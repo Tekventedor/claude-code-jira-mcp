@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0084FF"/>
+      <stop offset="1" stop-color="#1A56DB"/>
+    </linearGradient>
+    <linearGradient id="fhmark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0084FF"/>
+      <stop offset="1" stop-color="#1A56DB"/>
+    </linearGradient>
+    <style>
+      text { font-family: Inter, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; fill: #111928; }
+      .t { fill: #111928; }
+      .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .label { font-size: 16px; font-weight: 700; letter-spacing: 2px; fill: #6B7280; }
+      .h1 { font-size: 44px; font-weight: 800; letter-spacing: -1px; }
+      .step-num { font-size: 14px; font-weight: 700; fill: #0084FF; letter-spacing: 1.4px; }
+      .tool { font-size: 18px; font-weight: 700; fill: #FBBF24; }
+      .body { font-size: 16px; fill: #374151; }
+      .small { font-size: 13px; fill: #6B7280; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="#F9FAFB"/>
+
+  <!-- Title -->
+  <text x="960" y="100" text-anchor="middle" class="t label">THE WORKED EXAMPLE</text>
+  <text x="960" y="160" text-anchor="middle" class="t h1" xml:space="preserve">Three tool calls. <tspan fill="url(#grad)">One prompt.</tspan></text>
+  <text x="960" y="200" text-anchor="middle" class="t small" font-size="18">Read → Search → Write, entirely inside Jira</text>
+
+  <!-- Three step cards, left to right -->
+  <!-- Step 1 -->
+  <g transform="translate(120, 280)">
+    <rect width="510" height="380" rx="16" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5"/>
+    <text x="28" y="44" class="step-num">STEP 1 · READ</text>
+    <text x="28" y="100" class="t" font-size="22" font-weight="800">getVisibleJiraProjects</text>
+    <text x="28" y="148" class="t" font-size="18" font-weight="700">What it does</text>
+    <text x="28" y="176" class="body">Lists every Jira project the signed-in</text>
+    <text x="28" y="200" class="body">account can see.</text>
+
+    <text x="28" y="240" class="t" font-size="18" font-weight="700">Result in this demo</text>
+
+    <g transform="translate(28, 256)">
+      <rect width="454" height="28" rx="4" fill="#F3F4F6"/>
+      <text x="14" y="19" class="mono" font-size="13" fill="#374151">
+        <tspan font-weight="700" fill="#0084FF">KAN</tspan> · space  ·  picked as day-to-day
+      </text>
+    </g>
+    <g transform="translate(28, 292)">
+      <rect width="454" height="28" rx="4" fill="#F3F4F6"/>
+      <text x="14" y="19" class="mono" font-size="13" fill="#6B7280">
+        <tspan font-weight="700">SAM1</tspan> · built-in Atlassian sample · skipped
+      </text>
+    </g>
+  </g>
+
+  <!-- Step 2 -->
+  <g transform="translate(700, 280)">
+    <rect width="510" height="380" rx="16" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5"/>
+    <text x="28" y="44" class="step-num">STEP 2 · SEARCH</text>
+    <text x="28" y="100" class="t" font-size="22" font-weight="800">searchJiraIssuesUsingJql</text>
+    <text x="28" y="148" class="t" font-size="18" font-weight="700">Input · JQL</text>
+
+    <g transform="translate(28, 164)">
+      <rect width="454" height="50" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+      <text x="14" y="22" class="mono" font-size="13" fill="#374151">project = <tspan fill="#0084FF" font-weight="700">KAN</tspan> AND</text>
+      <text x="14" y="40" class="mono" font-size="13" fill="#374151">resolved &gt;= <tspan fill="#0084FF" font-weight="700">-14d</tspan> ORDER BY resolved DESC</text>
+    </g>
+
+    <text x="28" y="252" class="t" font-size="18" font-weight="700">Result in this demo</text>
+
+    <g transform="translate(28, 268)">
+      <rect width="454" height="28" rx="4" fill="#F3F4F6"/>
+      <text x="14" y="19" class="mono" font-size="13" fill="#374151">
+        <tspan font-weight="700" fill="#0084FF">KAN-3</tspan> · Subtask 2.1 · Unassigned · 2026-05-14
+      </text>
+    </g>
+    <text x="28" y="324" class="small">1 issue returned. On a busier project this list would group across many assignees.</text>
+  </g>
+
+  <!-- Step 3 -->
+  <g transform="translate(1280, 280)">
+    <rect width="510" height="380" rx="16" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1.5"/>
+    <text x="28" y="44" class="step-num">STEP 3 · WRITE</text>
+    <text x="28" y="100" class="t" font-size="22" font-weight="800">createJiraIssue</text>
+
+    <text x="28" y="148" class="t" font-size="18" font-weight="700">Input · fields</text>
+    <g transform="translate(28, 164)">
+      <rect width="454" height="72" rx="4" fill="#F3F4F6" stroke="#E5E7EB"/>
+      <text x="14" y="22" class="mono" font-size="13" fill="#374151">project: <tspan fill="#0084FF" font-weight="700">KAN</tspan>  ·  type: <tspan fill="#0084FF" font-weight="700">Task</tspan></text>
+      <text x="14" y="42" class="mono" font-size="13" fill="#374151">summary: <tspan fill="#0084FF" font-weight="700">"Sprint summary 2026-05-14"</tspan></text>
+      <text x="14" y="62" class="mono" font-size="13" fill="#6B7280">description: &lt;grouped digest&gt;</text>
+    </g>
+
+    <text x="28" y="264" class="t" font-size="18" font-weight="700">Result in this demo</text>
+    <g transform="translate(28, 280)">
+      <rect width="454" height="92" rx="4" fill="#F0FDF4" stroke="#BBF7D0"/>
+      <text x="14" y="22" class="mono" font-size="13">
+        <tspan font-weight="800" fill="#15803D">✓ Created KAN-4</tspan><tspan fill="#6B7280" font-weight="400">  ·  Task  ·  To Do</tspan>
+      </text>
+      <text x="14" y="42" class="mono" font-size="13" fill="#374151">
+        <tspan fill="#9CA3AF">summary  </tspan><tspan fill="#0084FF">"Sprint summary 2026-05-14"</tspan>
+      </text>
+      <text x="14" y="60" class="mono" font-size="13" fill="#374151">
+        <tspan fill="#9CA3AF">desc     </tspan># Unassigned  ▸  <tspan fill="#0084FF" font-weight="700">KAN-3</tspan> · Subtask 2.1
+      </text>
+      <text x="14" y="78" class="mono" font-size="13">
+        <tspan fill="#9CA3AF">url      </tspan><tspan fill="#0084FF">flowhunt.atlassian.net/browse/KAN-4</tspan>
+      </text>
+    </g>
+  </g>
+
+  <!-- KAN-3 ↔ KAN-4 explanation -->
+  <g transform="translate(120, 680)">
+    <text x="840" y="0" text-anchor="middle" class="t" font-size="13" font-weight="700" letter-spacing="2" fill="#6B7280">HOW KAN-3 AND KAN-4 RELATE</text>
+
+    <g transform="translate(40, 20)">
+      <rect width="700" height="56" rx="10" fill="#FFFFFF" stroke="#E5E7EB"/>
+      <text x="20" y="24" class="mono" font-size="13">
+        <tspan font-weight="800" fill="#0084FF">KAN-3</tspan><tspan fill="#374151">  ·  Subtask 2.1  ·  resolved 2026-05-14</tspan>
+      </text>
+      <text x="20" y="44" class="small">found by Step 2 (a resolved-in-14d issue, input to the rollup)</text>
+    </g>
+
+    <text x="840" y="52" text-anchor="middle" class="mono" font-size="14" fill="#6B7280">rolled up into</text>
+
+    <g transform="translate(940, 20)">
+      <rect width="700" height="56" rx="10" fill="#F0FDF4" stroke="#BBF7D0"/>
+      <text x="20" y="24" class="mono" font-size="13">
+        <tspan font-weight="800" fill="#15803D">KAN-4</tspan><tspan fill="#374151">  ·  Sprint summary 2026-05-14  ·  Task / To Do</tspan>
+      </text>
+      <text x="20" y="44" class="small">created by Step 3, description = grouped digest containing KAN-3</text>
+    </g>
+  </g>
+
+  <!-- Bottom strip -->
+  <g transform="translate(0, 760)">
+    <rect x="120" y="0" width="1680" height="180" rx="20" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <g transform="translate(176, 36)">
+      <text class="t" font-size="14" font-weight="700" letter-spacing="2" fill="#6B7280">ONE PROMPT, START TO FINISH</text>
+      <text y="40" class="t" font-size="22" font-weight="800">
+        “Capture this sprint as a tracking issue.”
+      </text>
+      <text y="74" class="body" fill="#374151">Claude Code chains the three tools above without you naming them. You see each call land, you confirm the grouped view, the issue is filed in your project.</text>
+      <text y="104" class="body" fill="#374151">Three Atlassian round-trips. Zero tabs opened. The new issue is a real Jira Task you can transition, comment on, or link from your retro.</text>
+    </g>
+  </g>
+
+  <!-- Watermark -->
+  <g transform="translate(960, 1030)" text-anchor="middle">
+    <text class="t" font-size="18" font-weight="700">
+      <tspan fill="#111928">Flow</tspan><tspan fill="url(#fhmark)">Hunt</tspan>
+    </text>
+  </g>
+</svg>

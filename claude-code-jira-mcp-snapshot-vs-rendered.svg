@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0084FF"/>
+      <stop offset="1" stop-color="#1A56DB"/>
+    </linearGradient>
+    <linearGradient id="fhmark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0084FF"/>
+      <stop offset="1" stop-color="#1A56DB"/>
+    </linearGradient>
+    <style>
+      .t { font-family: Inter, system-ui, sans-serif; fill: #111928; }
+      .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+      .label { font-size: 16px; font-weight: 700; letter-spacing: 2px; fill: #6B7280; }
+      .h1 { font-size: 44px; font-weight: 800; letter-spacing: -1px; }
+      .body { font-size: 18px; fill: #374151; }
+      .small { font-size: 14px; fill: #6B7280; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="#F9FAFB"/>
+
+  <!-- Top heading -->
+  <text x="960" y="90" text-anchor="middle" class="t label">JIRA MCP · INPUT vs OUTPUT</text>
+  <text x="960" y="148" text-anchor="middle" class="t h1">
+    Raw issues in. <tspan fill="url(#grad)">Tracked summary out.</tspan>
+  </text>
+
+  <!-- Left pane: raw Jira data -->
+  <g transform="translate(80, 220)">
+    <rect width="840" height="760" rx="16" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <!-- Pane header -->
+    <rect width="840" height="56" rx="16" fill="#0F172A"/>
+    <rect y="40" width="840" height="16" fill="#0F172A"/>
+    <circle cx="26" cy="28" r="6" fill="#FF5F57"/>
+    <circle cx="46" cy="28" r="6" fill="#FEBC2E"/>
+    <circle cx="66" cy="28" r="6" fill="#28C840"/>
+    <text x="100" y="34" class="mono" font-size="14" fill="#94A3B8">searchJiraIssuesUsingJql</text>
+
+    <!-- Code body -->
+    <g class="mono" font-size="16" fill="#E2E8F0" transform="translate(28, 96)">
+      <rect x="-28" y="-40" width="840" height="704" fill="#0F172A"/>
+      <text x="0" y="0" fill="#94A3B8">{</text>
+      <text x="0" y="32"><tspan fill="#22D3EE">  "jql"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"project = KAN AND resolved &gt;= -14d"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="64"><tspan fill="#22D3EE">  "issues"</tspan><tspan fill="#94A3B8">: [</tspan></text>
+      <text x="0" y="100"><tspan fill="#94A3B8">    {</tspan> <tspan fill="#22D3EE">"key"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"KAN-128"</tspan><tspan fill="#94A3B8">, </tspan><tspan fill="#22D3EE">"assignee"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Mia"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="124"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"summary"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Ship the search re-rank"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="148"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"resolved"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"2026-05-12"</tspan> <tspan fill="#94A3B8">},</tspan></text>
+      <text x="0" y="180"><tspan fill="#94A3B8">    {</tspan> <tspan fill="#22D3EE">"key"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"KAN-131"</tspan><tspan fill="#94A3B8">, </tspan><tspan fill="#22D3EE">"assignee"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Mia"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="204"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"summary"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Cache invalidation on token expiry"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="228"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"resolved"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"2026-05-13"</tspan> <tspan fill="#94A3B8">},</tspan></text>
+      <text x="0" y="260"><tspan fill="#94A3B8">    {</tspan> <tspan fill="#22D3EE">"key"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"KAN-134"</tspan><tspan fill="#94A3B8">, </tspan><tspan fill="#22D3EE">"assignee"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Jonas"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="284"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"summary"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Drop legacy webhook handler"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="308"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"resolved"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"2026-05-13"</tspan> <tspan fill="#94A3B8">},</tspan></text>
+      <text x="0" y="340"><tspan fill="#94A3B8">    {</tspan> <tspan fill="#22D3EE">"key"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"KAN-137"</tspan><tspan fill="#94A3B8">, </tspan><tspan fill="#22D3EE">"assignee"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Lin"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="364"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"summary"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"Audit log for issue transitions"</tspan><tspan fill="#94A3B8">,</tspan></text>
+      <text x="0" y="388"><tspan fill="#94A3B8">       </tspan><tspan fill="#22D3EE">"resolved"</tspan><tspan fill="#94A3B8">: </tspan><tspan fill="#FBBF24">"2026-05-14"</tspan> <tspan fill="#94A3B8">},</tspan></text>
+      <text x="0" y="420"><tspan fill="#475569">    /* 12 more… */</tspan></text>
+      <text x="0" y="452"><tspan fill="#94A3B8">  ]</tspan></text>
+      <text x="0" y="484"><tspan fill="#94A3B8">}</tspan></text>
+    </g>
+  </g>
+
+  <!-- Arrow between panes — sits inside the 80px gap (x: 920 → 1000) -->
+  <g transform="translate(960, 600)">
+    <circle r="38" fill="#FFFFFF" stroke="url(#grad)" stroke-width="3"/>
+    <path d="M -12 0 L 12 0 M 2 -8 L 14 0 L 2 8" stroke="url(#grad)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Right pane: new Jira issue rendered in browser -->
+  <g transform="translate(1000, 220)">
+    <rect width="840" height="760" rx="16" fill="#FFFFFF" stroke="#E5E7EB"/>
+    <!-- Browser chrome -->
+    <rect width="840" height="56" rx="16" fill="#F3F4F6"/>
+    <rect y="40" width="840" height="16" fill="#F3F4F6"/>
+    <circle cx="26" cy="28" r="6" fill="#FF5F57"/>
+    <circle cx="46" cy="28" r="6" fill="#FEBC2E"/>
+    <circle cx="66" cy="28" r="6" fill="#28C840"/>
+    <rect x="100" y="14" width="600" height="28" rx="6" fill="#FFFFFF"/>
+    <text x="116" y="32" class="mono" font-size="13" fill="#374151">flowhunt.atlassian.net/browse/KAN-145</text>
+
+    <!-- Jira issue header -->
+    <g transform="translate(40, 96)">
+      <!-- Breadcrumb -->
+      <text class="small" font-weight="600">Projects / KAN / Sprint summary 2026-05-14</text>
+      <!-- Issue key + title row -->
+      <g transform="translate(0, 28)">
+        <rect width="28" height="20" rx="4" fill="#1F845A"/>
+        <rect x="32" width="22" height="20" rx="4" fill="#0052CC"/>
+        <text x="11" y="14" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#FFFFFF">TASK</text>
+        <text x="43" y="14" text-anchor="middle" font-family="Inter" font-size="11" font-weight="700" fill="#FFFFFF">M</text>
+        <text x="68" y="15" class="mono" font-size="13" fill="#0052CC" font-weight="700">KAN-145</text>
+      </g>
+      <!-- Big title -->
+      <text y="86" class="t" font-size="26" font-weight="800">Sprint summary 2026-05-14</text>
+      <!-- Status pill row -->
+      <g transform="translate(0, 102)">
+        <rect width="56" height="20" rx="3" fill="#EAECF0"/>
+        <text x="28" y="14" text-anchor="middle" class="small" font-weight="700" fill="#374151">TO DO</text>
+        <text x="72" y="14" class="small">Reporter: <tspan font-weight="700" fill="#111928">you</tspan>  ·  Created by Claude Code via Atlassian MCP  ·  16 issues</text>
+      </g>
+
+      <!-- Description heading -->
+      <text y="158" class="t" font-size="14" font-weight="700" fill="#6B7280" letter-spacing="1">DESCRIPTION</text>
+      <line x1="0" y1="170" x2="760" y2="170" stroke="#E5E7EB"/>
+
+      <!-- Mia -->
+      <text y="200" class="t" font-size="18" font-weight="700">Mia</text>
+      <text y="226" class="body"><tspan font-weight="700" fill="#0052CC">KAN-128</tspan>  Ship the search re-rank  <tspan fill="#6B7280">· 2026-05-12</tspan></text>
+      <text y="250" class="body"><tspan font-weight="700" fill="#0052CC">KAN-131</tspan>  Cache invalidation on token expiry  <tspan fill="#6B7280">· 2026-05-13</tspan></text>
+
+      <!-- Jonas -->
+      <text y="294" class="t" font-size="18" font-weight="700">Jonas</text>
+      <text y="320" class="body"><tspan font-weight="700" fill="#0052CC">KAN-134</tspan>  Drop legacy webhook handler  <tspan fill="#6B7280">· 2026-05-13</tspan></text>
+      <text y="344" class="body"><tspan font-weight="700" fill="#0052CC">KAN-141</tspan>  Rate-limit headers on every response  <tspan fill="#6B7280">· 2026-05-14</tspan></text>
+
+      <!-- Lin -->
+      <text y="388" class="t" font-size="18" font-weight="700">Lin</text>
+      <text y="414" class="body"><tspan font-weight="700" fill="#0052CC">KAN-137</tspan>  Audit log for issue transitions  <tspan fill="#6B7280">· 2026-05-14</tspan></text>
+      <text y="438" class="body"><tspan font-weight="700" fill="#0052CC">KAN-139</tspan>  Confluence import preview  <tspan fill="#6B7280">· 2026-05-14</tspan></text>
+
+      <!-- Sam -->
+      <text y="482" class="t" font-size="18" font-weight="700">Sam</text>
+      <text y="508" class="body"><tspan font-weight="700" fill="#0052CC">KAN-144</tspan>  Migrate session cookies to first-party  <tspan fill="#6B7280">· 2026-05-14</tspan></text>
+
+      <text y="568" class="small">…and 8 more across 4 assignees. Full list in description body.</text>
+    </g>
+  </g>
+
+  <!-- Bottom watermark -->
+  <g transform="translate(960, 1024)" text-anchor="middle">
+    <text class="t" font-size="18" font-weight="700">
+      <tspan fill="#111928">Flow</tspan><tspan fill="url(#fhmark)">Hunt</tspan>
+    </text>
+  </g>
+</svg>
