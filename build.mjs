@@ -36,7 +36,7 @@ const PivotScene = `function PivotScene(props){${HELPERS}
     R('div',{style:{opacity:op,textAlign:'center',fontSize:'108px',fontWeight:800,color:'#111928',lineHeight:1.1,letterSpacing:'-2px'}},
       'Claude Code reads ',
       R('span',{style:{position:'relative',display:'inline-block'}},
-        R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Atlassian MCP Server.'),
+        R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Jira.'),
         R('span',{style:{position:'absolute',left:0,right:'8%',bottom:'-4px',height:'8px',borderRadius:'4px',background:grad,transform:'scaleX('+underP+')',transformOrigin:'left center'}})
       )
     ),
@@ -320,95 +320,117 @@ const InstallScene = `function InstallScene(props){${HELPERS}
 /* ============================================================================
  * SCENE 5 — Snapshot magic (240f, 8s) — query JSON → real Jira issue
  * ========================================================================== */
+/* ============================================================================
+ * SCENE 5 — "Your Jira, mapped" (240f, 8s)
+ * Explains what KAN is (project key), what KAN-3 / KAN-4 are (issue keys),
+ * and shows the broader tool surface so viewers see the demo is one of many
+ * shapes the Atlassian MCP supports. Not a repeat of Scene 2's snapshot.
+ * ========================================================================== */
 const SnapshotScene = `function SnapshotScene(props){${HELPERS}
   var f=props.frame||0;
   var END=240;
   var op=ease(cl(f/22))-easeIn(cl((f-(END-22))/22));
-  var leftIn=ease(cl(f/25));
-  var rightIn=ease(cl((f-30)/25));
-  // Annotation tooltips fade in after both panes are settled
-  var ttKan3=ease(cl((f-90)/22));
-  var ttKan4=ease(cl((f-115)/22));
-  var pillP=cl(ease(cl((f-160)/14))-easeIn(cl((f-(END-30))/14)));
+  // Hierarchy panel fade-in beats
+  var siteIn=easeBack(cl(f/22));
+  var projIn=easeBack(cl((f-18)/22));
+  var i1In=easeBack(cl((f-36)/18));
+  var i2In=easeBack(cl((f-48)/18));
+  var i3In=easeBack(cl((f-60)/18));    // highlight: KAN-3 (resolved, JQL found this)
+  var i4In=easeBack(cl((f-78)/18));    // highlight: KAN-4 (Claude created this)
+  // Right-side annotation labels
+  var l1=ease(cl((f-96)/18));
+  var l2=ease(cl((f-114)/18));
+  // Bottom ribbon: tool categories
+  var rib=ease(cl((f-140)/22));
+  function chip(d){return easeBack(cl((f-(140+d))/18));}
+  var c1=chip(0), c2=chip(10), c3=chip(20), c4=chip(30), c5=chip(40), c6=chip(50);
+  var pillP=cl(ease(cl((f-180)/14))-easeIn(cl((f-(END-22))/14)));
+
+  // Helper: an issue row in the project tree
+  function row(args){
+    var prog=args.prog, key=args.key, summary=args.summary, tag=args.tag, tagColor=args.tagColor;
+    if(prog<0.005)return null;
+    var bg = tag ? (tag==='JQL match' ? '#ECFDF5' : '#EFF6FF') : 'transparent';
+    var bd = tag ? (tag==='JQL match' ? '#10B981' : '#0084FF') : '#E5E7EB';
+    return R('div',{style:{opacity:prog,transform:'translateX('+((1-prog)*-14)+'px)',marginTop:'14px',padding:'14px 18px',borderLeft:'4px solid '+bd,background:bg,borderRadius:'0 10px 10px 0',display:'flex',alignItems:'center',gap:'16px'}},
+      R('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'19px',fontWeight:800,color:'#0052CC',minWidth:'78px'}}, key),
+      R('div',{style:{fontSize:'18px',color:'#172B4D',flex:1}}, summary),
+      tag ? R('div',{style:{padding:'4px 10px',background:tagColor,color:'#FFFFFF',fontSize:'12px',fontWeight:700,borderRadius:'999px',letterSpacing:'0.04em'}}, tag) : null
+    );
+  }
 
   return R('div',{style:{width:'100%',height:'100%',background:'#F9FAFB',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
-    // Title — naming consistent with the rest of the video
-    R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'BEFORE  ·  AFTER'),
-    R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'34px',fontWeight:800,color:'#111928'}},'From JQL row to tracked Atlassian issue.'),
+    // ─── Eyebrow + title ───
+    R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'KAN, EXPLAINED'),
+    R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'What is a KAN?'),
+    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Your Jira project key, and the issue keys that live inside it.'),
 
-    // LEFT — JSON
-    R('div',{style:{position:'absolute',left:'70px',top:'200px',width:'870px',height:'720px',background:'#0F172A',borderRadius:'12px',overflow:'hidden',opacity:leftIn,transform:'translateX('+((1-leftIn)*-40)+'px)'}},
-      R('div',{style:{height:'36px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 12px',gap:'8px'}},
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FF5F57'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FEBC2E'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#28C840'}}),
-        R('div',{style:{marginLeft:'12px',fontSize:'13px',color:'#94A3B8',fontFamily:'JetBrains Mono,monospace'}},'searchJiraIssuesUsingJql')
-      ),
-      R('div',{style:{padding:'28px 32px',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',color:'#E2E8F0',lineHeight:1.65}},
-        R('div',{style:{color:'#94A3B8'}},'{'),
-        R('div',null,R('span',{style:{color:'#22D3EE'}},'  "jql"'),R('span',{style:{color:'#94A3B8'}},': '),R('span',{style:{color:'#FBBF24'}},'"project = KAN AND resolved >= -14d"'),R('span',{style:{color:'#94A3B8'}},',')),
-        R('div',null,R('span',{style:{color:'#22D3EE'}},'  "issues"'),R('span',{style:{color:'#94A3B8'}},': [')),
+    // ─── LEFT (60%): the hierarchy tree ───
+    R('div',{style:{position:'absolute',left:'80px',top:'230px',width:'1050px'}},
+      // Site row
+      R('div',{style:{opacity:siteIn,transform:'translateY('+(10*(1-siteIn))+'px)',display:'flex',alignItems:'center',gap:'14px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px'}},
+        R('div',{style:{width:36,height:36,borderRadius:'8px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'JetBrains Mono,monospace',fontSize:'14px'}},'A'),
         R('div',null,
-          R('span',{style:{color:'#94A3B8'}},'    { '),
-          R('span',{style:{color:'#22D3EE'}},'"key"'),R('span',{style:{color:'#94A3B8'}},': '),
-          R('span',{style:{color:'#FBBF24'}},'"KAN-3"'),
-          R('span',{style:{color:'#94A3B8'}},', ')
+          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'SITE'),
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'flowhunt.atlassian.net')
+        )
+      ),
+      // Project row
+      R('div',{style:{marginTop:'14px',marginLeft:'34px',opacity:projIn,transform:'translateX('+((1-projIn)*-14)+'px)',display:'flex',alignItems:'center',gap:'14px',padding:'14px 18px',background:'linear-gradient(90deg,rgba(0,132,255,0.08),rgba(26,86,219,0.04))',border:'1.5px solid #0084FF',borderRadius:'12px'}},
+        R('div',{style:{padding:'6px 14px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'20px',fontWeight:800,borderRadius:'8px'}},'KAN'),
+        R('div',{style:{flex:1}},
+          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'PROJECT KEY'),
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'Kanban demo board')
         ),
-        R('div',null,R('span',{style:{color:'#94A3B8'}},'      '),R('span',{style:{color:'#22D3EE'}},'"summary"'),R('span',{style:{color:'#94A3B8'}},': '),R('span',{style:{color:'#FBBF24'}},'"Subtask 2.1"'),R('span',{style:{color:'#94A3B8'}},',')),
-        R('div',null,R('span',{style:{color:'#94A3B8'}},'      '),R('span',{style:{color:'#22D3EE'}},'"assignee"'),R('span',{style:{color:'#94A3B8'}},': '),R('span',{style:{color:'#FBBF24'}},'null'),R('span',{style:{color:'#94A3B8'}},',')),
-        R('div',null,R('span',{style:{color:'#94A3B8'}},'      '),R('span',{style:{color:'#22D3EE'}},'"resolved"'),R('span',{style:{color:'#94A3B8'}},': '),R('span',{style:{color:'#FBBF24'}},'"2026-05-14"'),R('span',{style:{color:'#94A3B8'}},' }')),
-        R('div',{style:{color:'#94A3B8'}},'  ]'),
-        R('div',{style:{color:'#94A3B8'}},'}')
+        R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:600}}, '4 issues')
+      ),
+      // Issues — nested
+      R('div',{style:{marginTop:'4px',marginLeft:'68px'}},
+        row({prog:i1In,key:'KAN-1',summary:'Spike: evaluate options'}),
+        row({prog:i2In,key:'KAN-2',summary:'Refactor auth flow'}),
+        row({prog:i3In,key:'KAN-3',summary:'Subtask 2.1',tag:'JQL match',tagColor:'#10B981'}),
+        row({prog:i4In,key:'KAN-4',summary:'Sprint summary 2026-05-14',tag:'Claude created',tagColor:'#0084FF'})
       )
     ),
 
-    // RIGHT — Jira issue
-    R('div',{style:{position:'absolute',right:'70px',top:'200px',width:'870px',height:'720px',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',opacity:rightIn,transform:'translateX('+((1-rightIn)*40)+'px)',boxShadow:'0 24px 50px rgba(17,25,40,0.10)'}},
-      R('div',{style:{height:'42px',background:'#F4F5F7',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px',borderBottom:'1px solid #DFE1E6'}},
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FF5F57'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FEBC2E'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#28C840'}}),
-        R('div',{style:{marginLeft:'12px',padding:'4px 14px',background:'#FFFFFF',borderRadius:'4px',fontSize:'12px',color:'#42526E'}},'flowhunt.atlassian.net/browse/KAN-4')
-      ),
-      R('div',{style:{padding:'30px 40px'}},
-        R('div',{style:{fontSize:'12px',color:'#5E6C84',fontWeight:600}},'Projects / KAN / KAN-4'),
-        R('div',{style:{marginTop:'14px',display:'flex',alignItems:'center',gap:'10px'}},
-          R('div',{style:{padding:'3px 10px',background:'#E3FCEF',color:'#006644',fontSize:'12px',fontWeight:700,borderRadius:'3px'}},'TASK'),
-          R('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'15px',color:'#0052CC',fontWeight:700}},'KAN-4')
+    // ─── RIGHT (40%): the legend panel ───
+    R('div',{style:{position:'absolute',right:'80px',top:'230px',width:'620px'}},
+      // Legend card 1 — project key
+      R('div',{style:{opacity:l1,transform:'translateY('+(10*(1-l1))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
+        R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+          R('div',{style:{padding:'4px 12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN'),
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= the project key')
         ),
-        R('div',{style:{marginTop:'16px',fontSize:'34px',fontWeight:800,color:'#172B4D'}},'Sprint summary 2026-05-14'),
-        R('div',{style:{marginTop:'12px',display:'inline-block',padding:'4px 12px',background:'#EAECF0',color:'#42526E',fontSize:'12px',fontWeight:700,borderRadius:'3px'}},'TO DO'),
-        R('div',{style:{marginTop:'34px',fontSize:'13px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'DESCRIPTION'),
-        R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'10px'}}),
-        R('div',{style:{marginTop:'18px',fontSize:'20px',fontWeight:700,color:'#172B4D'}},'Unassigned'),
-        R('div',{style:{marginTop:'12px',fontSize:'17px',color:'#42526E'}},
-          R('span',{style:{color:'#0052CC',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-3'),
-          '  Subtask 2.1  ·  resolved 2026-05-14'
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Three or four letters Jira gives every project. Yours might be ENG, OPS, DATA — same idea.')
+      ),
+      // Legend card 2 — issue keys
+      R('div',{style:{marginTop:'18px',opacity:l2,transform:'translateY('+(10*(1-l2))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
+        R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+          R('div',{style:{padding:'4px 12px',background:'#0052CC',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN-N'),
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= an issue key')
+        ),
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Every ticket gets the project key plus a number. ',
+          R('span',{style:{color:'#10B981',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-3'),
+          ' is what JQL found. ',
+          R('span',{style:{color:'#0084FF',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-4'),
+          ' is what Claude just filed.'
         )
       )
     ),
 
-    // ─── ANNOTATION TOOLTIPS — explain what KAN-3 and KAN-4 are ───
-    // KAN-3 tooltip (left, pointing to the "KAN-3" key in the JSON)
-    ttKan3>0.005?R('div',{style:{position:'absolute',left:'350px',top:'430px',opacity:ttKan3,transform:'translateY('+(8*(1-ttKan3))+'px)'}},
-      R('div',{style:{background:'#111928',color:'#FFFFFF',padding:'10px 16px',borderRadius:'8px',fontSize:'15px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(17,25,40,0.30)'}},
-        R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:700}},'KAN-3'),
-        ' — the issue Jira returned'
-      ),
-      R('div',{style:{position:'absolute',left:'30px',top:'-6px',width:'12px',height:'12px',background:'#111928',transform:'rotate(45deg)'}})
-    ):null,
-    // KAN-4 tooltip (right, pointing to the KAN-4 issue title)
-    ttKan4>0.005?R('div',{style:{position:'absolute',right:'330px',top:'380px',opacity:ttKan4,transform:'translateY('+(8*(1-ttKan4))+'px)'}},
-      R('div',{style:{background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',padding:'10px 16px',borderRadius:'8px',fontSize:'15px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,132,255,0.30)'}},
-        R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700}},'KAN-4'),
-        ' — the new issue Claude just filed'
-      ),
-      R('div',{style:{position:'absolute',right:'30px',top:'-6px',width:'12px',height:'12px',background:'#0084FF',transform:'rotate(45deg)'}})
+    // ─── BOTTOM ribbon: tool categories the Atlassian MCP exposes ───
+    rib>0.005?R('div',{style:{position:'absolute',left:'80px',right:'80px',bottom:'120px',opacity:rib,transform:'translateY('+(10*(1-rib))+'px)'}},
+      R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:700,letterSpacing:'0.08em',textAlign:'center',marginBottom:'14px'}},'AND THE SAME KEY UNLOCKS EVERYTHING ELSE'),
+      R('div',{style:{display:'flex',gap:'14px',justifyContent:'center',flexWrap:'nowrap'}},
+        [{p:c1,t:'Search issues'},{p:c2,t:'Create / update'},{p:c3,t:'Transitions'},{p:c4,t:'Comments'},{p:c5,t:'Sprints'},{p:c6,t:'Confluence pages'}].map(function(o,i){
+          return R('div',{key:i,style:{opacity:o.p,transform:'translateY('+(8*(1-o.p))+'px) scale('+(0.9+0.1*o.p)+')',padding:'12px 22px',background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'999px',fontSize:'17px',fontWeight:700,color:'#111928',whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(17,25,40,0.05)'}}, o.t);
+        })
+      )
     ):null,
 
-    // Bottom-centre narrator pill — no big rotated stamp anymore
-    pillP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'945px',transform:'translateX(-50%) translateY('+(-8*(1-pillP))+'px)',opacity:pillP,background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'999px',padding:'12px 28px',fontSize:'20px',fontWeight:700,color:'#111928',boxShadow:'0 8px 22px rgba(17,25,40,0.12)',whiteSpace:'nowrap',zIndex:10}}, 'One query in. One tracked issue out.'):null
+    // ─── Bottom-centre narrator pill ───
+    pillP>0.005?R('div',{style:{position:'absolute',left:'50%',bottom:'46px',transform:'translateX(-50%) translateY('+(8*(1-pillP))+'px)',opacity:pillP,background:'#111928',color:'#FFFFFF',borderRadius:'999px',padding:'12px 28px',fontSize:'20px',fontWeight:700,boxShadow:'0 8px 22px rgba(17,25,40,0.20)',whiteSpace:'nowrap',zIndex:10}}, 'Learn the key. Use the whole product.'):null
   );
 }`;
 

@@ -30,11 +30,11 @@ Time the last two beats to the node entries.
 
 Read the command flat, matching the on-screen typewriter cadence.
 
-## Scene 5 — Snapshot magic · frames 870–1110 · 8.0 s · ~25 words
+## Scene 5 — KAN, explained · frames 870–1110 · 8.0 s · ~26 words
 
-> On the left, raw JQL output. On the right, the same data turned into a tracked Atlassian issue Claude just filed. Same source. Same data. New container.
+> Quick decoder. `KAN` is your project key — every Jira project has one. `KAN-3`, `KAN-4` — those are issue keys inside it. Learn the key. The MCP unlocks everything else.
 
-Hit "new container" right when the right-pane Jira card settles.
+Land "Learn the key" right when the bottom ribbon of tool categories fans in.
 
 ## Scene 6 — CTA · frames 1110–1350 · 8.0 s · ~25 words
 
