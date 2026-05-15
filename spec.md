@@ -1,20 +1,21 @@
 # claude-code-jira-mcp — scene spec
 
-**Total**: ~69.3 s · 30 fps · 2080 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
+**Total**: ~78.8 s · 30 fps · 2365 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
 
 Scenes are contiguous; no cross-scene cuts inside a scene's `endFrame`. FlowHunt watermark on every scene via `scene()` builder. No em dashes in copy.
 
 | # | id | name | range | dur | role |
 |---|---|---|---|---|---|
-| 1 | s1-pivot | Pivot | 0–90 | 3.0 s | Title card. "Claude Code reads Jira." |
-| 2 | s2-explainer | Project codes | 90–330 | 8.0 s | Vocabulary primer; uses OPS on the right to show the code is arbitrary |
-| 3 | s3-demo | Demo | 330–570 | 8.0 s | Bug-triage walkthrough at 2x speed |
-| 4 | s4-arch | Architecture | 570–730 | ~5.3 s | Pipeline diagram (1.5x speed) |
-| 5 | s5-fh-oauth | FlowHunt + Atlassian OAuth | 730–1015 | 9.5 s | FlowHunt Integrations page → real Atlassian consent screen ("FlowHunt is requesting access") |
-| 6 | s6-fh-mcp | MCP Server config + Connect JSON | 1015–1300 | 9.5 s | FlowHunt MCP Servers modal with 34 Jira tools → Connect tab with `mcp.flowhunt.io` JSON |
-| 7 | s7-fh-bridge | One JSON, two surfaces | 1300–1570 | 9.0 s | Same JSON consumed by Claude Code terminal (left) and FlowHunt agent dialog (right) |
-| 8 | s8-fh-usage | FlowHunt agent in action | 1570–1840 | 9.0 s | Scrolling chat response: ticket pull + capability list |
-| 9 | s9-cta | CTA | 1840–2080 | 8.0 s | FlowHunt logo + blog title + button + URL |
+| 1  | s01-pivot       | Pivot | 0–90 | 3.0 s | Title card. "Claude Code reads Jira." |
+| 2  | s02-explainer   | Project codes | 90–330 | 8.0 s | Vocabulary primer; uses OPS on the right to show the code is arbitrary |
+| 3  | s03-demo        | Demo | 330–570 | 8.0 s | Bug-triage walkthrough at 2x speed |
+| 4  | s04-arch        | Architecture | 570–730 | ~5.3 s | Pipeline diagram (1.5x speed) |
+| 5  | s05-cc-direct   | Path 3: Claude Code direct | 730–1015 | 9.5 s | Terminal `claude mcp add atlassian https://mcp.atlassian.com/...` → Atlassian OAuth screen ("Claude Code is requesting access") |
+| 6  | s06-fh-oauth    | Path 1+2 setup: FlowHunt Token-Auth | 1015–1300 | 9.5 s | Integrations page → Manage Integration click → modal with API token form → success |
+| 7  | s07-fh-mcp      | Path 2 setup: MCP Server config | 1300–1585 | 9.5 s | FlowHunt MCP Servers modal with 34 Jira tools → Connect tab JSON |
+| 8  | s08-fh-bridge   | Path 2 wire-up: same MCP, both sides | 1585–1855 | 9.0 s | Local Claude Code terminal + FlowHunt agent editor with MCP Client tool selected |
+| 9  | s09-fh-usage    | Path 1 in action: FlowHunt agent | 1855–2125 | 9.0 s | Scrolling chat response: ticket pull + capability list |
+| 10 | s10-cta         | CTA | 2125–2365 | 8.0 s | FlowHunt logo + blog title + button + URL |
 
 ## Scene 1 — Pivot (0–90)
 
@@ -85,7 +86,7 @@ End card. FlowHunt logo + blog title + button + URL.
 
 ## Constraints recap
 
-- `output.duration * fps == 2080`. Verify on every build.
+- `output.duration * fps == 2365`. Verify on every build.
 - Watermark layer at y=994, height 50, on every scene.
 - No real screenshots embedded; recreate Jira chrome inline with `React.createElement` so it can be animated.
 - Source of truth: edit `build.mjs`, run `node build.mjs`, click Load in the playground.

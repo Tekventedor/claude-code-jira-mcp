@@ -16,13 +16,14 @@ const F = {
   snapshot:   { start: 90,   end: 330,   dur: 240 },  // 8s   — Project-code primer
   demo:       { start: 330,  end: 570,   dur: 240 },  // 8s   — Bug-triage walkthrough at 2x
   arch:       { start: 570,  end: 730,   dur: 160 },  // ~5.3s
-  fhOAuth:    { start: 730,  end: 1015,  dur: 285 },  // 9.5s — FlowHunt + Atlassian OAuth
-  fhMcp:      { start: 1015, end: 1300,  dur: 285 },  // 9.5s — MCP Server config + Connect JSON
-  fhBridge:   { start: 1300, end: 1570,  dur: 270 },  // 9s   — One JSON, two surfaces (local + online)
-  fhUsage:    { start: 1570, end: 1840,  dur: 270 },  // 9s   — FlowHunt agent in action (scroll)
-  cta:        { start: 1840, end: 2080,  dur: 240 },  // 8s
+  ccDirect:   { start: 730,  end: 1015,  dur: 285 },  // 9.5s — PATH 3: Claude Code direct to Atlassian
+  fhOAuth:    { start: 1015, end: 1300,  dur: 285 },  // 9.5s — PATH 1+2 setup: FlowHunt Token-Auth
+  fhMcp:      { start: 1300, end: 1585,  dur: 285 },  // 9.5s — PATH 2 setup: MCP Server + Connect JSON
+  fhBridge:   { start: 1585, end: 1855,  dur: 270 },  // 9s   — PATH 2 wire-up: local + online
+  fhUsage:    { start: 1855, end: 2125,  dur: 270 },  // 9s   — PATH 1 in action: FlowHunt agent scroll
+  cta:        { start: 2125, end: 2365,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 2080;
+const TOTAL_FRAMES = 2365;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -700,38 +701,96 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
 //                     toast slides in bottom-right.
 //   Phase E (260–285): scene-out fade (matches InstallScene op formula).
 
-const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
+// fh-oauth-scene-v2.snippet.mjs
+// Replacement template-literal const for FlowHuntOAuthScene (Scene 5, 285f / 9.5s).
+//
+// Restructured to show the *actual* temporal order of the Token-based Auth flow:
+//   Phase A (0–70):   FlowHunt Integrations page renders inside the Chrome browser
+//                     window. URL app.flowhunt.io/integrations. Two Atlassian
+//                     cards side-by-side (OAuth left, Token-based Auth right).
+//                     Token-based Auth card shows BETA tag + an "Integrate"
+//                     button. Search bar typewriters "atlas" in first ~40f.
+//   Phase B (70–110): Click flash on the Token-based Auth card's Integrate
+//                     button. The page dims (rgba(0,0,0,0.30) overlay) and the
+//                     Token-based Auth modal slides/fades in over the page.
+//   Phase C (110–180):Modal fully visible. Left column: Atlassian logo,
+//                     heading, blurb, Key Features bullets. Right column: tabs
+//                     (Configuration active), header row, blue API-tokens
+//                     instructions callout, three pre-filled form fields
+//                     (Atlassian Domain / Email / API Token — dots typewriter
+//                     ~f=130→170), Close + Integrate Atlassian buttons. Click
+//                     flash on Integrate Atlassian around f=200.
+//   Phase D (180–250):Modal scales down + fades out. Behind it the Integrations
+//                     page transitions to its INTEGRATED state: Token-based
+//                     Auth card now shows "Manage Integration" + green
+//                     "Integrated" tag (with check icon). A green success
+//                     toast slides in from the top-right of the page.
+//   Phase E (250–285):Hold. Manage Integration button gets a phase-integrated
+//                     fast→slow breathing pulse (fast 0.22 until f=250, slow
+//                     0.085 after). Standard op formula handles scene-out
+//                     fade in the last 20 frames.
+//
+// Uses ${HELPERS}, ${ATLASSIAN_MARK} and ${FH_MARK_PATH} placeholders so
+// build.mjs interpolates them at compose time. No other files modified.
+
+// ClaudeCodeDirectScene — the "third path" scene for the rendervid promo.
+//
+// The video has spent its time so far establishing FlowHunt as the bridge
+// between Claude Code and Atlassian. This scene flips that framing: Claude
+// Code can ALSO speak directly to Atlassian's hosted MCP server with a
+// single `claude mcp add` command and a standard OAuth click — no FlowHunt
+// in the middle. The eyebrow reads "OR · STEP 1 ALTERNATIVE" so the
+// viewer parses this as a sibling to the FlowHunt path, not a replacement.
+//
+// Choreography (mirrors InstallScene exactly so it visually rhymes with
+// the rest of the deck):
+//   Phase A (0–130):   tall terminal renders; `claude mcp add ...` types
+//                      in; result line + "opening browser..." reveal.
+//   Phase B (130–170): terminal scales/fades out; Chrome window rises
+//                      from below (1500×780, same chrome bar pattern).
+//   Phase C (170–216): Atlassian OAuth consent body — Atlassian wordmark,
+//                      header naming Claude Code as the requester, and
+//                      three staggered permission rows.
+//   Phase D (216–265): Accept button reveals with the same phase-integrated
+//                      fast→slow breathing pulse used in InstallScene.
+//   Phase E (265–285): scene-out fade via the standard `op` formula.
+//
+// Output: a single template-literal const. Build-time interpolations
+// (${HELPERS}, ${ATLASSIAN_MARK}, ${CLAUDE_ICON}) are written with a
+// literal '$' so build.mjs's outer template literal expands them at
+// compose time. No other files are touched.
+
+const ClaudeCodeDirectScene = `function ClaudeCodeDirectScene(props){${HELPERS}
   var f=props.frame||0;
   var END=285;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
-  // ─── Phase A: FlowHunt Integrations page + Atlassian modal ─────────
-  var panelIn=ease(cl(f/24));
-  // Modal body items reveal staggered
-  function modalIn(d){return ease(cl((f-(28+d))/18));}
-  var m1=modalIn(0), m2=modalIn(10), m3=modalIn(20), m4=modalIn(30), m5=modalIn(40);
-  // Click flash on the Integrate button around f=90
-  var clickFlash=cl(1-Math.abs(f-90)/8);
+  // ─── Phase A: terminal ─────────────────────────────────────────────
+  var termIn=ease(cl(f/24));
+  var promptCmd='claude mcp add --transport http atlassian https://mcp.atlassian.com/v1/mcp/authv2';
+  var typeStart=30, typeDur=72;
+  var promptTyped=promptCmd.slice(0, Math.floor(cl((f-typeStart)/typeDur)*promptCmd.length));
+  var caretOn=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+30;
+  var resultP=ease(cl((f-108)/16));
 
-  // ─── Phase B: panel exit + chrome enter ─────────────────────────────
-  var panelOut=easeIn(cl((f-115)/30));
-  var panelOpacity=cl(panelIn-panelOut);
-  var panelScale=1-0.06*panelOut;
-  var panelShift=-30*panelOut;
+  // ─── Phase B: terminal exit + chrome enter ─────────────────────────
+  var termOut=easeIn(cl((f-130)/30));
+  var termOpacity=cl(termIn-termOut);
+  var termScale=1-0.06*termOut;
+  var termShift=-30*termOut;
 
-  var chromeP=ease(cl((f-115)/40));
+  var chromeP=ease(cl((f-130)/40));
   var chromeRise=lerp(120, 0, chromeP);
 
   // ─── Phase C: OAuth content reveals ────────────────────────────────
-  var iconStripP=ease(cl((f-155)/20));
-  var headerP=ease(cl((f-168)/22));
-  var useAppP=ease(cl((f-180)/18));
-  function scopeIn(d){return ease(cl((f-(190+d))/20));}
-  var s1=scopeIn(0), s2=scopeIn(14), s3=scopeIn(28);
-  var footerP=ease(cl((f-216)/16));
-  var btnP=ease(cl((f-220)/16));
+  var headerP=ease(cl((f-170)/22));
+  function rowIn(d){return ease(cl((f-(176+d))/18));}
+  var r1=rowIn(0), r2=rowIn(14), r3=rowIn(28);
+  var btnP=ease(cl((f-216)/16));
 
-  // ─── Phase D: Accept ring pulse (phase-integrated fast→slow) ───────
+  // ─── Phase D: Accept ring pulse — fast/snappy when it first appears
+  // so the viewer notices, then slows into a calmer breathe. Phase is
+  // integrated across the rate change so there's no jump.
   var fastEnd=230;
   var fastFreq=0.22, slowFreq=0.085;
   var pulsePhase = f<=fastEnd
@@ -739,8 +798,187 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
     : (fastEnd-220)*fastFreq + (f-fastEnd)*slowFreq;
   var acceptPulse=0.5+0.5*Math.sin(pulsePhase);
 
-  // ─── Success toast (bottom-right of Chrome) at f=250 ───────────────
-  var toastP=ease(cl((f-250)/14));
+  function span(t,c){return R('span',{style:{color:c}},t);}
+
+  // The official Atlassian mark (PNG inlined via assets.mjs).
+  function atlassianMark(size){
+    var s=size||56;
+    return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block'}});
+  }
+
+  // The Claude Code mark (used as a small badge in the consent header
+  // strip so the requesting app reads visually as well as in copy).
+  function claudeMark(size){
+    var s=size||40;
+    return R('img',{src:'${CLAUDE_ICON}',width:s,height:s,style:{display:'block',borderRadius:'9px',boxShadow:'0 2px 6px rgba(217,119,87,0.35)'}});
+  }
+
+  return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
+
+    // ─── Header ─────────────────────────────────────────────────────
+    R('div',{style:{position:'absolute',left:'50%',top:'60px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'OR · STEP 1 ALTERNATIVE'),
+    R('div',{style:{position:'absolute',left:'50%',top:'96px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px'}},'Claude Code direct to Atlassian.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'150px',transform:'translateX(-50%)',fontSize:'18px',fontWeight:500,color:'#6B7280'}},'One terminal command. No FlowHunt needed.'),
+
+    // ─── Tall terminal (Phase A → fades during Phase B) ─────────────
+    termOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'210px',width:'1600px',transform:'translateX(-50%) translateY('+termShift+'px) scale('+termScale+')',transformOrigin:'top center',background:'#0F172A',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.25)',opacity:termOpacity}},
+      R('div',{style:{height:'46px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 16px',gap:'10px'}},
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'14px',fontSize:'13px',color:'#94A3B8',fontFamily:'JetBrains Mono,monospace'}},'~  ·  zsh')
+      ),
+      R('div',{style:{padding:'60px 60px',fontFamily:'JetBrains Mono,monospace',fontSize:'26px',lineHeight:1.6,color:'#E2E8F0',minHeight:'440px'}},
+        R('div',{style:{wordBreak:'break-all'}},
+          span('$ ', '#22C55E'),
+          R('span',null, promptTyped),
+          caretOn?R('span',{style:{display:'inline-block',width:13,height:26,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
+        ),
+        resultP>0.01?R('div',{style:{marginTop:34,opacity:resultP,color:'#22C55E'}},'✓ Added MCP server "atlassian" (http, OAuth 2.1)'):null,
+        resultP>0.01?R('div',{style:{marginTop:14,opacity:resultP,color:'#94A3B8',fontSize:'22px'}},'opening browser to sign in...'):null
+      )
+    ):null,
+
+    // ─── Chrome browser window — Atlassian OAuth consent (Phase B/C) ─
+    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(210+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+
+      // Chrome chrome bar — tabs row
+      R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
+        R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{position:'absolute',left:54,top:14,width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'90px',height:'34px',padding:'0 18px',background:'#F4F5F7',borderTopLeftRadius:'10px',borderTopRightRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#172B4D',fontWeight:600}},
+          atlassianMark(16),
+          R('span',null,'Sign in to Atlassian')
+        )
+      ),
+
+      // URL bar
+      R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
+        R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
+          R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
+        ),
+        R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
+          R('span',{style:{color:'#172B4D'}},'auth.atlassian.com'),
+          R('span',{style:{color:'#6B7280'}},'/o/oauth2/authorize?client_id=claude-code&scope=read+search+write')
+        )
+      ),
+
+      // Body — Atlassian OAuth consent
+      R('div',{style:{padding:'54px 80px 60px',display:'flex',flexDirection:'column',alignItems:'center'}},
+
+        // Atlassian wordmark + logo + small Claude Code badge on the right
+        R('div',{style:{display:'flex',alignItems:'center',gap:'18px',marginBottom:'34px',opacity:chromeP}},
+          atlassianMark(56),
+          R('div',{style:{fontSize:'32px',fontWeight:700,color:'#172B4D',letterSpacing:'-0.5px'}},'Atlassian'),
+          R('div',{style:{width:'1px',height:'30px',background:'#DFE1E6',margin:'0 6px'}}),
+          claudeMark(34),
+          R('div',{style:{fontSize:'15px',fontWeight:700,color:'#42526E'}},'Claude Code')
+        ),
+
+        // Big header
+        R('div',{style:{textAlign:'center',opacity:headerP,transform:'translateY('+(10*(1-headerP))+'px)'}},
+          R('div',{style:{fontSize:'34px',fontWeight:800,color:'#172B4D',letterSpacing:'-0.4px',maxWidth:'860px',lineHeight:1.2}},'Claude Code is requesting access to your Atlassian account.'),
+          R('div',{style:{marginTop:'10px',fontSize:'18px',color:'#6B7280'}},'Review what Claude Code will be able to do, then choose Accept.')
+        ),
+
+        // Permission rows — bigger, with descriptions
+        R('div',{style:{marginTop:'36px',width:'780px',display:'flex',flexDirection:'column',gap:'12px'}},
+          R('div',{style:{opacity:r1,transform:'translateX('+((1-r1)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Read your Jira and Confluence content'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'View projects, issues, and pages just like you would in the web app.')
+            )
+          ),
+          R('div',{style:{opacity:r2,transform:'translateX('+((1-r2)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Search across your workspace'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'Run JQL and full-text searches over your tickets and pages.')
+            )
+          ),
+          R('div',{style:{opacity:r3,transform:'translateX('+((1-r3)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Create and update tickets'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'File new Jira issues, leave comments, and change ticket status.')
+            )
+          )
+        ),
+
+        // Buttons row
+        R('div',{style:{marginTop:'36px',width:'780px',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'18px',opacity:btnP,transform:'translateY('+(8*(1-btnP))+'px)'}},
+          R('div',{style:{padding:'14px 26px',fontSize:'16px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'8px'}},'Cancel'),
+          R('div',{style:{padding:'14px 36px',fontSize:'17px',fontWeight:700,color:'#FFFFFF',background:'#0052CC',borderRadius:'8px',boxShadow:'0 0 0 '+(4+10*acceptPulse)+'px rgba(0,82,204,0.18)'}},'Accept')
+        )
+      )
+    ):null
+  );
+}`;
+
+const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
+  var f=props.frame||0;
+  var END=285;
+  var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
+
+  // ─── Phase A: Integrations page reveal + search typewriter ─────────
+  var pageIn=ease(cl(f/18));
+  // Typewriter "atlas" across the first ~40 frames
+  var searchText='atlas';
+  var searchChars=Math.max(0,Math.min(searchText.length, Math.floor((f-6)/7)));
+  var searchTyped=searchText.slice(0, searchChars);
+  // Caret blink while typing, hidden once full text is in
+  var searchCaret=(searchChars<searchText.length && Math.floor(f/6)%2===0)?'|':'';
+
+  // ─── Phase B: Integrate button click flash + modal entrance ────────
+  // Click happens at f=80; flash narrow around it.
+  var integrateClick=cl(1-Math.abs(f-80)/6);
+  // Page-behind dim ramps in 70→105
+  var pageDim=ease(cl((f-70)/35));
+  // Modal slide-in begins ~f=82, settles by ~f=115
+  var modalIn=ease(cl((f-82)/30));
+  // Modal exit begins f=180, completes by f=215
+  var modalOut=easeIn(cl((f-180)/35));
+  var modalOpacity=cl(modalIn-modalOut);
+  var modalScale=(0.94 + 0.06*modalIn) * (1 - 0.05*modalOut);
+  var modalShift=(1-modalIn)*18 - 14*modalOut;
+
+  // Staggered reveal of right-column form blocks once the modal is open.
+  function formIn(d){return ease(cl((f-(112+d))/16));}
+  var fi1=formIn(0), fi2=formIn(8), fi3=formIn(16), fi4=formIn(24), fi5=formIn(32);
+
+  // API Token dots typewriter — start ~f=130, finish ~f=170. ~28 dots.
+  var tokenDots=28;
+  var tokenCount=Math.max(0,Math.min(tokenDots, Math.floor((f-130)/1.45)));
+  var tokenStr='';
+  for(var ti=0;ti<tokenCount;ti++){ tokenStr+='•'; }
+  var tokenCaret=(tokenCount<tokenDots && Math.floor(f/6)%2===0)?'|':'';
+
+  // Integrate Atlassian button click flash — around f=200
+  var submitClick=cl(1-Math.abs(f-200)/6);
+
+  // ─── Phase D: Integrated-state crossfade behind modal ──────────────
+  // Card swaps from un-integrated → integrated state starting f=190
+  var integratedP=ease(cl((f-190)/30));
+  // Success toast slides in from top-right shortly after card swaps
+  var toastP=ease(cl((f-210)/16));
+  // Toast can hold then gently fade near the end
+  var toastFade=easeIn(cl((f-275)/10));
+  var toastOpacity=cl(toastP-toastFade);
+
+  // ─── Phase E: Manage Integration pulse — phase-integrated fast→slow ──
+  // Pulse exists only once the integrated state is visible.
+  var pulseStart=210;
+  var fastEnd=250;
+  var fastFreq=0.22, slowFreq=0.085;
+  var pulsePhase = f<=fastEnd
+    ? (f-pulseStart)*fastFreq
+    : (fastEnd-pulseStart)*fastFreq + (f-fastEnd)*slowFreq;
+  var managePulse=Math.max(0,0.5+0.5*Math.sin(pulsePhase));
+  // Only show pulse after integrated state is in
+  var manageGlow=managePulse*cl((f-pulseStart)/14);
 
   // Atlassian mark (PNG inlined via assets.mjs)
   function atlassianMark(size){
@@ -750,7 +988,7 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
 
   // FlowHunt mark — brand path + blue gradient
   function fhMark(size){
-    var s=size||32;
+    var s=size||22;
     var uid=('fhoa'+Math.floor(s*1000));
     return R('svg',{width:s,height:s*(223/275),viewBox:'0 0 275 223',style:{display:'block'}},
       R('defs',null,
@@ -761,173 +999,24 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
     );
   }
 
-  // Reusable "row" inside a scope card: bold action verb + monospace scopes
-  function scopeRow(action, scopes){
-    return R('div',{style:{display:'flex',alignItems:'flex-start',gap:'10px',marginTop:'8px'}},
-      R('div',{style:{minWidth:'72px',fontSize:'15px',fontWeight:600,color:'#172B4D'}}, action),
-      R('div',{style:{flex:1,display:'flex',alignItems:'center',gap:'8px',fontSize:'14px',color:'#42526E'}},
-        R('span',{style:{color:'#9CA3AF',fontSize:'12px'}}, '›'),
-        R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'14px',color:'#172B4D'}}, scopes)
-      )
-    );
-  }
-
-  // A "section" of scopes for a product (Jira / Confluence / Service Desk)
-  function scopeSection(args){
-    var prog=args.prog, accent=args.accent, productLine=args.productLine, rows=args.rows, divider=args.divider;
-    if(prog<0.005) return null;
-    return R('div',{style:{opacity:prog,transform:'translateY('+(8*(1-prog))+'px)',paddingTop:'18px',paddingBottom:'18px',borderBottom:divider?'1px solid #DFE1E6':'none'}},
-      R('div',{style:{display:'flex',alignItems:'flex-start',gap:'14px'}},
-        // tiny product glyph
-        R('div',{style:{width:'22px',height:'22px',marginTop:'2px',display:'flex',alignItems:'center',justifyContent:'center'}},
-          R('div',{style:{width:'14px',height:'14px',background:accent,clipPath:'polygon(50% 0,100% 100%,0 100%)'}})
-        ),
-        R('div',{style:{flex:1}},
-          R('div',{style:{fontSize:'16px',fontWeight:700,color:'#172B4D'}}, productLine),
-          R('div',null,
-            rows.map(function(r,i){ return R('div',{key:i}, scopeRow(r.action, r.scopes)); })
-          )
-        )
-      )
+  // Reusable key-feature bullet (bold-then-colon style)
+  function bullet(opa, label, body){
+    return R('div',{style:{opacity:opa,transform:'translateX('+((1-opa)*-8)+'px)',display:'flex',gap:'10px',alignItems:'flex-start'}},
+      R('span',{style:{color:'#0084FF',marginTop:'5px',fontSize:'10px',lineHeight:1}},'●'),
+      R('div',null, R('span',{style:{fontWeight:700,color:'#172B4D'}}, label),' ', body)
     );
   }
 
   return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
-    // ─── Header ─────────────────────────────────────────────────────
+    // ─── Header (above Chrome) ──────────────────────────────────────
     R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'STEP 1 · TOKEN-BASED AUTH'),
     R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'Connect Atlassian to FlowHunt with an API token.'),
 
-    // ─── Phase A: Integrations page panel with the modal open ───────
-    panelOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1600px',transform:'translateX(-50%) translateY('+panelShift+'px) scale('+panelScale+')',transformOrigin:'top center',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.18)',opacity:panelOpacity,border:'1px solid #E5E7EB',minHeight:'660px',position:'absolute'}},
+    // ─── Chrome browser window with the FlowHunt Integrations page ──
+    R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:pageIn,border:'1px solid #D1D5DB'}},
 
-      // Dimmed Integrations page behind the modal
-      R('div',{style:{position:'absolute',inset:0,background:'#F9FAFB'}},
-        // Top bar
-        R('div',{style:{height:'56px',padding:'0 24px',borderBottom:'1px solid #E5E7EB',background:'#FFFFFF',display:'flex',alignItems:'center',gap:'12px'}},
-          fhMark(22),
-          R('div',{style:{fontSize:'15px',fontWeight:800,color:'#111928'}},'FlowHunt'),
-          R('div',{style:{marginLeft:'24px',fontSize:'14px',color:'#6B7280'}},'Integrations')
-        ),
-        // Ghost cards row (so the modal feels like an overlay)
-        R('div',{style:{padding:'30px 40px',display:'flex',gap:'18px'}},
-          R('div',{style:{flex:1,height:'150px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',opacity:0.55,padding:'16px 18px'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}}, atlassianMark(28), R('div',{style:{fontSize:'15px',fontWeight:700,color:'#172B4D'}},'Atlassian (OAuth)')),
-            R('div',{style:{marginTop:'10px',fontSize:'12px',color:'#6B7280'}},'Integrate Atlassian to automate your Jira and Confluence processes.')
-          ),
-          R('div',{style:{flex:1,height:'150px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',opacity:0.55,padding:'16px 18px'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}}, atlassianMark(28), R('div',{style:{fontSize:'15px',fontWeight:700,color:'#172B4D'}},'Atlassian (Token-based Auth)')),
-            R('div',{style:{marginTop:'10px',fontSize:'12px',color:'#6B7280'}},'Integrate Atlassian to automate your Jira and Confluence processes.')
-          )
-        ),
-        // Modal scrim
-        R('div',{style:{position:'absolute',inset:0,background:'rgba(15,23,42,0.30)'}})
-      ),
-
-      // ─── The Atlassian (Token-based Auth) modal ────────────────────
-      R('div',{style:{position:'absolute',left:'50%',top:'42px',transform:'translateX(-50%)',width:'1300px',background:'#FFFFFF',borderRadius:'14px',boxShadow:'0 30px 70px rgba(17,25,40,0.28)',overflow:'hidden',border:'1px solid #E5E7EB',opacity:panelIn}},
-
-        // Two-column modal body
-        R('div',{style:{display:'flex',minHeight:'560px'}},
-
-          // Left column — instructions
-          R('div',{style:{width:'410px',padding:'34px 32px',borderRight:'1px solid #E5E7EB',background:'#FFFFFF'}},
-            R('div',{style:{display:'flex',alignItems:'flex-start',gap:'14px'}},
-              atlassianMark(44),
-              R('div',{style:{fontSize:'22px',fontWeight:800,color:'#111928',lineHeight:1.2,letterSpacing:'-0.3px'}},'Atlassian (Token-based Auth)')
-            ),
-            R('div',{style:{marginTop:'18px',fontSize:'13px',color:'#4B5563',lineHeight:1.55}},'Atlassian integration allows you to integrate Atlassian Jira and Confluence to your workspace.'),
-            R('div',{style:{marginTop:'18px',fontSize:'13px',fontWeight:800,color:'#111928'}},'Key Features:'),
-            R('div',{style:{marginTop:'10px',display:'flex',flexDirection:'column',gap:'10px',fontSize:'13px',color:'#4B5563',lineHeight:1.5}},
-              R('div',{style:{opacity:m1,transform:'translateX('+((1-m1)*-8)+'px)',display:'flex',gap:'10px',alignItems:'flex-start'}},
-                R('span',{style:{color:'#0084FF',marginTop:'4px',fontSize:'10px'}},'●'),
-                R('div',null, R('span',{style:{fontWeight:700,color:'#172B4D'}},'Manage Jira Issues:'),' Create, update, and manage Jira issues directly from FlowHunt.')
-              ),
-              R('div',{style:{opacity:m2,transform:'translateX('+((1-m2)*-8)+'px)',display:'flex',gap:'10px',alignItems:'flex-start'}},
-                R('span',{style:{color:'#0084FF',marginTop:'4px',fontSize:'10px'}},'●'),
-                R('div',null, R('span',{style:{fontWeight:700,color:'#172B4D'}},'Manage Confluence Pages:'),' Create, update, and manage Confluence pages directly from FlowHunt.')
-              ),
-              R('div',{style:{opacity:m3,transform:'translateX('+((1-m3)*-8)+'px)',display:'flex',gap:'10px',alignItems:'flex-start'}},
-                R('span',{style:{color:'#0084FF',marginTop:'4px',fontSize:'10px'}},'●'),
-                R('div',null, R('span',{style:{fontWeight:700,color:'#172B4D'}},'Manage Jira Projects:'),' Create, update, and manage Jira projects directly from FlowHunt.')
-              ),
-              R('div',{style:{opacity:m4,transform:'translateX('+((1-m4)*-8)+'px)',display:'flex',gap:'10px',alignItems:'flex-start'}},
-                R('span',{style:{color:'#0084FF',marginTop:'4px',fontSize:'10px'}},'●'),
-                R('div',null, R('span',{style:{fontWeight:700,color:'#172B4D'}},'Manage Jira Boards:'),' Create, update, and manage Jira boards directly from FlowHunt.')
-              )
-            )
-          ),
-
-          // Right column — form
-          R('div',{style:{flex:1,padding:'34px 36px',background:'#FFFFFF',display:'flex',flexDirection:'column',gap:'14px'}},
-
-            // Tabs row (Configuration | Available Agents)
-            R('div',{style:{display:'flex',gap:'24px',borderBottom:'1px solid #E5E7EB',marginBottom:'6px',paddingBottom:'8px'}},
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:700,color:'#0084FF',borderBottom:'2px solid #0084FF',paddingBottom:'4px',marginBottom:'-9px'}},
-                R('span',{style:{fontSize:'12px'}},'⚙'), R('span',null,'Configuration')
-              ),
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:600,color:'#6B7280',paddingBottom:'4px'}},
-                R('span',{style:{fontSize:'12px'}},'☆'), R('span',null,'Available Agents')
-              )
-            ),
-
-            // Header row: Atlassian icon + name + Not Connected pill + Self Hosted toggle
-            R('div',{style:{marginTop:'4px',display:'flex',alignItems:'center',gap:'14px'}},
-              atlassianMark(40),
-              R('div',{style:{flex:1}},
-                R('div',{style:{fontSize:'17px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
-                R('div',{style:{display:'flex',alignItems:'center',gap:'6px',marginTop:'2px',fontSize:'12px',color:'#6B7280'}},
-                  R('span',{style:{width:'8px',height:'8px',borderRadius:'50%',background:'#9CA3AF'}}), R('span',null,'Not Connected')
-                )
-              ),
-              R('div',{style:{padding:'6px 12px',background:'#F3F4F6',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'12px',fontWeight:600,color:'#4B5563'}},'Self Hosted')
-            ),
-
-            // API token instructions callout
-            R('div',{style:{opacity:m1,padding:'14px 16px',background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:'10px',fontSize:'12px',color:'#1E3A8A',lineHeight:1.55}},
-              R('div',{style:{fontWeight:700,color:'#0052CC',marginBottom:'4px'}},'For Atlassian Cloud:'),
-              R('div',null,'1. Visit ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#0052CC'}},'id.atlassian.com/manage-profile/security/api-tokens')),
-              R('div',null,'2. Click ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#172B4D',fontWeight:700}},'"Create API token"')),
-              R('div',null,'3. Give it a label e.g. ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#172B4D',fontWeight:700}},'"FlowHunt Integration"')),
-              R('div',null,'4. Copy the generated token and paste it below.')
-            ),
-
-            // Atlassian Domain
-            R('div',{style:{opacity:m2}},
-              R('div',{style:{fontSize:'12px',fontWeight:700,color:'#172B4D',marginBottom:'6px'}},'Atlassian Domain'),
-              R('div',{style:{padding:'9px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'13px',color:'#172B4D',fontFamily:'JetBrains Mono,monospace'}},'flowhunt.atlassian.net')
-            ),
-
-            // Email
-            R('div',{style:{opacity:m3}},
-              R('div',{style:{fontSize:'12px',fontWeight:700,color:'#172B4D',marginBottom:'6px'}},'Email'),
-              R('div',{style:{padding:'9px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'13px',color:'#172B4D',fontFamily:'JetBrains Mono,monospace'}},'you@example.com')
-            ),
-
-            // API Token (dots)
-            R('div',{style:{opacity:m4}},
-              R('div',{style:{fontSize:'12px',fontWeight:700,color:'#172B4D',marginBottom:'6px'}},'API Token'),
-              R('div',{style:{padding:'9px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'18px',color:'#172B4D',letterSpacing:'2px'}},'•••••••••••••••••••••••••••••••')
-            ),
-
-            // Buttons row
-            R('div',{style:{marginTop:'6px',display:'flex',justifyContent:'flex-end',gap:'12px',opacity:m5}},
-              R('div',{style:{padding:'10px 22px',background:'#FFFFFF',color:'#42526E',border:'1px solid #D1D5DB',borderRadius:'8px',fontSize:'13px',fontWeight:700}},'Close'),
-              R('div',{style:{padding:'10px 22px',background:'#0052CC',color:'#FFFFFF',borderRadius:'8px',fontSize:'13px',fontWeight:700,boxShadow:'0 0 0 '+(6*clickFlash)+'px rgba(0,82,204,0.25)'}},'Integrate Atlassian')
-            )
-          )
-        )
-      )
-    ):null,
-
-    // ─── Phase B/C: Chrome browser window — FlowHunt Integrations
-    //     page in its "Token-based Auth successfully integrated" state.
-    //     (No OAuth tab. Token-Auth happens entirely inside FlowHunt;
-    //     this Chrome window just lets us reveal the success page after
-    //     the modal exits.)
-    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(200+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
-
-      // Chrome chrome bar — tabs row
+      // Chrome chrome bar — tabs row (matches InstallScene markup)
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
         R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
         R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
@@ -938,7 +1027,7 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
         )
       ),
 
-      // URL bar
+      // URL bar — green dot + host
       R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
         R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
           R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
@@ -950,7 +1039,7 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
         )
       ),
 
-      // ─── FlowHunt page-level header inside the browser ──────────
+      // FlowHunt page-level header inside the browser
       R('div',{style:{height:'48px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 28px',gap:'14px'}},
         R('div',{style:{display:'flex',alignItems:'center',fontSize:'18px',fontWeight:800,letterSpacing:'-0.3px'}},
           R('span',{style:{color:'#111928'}},'Flow'),
@@ -962,20 +1051,21 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
         )
       ),
 
-      // ─── Body: Integrations page success state ──────────────────
-      R('div',{style:{position:'relative',padding:'28px 48px',height:'640px',background:'#F9FAFB'}},
+      // ─── Body: Integrations page ────────────────────────────────
+      R('div',{style:{position:'relative',padding:'28px 48px',height:'640px',background:'#F9FAFB',overflow:'hidden'}},
 
         // Page title
         R('div',{style:{fontSize:'28px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px'}},'Integrations'),
 
-        // Search bar pre-filled
+        // Search bar (typewriter) + Category dropdown + Clear filters
         R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{flex:'0 0 320px',padding:'9px 14px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px'}},
             R('span',{style:{color:'#9CA3AF',fontWeight:700}},'⌕'),
             R('div',{style:{display:'inline-flex',alignItems:'center',color:'#111928'}},
-              R('span',null,'atlas')
+              R('span',null, searchTyped),
+              R('span',{style:{color:'#0084FF',marginLeft:'1px'}}, searchCaret)
             ),
-            R('span',{style:{marginLeft:'auto',color:'#9CA3AF',fontSize:'14px',cursor:'pointer'}},'×')
+            R('span',{style:{marginLeft:'auto',color:'#9CA3AF',fontSize:'14px'}}, searchChars>0 ? '×' : '')
           ),
           R('div',{style:{padding:'9px 14px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px',fontSize:'14px',color:'#42526E',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
             R('span',null,'Category'),
@@ -987,48 +1077,155 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
           )
         ),
 
-        // Two integration cards side by side
-        R('div',{style:{marginTop:'24px',display:'flex',gap:'18px'}},
+        // Two Atlassian cards side by side
+        R('div',{style:{marginTop:'24px',display:'flex',gap:'18px',position:'relative'}},
 
-          // LEFT card: Atlassian (OAuth) — alternative path, NOT selected
+          // LEFT: Atlassian (OAuth) — alternative, not selected
           R('div',{style:{flex:1,padding:'22px 24px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',position:'relative'}},
-            R('div',{style:{position:'absolute',top:'14px',right:'14px',padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA'),
             atlassianMark(38),
             R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (OAuth)'),
             R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
             R('div',{style:{marginTop:'18px',padding:'8px 16px',background:'#FFFFFF',border:'1px solid #D1D5DB',color:'#172B4D',fontSize:'13px',fontWeight:700,borderRadius:'6px',display:'inline-block'}},'Integrate')
           ),
 
-          // RIGHT card: Atlassian (Token-based Auth) — INTEGRATED (highlight)
-          R('div',{style:{flex:1,padding:'22px 24px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'14px',position:'relative',boxShadow:'0 8px 22px rgba(0,132,255,0.10)'}},
-            R('div',{style:{position:'absolute',top:'14px',right:'14px',display:'flex',gap:'6px'}},
-              R('div',{style:{padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA')
+          // RIGHT: Atlassian (Token-based Auth) — the selected path.
+          // Crossfade between un-integrated state and integrated state.
+          R('div',{style:{flex:1,position:'relative'}},
+
+            // UN-INTEGRATED state (visible before integratedP fades in)
+            R('div',{style:{position:'relative',padding:'22px 24px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',opacity:1-integratedP}},
+              R('div',{style:{position:'absolute',top:'14px',right:'14px',padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA'),
+              atlassianMark(38),
+              R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
+              R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+              R('div',{style:{marginTop:'18px',padding:'8px 16px',background:'#0084FF',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'6px',display:'inline-block',boxShadow:'0 0 0 '+(8*integrateClick)+'px rgba(0,132,255,0.28)'}},'Integrate')
             ),
-            atlassianMark(38),
-            R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
-            R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
-            R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',gap:'10px'}},
-              R('div',{style:{padding:'8px 16px',background:'#0084FF',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'6px',boxShadow:'0 0 0 '+(2+8*acceptPulse)+'px rgba(0,132,255,0.18)'}},'Manage Integration'),
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',color:'#047857',fontSize:'13px',fontWeight:700}},
-                R('div',{style:{width:18,height:18,borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'11px'}},'✓'),
-                R('span',null,'Integrated')
+
+            // INTEGRATED state — overlaid, fades in once form is submitted
+            integratedP>0.005?R('div',{style:{position:'absolute',inset:0,padding:'22px 24px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'14px',opacity:integratedP,boxShadow:'0 8px 22px rgba(0,132,255,0.10)'}},
+              R('div',{style:{position:'absolute',top:'14px',right:'14px',display:'flex',gap:'6px'}},
+                R('div',{style:{padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA')
+              ),
+              atlassianMark(38),
+              R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
+              R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+              R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',gap:'10px'}},
+                R('div',{style:{padding:'8px 16px',background:'#0084FF',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'6px',boxShadow:'0 0 0 '+(2+8*manageGlow)+'px rgba(0,132,255,0.20)'}},'Manage Integration'),
+                R('div',{style:{display:'flex',alignItems:'center',gap:'6px',color:'#047857',fontSize:'13px',fontWeight:700}},
+                  R('div',{style:{width:18,height:18,borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'11px'}},'✓'),
+                  R('span',null,'Integrated')
+                )
               )
-            )
+            ):null
           )
         ),
 
-        // ─── Success toast (top-right) ───────────────────────────
-        toastP>0.005?R('div',{style:{position:'absolute',right:'48px',top:'30px',opacity:toastP,transform:'translateY('+(-12*(1-toastP))+'px)',padding:'14px 18px',background:'#ECFDF5',border:'1px solid #10B981',borderRadius:'12px',display:'flex',alignItems:'center',gap:'14px',boxShadow:'0 12px 28px rgba(16,185,129,0.22)',maxWidth:'440px'}},
-          R('div',{style:{width:'30px',height:'30px',borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'16px'}},'✓'),
+        // ─── Success toast (top-right of page body) ──────────────
+        toastOpacity>0.005?R('div',{style:{position:'absolute',right:'48px',top:'24px',opacity:toastOpacity,transform:'translateX('+((1-toastP)*40)+'px)',padding:'14px 18px',background:'#ECFDF5',border:'1px solid #10B981',borderRadius:'12px',display:'flex',alignItems:'flex-start',gap:'14px',boxShadow:'0 12px 28px rgba(16,185,129,0.22)',maxWidth:'460px',zIndex:5}},
+          R('div',{style:{width:'30px',height:'30px',borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'16px',flex:'0 0 30px'}},'✓'),
           R('div',{style:{flex:1}},
-            R('div',{style:{fontSize:'14px',color:'#065F46',fontWeight:700,lineHeight:1.35}},'Atlassian (Token-based Auth) was successfully integrated'),
-            R('div',{style:{marginTop:'4px',fontSize:'12px',color:'#047857',lineHeight:1.4}},'Your API token is stored. FlowHunt agents can now use Atlassian tools.')
+            R('div',{style:{fontSize:'14px',color:'#065F46',fontWeight:700,lineHeight:1.35}},'Atlassian (Token-based Auth) was successfully integrated.'),
+            R('div',{style:{marginTop:'4px',fontSize:'12px',color:'#047857',lineHeight:1.45}},'Your API token is stored. FlowHunt agents can now use Atlassian tools.')
           )
-        ):null
+        ):null,
+
+        // ─── Page dim overlay while modal is open ─────────────────
+        pageDim>0.005 && modalOpacity>0.005 ? R('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.30)',opacity:pageDim*(1-easeIn(cl((f-180)/30)))}}) : null,
+
+        // ─── The Token-based Auth modal (over the dimmed page) ────
+        modalOpacity>0.005 ? R('div',{style:{position:'absolute',left:'50%',top:'40px',transform:'translateX(-50%) translateY('+modalShift+'px) scale('+modalScale+')',transformOrigin:'top center',width:'1100px',height:'540px',background:'#FFFFFF',borderRadius:'14px',boxShadow:'0 30px 70px rgba(17,25,40,0.32)',overflow:'hidden',border:'1px solid #E5E7EB',opacity:modalOpacity,display:'flex'}},
+
+          // Left column (~38%) — instructions
+          R('div',{style:{width:'420px',padding:'28px 28px',borderRight:'1px solid #E5E7EB',background:'#FFFFFF',display:'flex',flexDirection:'column',gap:'12px'}},
+            R('div',{style:{display:'flex',alignItems:'flex-start',gap:'14px'}},
+              atlassianMark(44),
+              R('div',{style:{fontSize:'20px',fontWeight:800,color:'#111928',lineHeight:1.2,letterSpacing:'-0.3px'}},'Atlassian (Token-based Auth)')
+            ),
+            R('div',{style:{fontSize:'12.5px',color:'#4B5563',lineHeight:1.55}},'Atlassian integration allows you to integrate Atlassian Jira and Confluence to your workspace.'),
+            R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928',marginTop:'4px'}},'Key Features:'),
+            R('div',{style:{display:'flex',flexDirection:'column',gap:'8px',fontSize:'12.5px',color:'#4B5563',lineHeight:1.5}},
+              bullet(fi1,'Manage Jira Issues:','Create, update, and manage Jira issues directly from FlowHunt.'),
+              bullet(fi2,'Manage Confluence Pages:','Create, update, and manage Confluence pages directly from FlowHunt.'),
+              bullet(fi3,'Manage Jira Projects:','Create, update, and manage Jira projects directly from FlowHunt.'),
+              bullet(fi4,'Manage Jira Boards:','Create, update, and manage Jira boards directly from FlowHunt.')
+            )
+          ),
+
+          // Right column (~62%) — form
+          R('div',{style:{flex:1,padding:'22px 28px 24px 28px',background:'#FFFFFF',display:'flex',flexDirection:'column',gap:'12px'}},
+
+            // Tabs row: Configuration | Available Agents
+            R('div',{style:{display:'flex',gap:'24px',borderBottom:'1px solid #E5E7EB',paddingBottom:'8px'}},
+              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:700,color:'#0084FF',borderBottom:'2px solid #0084FF',paddingBottom:'6px',marginBottom:'-9px'}},
+                R('span',{style:{fontSize:'12px'}},'⚙'), R('span',null,'Configuration')
+              ),
+              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',fontWeight:600,color:'#6B7280',paddingBottom:'6px'}},
+                R('span',{style:{fontSize:'12px'}},'☆'), R('span',null,'Available Agents')
+              )
+            ),
+
+            // Header row: small Atlassian mark + name + Not Connected dot + Self Hosted pill
+            R('div',{style:{display:'flex',alignItems:'center',gap:'14px'}},
+              atlassianMark(34),
+              R('div',{style:{flex:1}},
+                R('div',{style:{fontSize:'15px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
+                R('div',{style:{display:'flex',alignItems:'center',gap:'6px',marginTop:'3px',fontSize:'11.5px',color:'#6B7280'}},
+                  R('span',{style:{width:'8px',height:'8px',borderRadius:'50%',background:'#9CA3AF'}}), R('span',null,'Not Connected')
+                )
+              ),
+              R('div',{style:{padding:'5px 11px',background:'#F3F4F6',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'11.5px',fontWeight:600,color:'#4B5563'}},'Self Hosted')
+            ),
+
+            // API token instructions callout
+            R('div',{style:{opacity:fi1,padding:'11px 14px',background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:'10px',fontSize:'11.5px',color:'#1E3A8A',lineHeight:1.55}},
+              R('div',{style:{fontWeight:700,color:'#0052CC',marginBottom:'2px'}},'For Atlassian Cloud:'),
+              R('div',null,'1. Visit ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#0052CC'}},'id.atlassian.com/manage-profile/security/api-tokens')),
+              R('div',null,'2. Click ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#172B4D',fontWeight:700}},'"Create API token"')),
+              R('div',null,'3. Give it a label e.g. ',R('span',{style:{fontFamily:'JetBrains Mono,monospace',color:'#172B4D',fontWeight:700}},'"FlowHunt Integration"')),
+              R('div',null,'4. Copy the generated token and paste it below.')
+            ),
+
+            // Atlassian Domain
+            R('div',{style:{opacity:fi2}},
+              R('div',{style:{fontSize:'11.5px',fontWeight:700,color:'#172B4D',marginBottom:'4px'}},'Atlassian Domain'),
+              R('div',{style:{padding:'8px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'12.5px',color:'#172B4D',fontFamily:'JetBrains Mono,monospace'}},'flowhunt.atlassian.net')
+            ),
+
+            // Email
+            R('div',{style:{opacity:fi3}},
+              R('div',{style:{fontSize:'11.5px',fontWeight:700,color:'#172B4D',marginBottom:'4px'}},'Email'),
+              R('div',{style:{padding:'8px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'12.5px',color:'#172B4D',fontFamily:'JetBrains Mono,monospace'}},'you@example.com')
+            ),
+
+            // API Token (dots typewriter)
+            R('div',{style:{opacity:fi4}},
+              R('div',{style:{fontSize:'11.5px',fontWeight:700,color:'#172B4D',marginBottom:'4px'}},'API Token'),
+              R('div',{style:{padding:'8px 12px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'16px',color:'#172B4D',letterSpacing:'2px',minHeight:'18px'}},
+                R('span',null, tokenStr),
+                R('span',{style:{color:'#0084FF',marginLeft:'2px',fontSize:'13px'}}, tokenCaret)
+              )
+            ),
+
+            // Buttons row
+            R('div',{style:{marginTop:'auto',display:'flex',justifyContent:'flex-end',gap:'12px',opacity:fi5}},
+              R('div',{style:{padding:'9px 20px',background:'#FFFFFF',color:'#42526E',border:'1px solid #D1D5DB',borderRadius:'8px',fontSize:'12.5px',fontWeight:700}},'Close'),
+              R('div',{style:{padding:'9px 20px',background:'#0052CC',color:'#FFFFFF',borderRadius:'8px',fontSize:'12.5px',fontWeight:700,boxShadow:'0 0 0 '+(8*submitClick)+'px rgba(0,82,204,0.28)'}},'Integrate Atlassian')
+            )
+          )
+        ) : null
       )
-    ):null
+    )
   );
 }`;
+
+// Summary:
+// 1. Restructures Scene 5 into proper temporal order: Integrations page first (with
+//    typewriter search), modal opens on Integrate-button click, form fills, submits,
+//    modal exits, then integrated state appears with success toast.
+// 2. Preserves visual identity, op formula, Chrome window dims/markup, header,
+//    Atlassian card style, bullet style, and the InstallScene-style phase-integrated
+//    fast→slow pulse formula (now applied to Manage Integration).
+// 3. Uses ${HELPERS} / ${ATLASSIAN_MARK} / ${FH_MARK_PATH} placeholders so build.mjs interpolates them at compose time; no other files modified.
 
 // Produced: a single template-literal const named FlowHuntOAuthScene targeting
 // the rendervid pattern used by InstallScene/FlowHuntSetupScene — five phases
@@ -1307,7 +1504,7 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
     ):null,
 
     // ─── Phase B/C: Chrome browser window (Connect tab) ─────────────
-    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(190+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(190+chromeRise)+'px',width:'1700px',height:'860px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
 
       // Chrome chrome bar — tabs row (same markup as InstallScene)
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
@@ -1489,16 +1686,43 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
  * HELPERS and CLAUDE_ICON are interpolated from the parent build.mjs scope.
  * ========================================================================== */
 
+/* ============================================================================
+ * FlowHuntBridgeScene v2 (270f, 9s) - Scene 7 replacement snippet.
+ *
+ * Two side-by-side surfaces both consume the same MCP server config:
+ *   LEFT  - Claude Code terminal running `claude mcp add jira ...` (UNCHANGED
+ *           from the previous version - left terminal block is verbatim).
+ *   RIGHT - FlowHunt's browser, now showing the FULL agent editor:
+ *             - FlowHunt page header bar inside the browser body.
+ *             - Agent canvas with three vertical nodes
+ *                 (Chat Input -> AI Agent -> Chat Output)
+ *               and the Configure Tool: MCP Client modal + nested
+ *               External MCP Servers modal floating over it.
+ *             - Right-side AI Agent config panel showing the agent has
+ *               the MCP Client tool selected (the visual proof requested
+ *               by the user).
+ *
+ * Phase layout (frame-local):
+ *   0-22     surfaces fade in together with caption labels.
+ *   22-118   terminal types; right side reveals page header, canvas,
+ *            right config panel, then the two stacked modals.
+ *   200-260  Save button outer glow pulses (fast->slow phase-integrated).
+ *   250-270  scene-out fade.
+ *
+ * HELPERS, CLAUDE_ICON and ATLASSIAN_MARK are interpolated from the parent
+ * build.mjs scope - the same template-literal mechanism the other scenes use.
+ * ========================================================================== */
+
 const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var f=props.frame||0;
   var END=270;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
-  // ─── Surfaces fade in together ─────────────────────────────────────
+  // ─── Surfaces fade in together (same formula as previous version) ──
   var surfP=ease(cl(f/22));
   var surfRise=18*(1-surfP);
 
-  // ── LEFT terminal typewriter (unchanged from before, just earlier) ──
+  // ── LEFT terminal typewriter (UNCHANGED from previous scene) ──
   var addCmd='claude mcp add jira --transport streamable_http https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b --header "Authorization: Bearer ********"';
   var addStart=20, addDur=80;
   var addTyped=addCmd.slice(0, Math.floor(cl((f-addStart)/addDur)*addCmd.length));
@@ -1511,12 +1735,16 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
 
   // ── RIGHT FlowHunt browser reveal staggers ──
   var browserP=surfP;            // browser appears with the left terminal
-  var dialogP=ease(cl((f-30)/22));
-  var advTogP=ease(cl((f-58)/16));
-  var configP=ease(cl((f-78)/22));
-  var btnsP=ease(cl((f-118)/16));
+  var pageHeadP=ease(cl((f-26)/16));   // FlowHunt page header bar
+  var canvasP=ease(cl((f-34)/18));     // dotted canvas + nodes appear
+  var sidebarP=ease(cl((f-44)/20));    // right AI Agent config panel
+  var toolRowP=ease(cl((f-70)/16));    // MCP Client tool row highlights
+  var outerModalP=ease(cl((f-86)/20)); // Configure Tool: MCP Client modal
+  var innerModalP=ease(cl((f-118)/20));// nested External MCP Servers modal
+  var saveBtnP=ease(cl((f-140)/16));   // save button row inside inner modal
 
-  // ─── Save-button pulse (fast→slow phase-integrated) ────────────────
+  // ─── Save-button pulse (fast→slow phase-integrated) ───────────────
+  // Same phase-integrated formula and timing values as the previous scene.
   var pulseStart=200;
   var fastEnd=230;
   var fastFreq=0.22, slowFreq=0.085;
@@ -1535,11 +1763,18 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
+  // Tiny Atlassian "A" mark — small inline SVG-style tile.
+  // We use the inlined PNG asset to match the rest of the scenes.
+  function atlassianMark(size){
+    var s=size||16;
+    return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block',borderRadius:'3px'}});
+  }
+
   return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op,overflow:'hidden'}},
 
-    // ─── Header strip ───────────────────────────────────────────────
-    R('div',{style:{position:'absolute',left:'50%',top:'62px',transform:'translateX(-50%)',fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'2px',opacity:surfP}},'TWO WAYS, ONE SERVER'),
-    R('div',{style:{position:'absolute',left:'50%',top:'94px',transform:'translateX(-50%)',fontSize:'36px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px',opacity:surfP}},'The same MCP. Local or online.'),
+    // ─── Header strip (tightened wording per user feedback) ─────────
+    R('div',{style:{position:'absolute',left:'50%',top:'62px',transform:'translateX(-50%)',fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'2px',opacity:surfP}},'THE SAME MCP, BOTH SIDES'),
+    R('div',{style:{position:'absolute',left:'50%',top:'94px',transform:'translateX(-50%)',fontSize:'36px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px',opacity:surfP}},'One server. Use it locally or inside a FlowHunt agent.'),
 
     // ─── Caption labels above each surface (from frame 0) ───────────
     R('div',{style:{position:'absolute',left:(termX+termW/2)+'px',top:captionY+'px',transform:'translateX(-50%) translateY('+(8*(1-surfP))+'px)',opacity:surfP,padding:'7px 18px',background:'linear-gradient(90deg,rgba(15,23,42,0.94),rgba(30,41,59,0.94))',color:'#F8FAFC',borderRadius:'999px',fontSize:'14px',fontWeight:700,whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(17,25,40,0.18)',display:'flex',alignItems:'center',gap:'10px',zIndex:10}},
@@ -1551,7 +1786,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       R('span',null,'Online: FlowHunt agent')
     ),
 
-    // ─── LEFT — Claude Code terminal ────────────────────────────────
+    // ─── LEFT — Claude Code terminal (UNCHANGED) ────────────────────
     surfP>0.005?R('div',{style:{position:'absolute',left:termX+'px',top:(termY+surfRise)+'px',width:termW+'px',height:termH+'px',background:'#0F172A',borderRadius:'12px',overflow:'hidden',boxShadow:'0 22px 50px rgba(17,25,40,0.22)',opacity:surfP}},
       R('div',{style:{height:'48px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px'}},
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FF5F57'}}),
@@ -1588,8 +1823,9 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       )
     ):null,
 
-    // ─── RIGHT — FlowHunt Chrome browser window ─────────────────────
+    // ─── RIGHT — FlowHunt Chrome browser window (REWRITTEN) ─────────
     surfP>0.005?R('div',{style:{position:'absolute',left:fhX+'px',top:(fhY+surfRise)+'px',width:fhW+'px',height:fhH+'px',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 24px 56px rgba(17,25,40,0.22)',border:'1px solid #D1D5DB',opacity:surfP*browserP}},
+
       // Chrome chrome bar — tabs row
       R('div',{style:{height:'40px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
         R('div',{style:{position:'absolute',left:14,top:13,width:11,height:11,borderRadius:'50%',background:'#FF5F57'}}),
@@ -1600,6 +1836,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           R('span',null,'Jira agent · FlowHunt')
         )
       ),
+
       // URL bar
       R('div',{style:{height:'42px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 14px',gap:'12px'}},
         R('div',{style:{display:'flex',gap:'12px',color:'#9AA0A6',fontSize:'15px'}},
@@ -1612,77 +1849,262 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
         )
       ),
 
-      // Page body — agent editor backdrop (dotted grid) with the Configure Tool modal floating over it.
-      R('div',{style:{position:'relative',height:'calc(100% - 82px)',background:'#F9FAFB',backgroundImage:'radial-gradient(circle, #D1D5DB 1px, transparent 1px)',backgroundSize:'18px 18px',overflow:'hidden'}},
-
-        // Faded agent-canvas hint behind the modal (a single dashed node)
-        R('div',{style:{position:'absolute',top:'24px',left:'50%',transform:'translateX(-50%)',width:'240px',padding:'12px 16px',background:'rgba(255,255,255,0.92)',border:'1.5px dashed #E11D74',borderRadius:'12px',display:'flex',alignItems:'center',gap:'10px',opacity:0.55}},
-          R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'12px',fontWeight:800}},'★'),
-          R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'AI Agent'),
-          R('div',{style:{marginLeft:'auto',display:'flex',gap:'4px'}},
-            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}}),
-            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}}),
-            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}})
-          )
+      // FlowHunt page-level header bar (logo + breadcrumb + version pill)
+      R('div',{style:{height:'36px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 16px',gap:'14px',opacity:pageHeadP}},
+        R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
+          R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'10px',fontWeight:800}},'FH'),
+          R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'FlowHunt')
         ),
+        R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
+          R('span',null,'Agents'),
+          R('span',{style:{color:'#9CA3AF'}},'›'),
+          R('span',null,'Jira'),
+          R('span',{style:{color:'#9CA3AF'}},'›'),
+          R('span',{style:{color:'#111928',fontWeight:700}},'Edit')
+        ),
+        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'8px'}},
+          R('div',{style:{padding:'3px 8px',background:'#EFF6FF',color:'#1A56DB',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'VERSION: 3'),
+          R('div',{style:{padding:'3px 10px',background:'linear-gradient(90deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontSize:'10px',fontWeight:800,borderRadius:'4px'}},'SAVE')
+        )
+      ),
 
-        // Configure Tool: MCP Client modal floating in the page
-        R('div',{style:{position:'absolute',left:'4%',right:'4%',top:'90px',bottom:'30px',background:'#FFFFFF',borderRadius:'14px',boxShadow:'0 24px 56px rgba(17,25,40,0.22)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:dialogP}},
-          // Outer modal title strip
-          R('div',{style:{height:'44px',background:'#F9FAFB',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
-              R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'11px',fontWeight:800}},'★'),
-              R('div',{style:{fontSize:'14px',fontWeight:700,color:'#111928'}},'Configure Tool: MCP Client')
+      // Page body — split: canvas (left ~70%) + AI Agent config panel (right ~30%)
+      R('div',{style:{position:'relative',height:'calc(100% - 118px)',display:'flex',overflow:'hidden'}},
+
+        // ── LEFT-OF-RIGHT: agent canvas (dotted grid + nodes + floating modals)
+        R('div',{style:{flex:1,position:'relative',background:'#F9FAFB',backgroundImage:'radial-gradient(circle, #D1D5DB 1px, transparent 1px)',backgroundSize:'18px 18px',overflow:'hidden'}},
+
+          // Three vertical nodes connected by dashed lines.
+          // We position them absolutely so the connecting lines line up.
+          // Node geometry (px from top of canvas body).
+          //   ny1=24  (Chat Input)
+          //   ny2=158 (AI Agent — taller card)
+          //   ny3=348 (Chat Output)
+          // All nodes are centred horizontally within the canvas column.
+
+          // Dashed connector — Chat Input → AI Agent
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'80px',width:'2px',height:'80px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+          // Dashed connector — AI Agent → Chat Output
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'304px',width:'2px',height:'46px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+
+          // Node 1: Chat Input (green)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'24px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
+            R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#10B981,#047857)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'›'),
+            R('div',{style:{flex:1,minWidth:0}},
+              R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Input'),
+              R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Entry point')
             ),
-            R('div',{style:{fontSize:'18px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
-          ),
-          // Body
-          R('div',{style:{padding:'22px 26px',display:'flex',flexDirection:'column',gap:'14px',flex:1,minHeight:0}},
-            R('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
-              R('div',{style:{fontSize:'19px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'External MCP Servers'),
-              R('div',{style:{display:'flex',alignItems:'center',gap:'10px',opacity:advTogP}},
-                R('span',{style:{fontSize:'12px',fontWeight:600,color:'#4B5563'}},'Advanced Mode'),
-                R('div',{style:{width:36,height:20,borderRadius:'10px',background:'#0084FF',padding:'2px',display:'flex',justifyContent:'flex-end',alignItems:'center'}},
-                  R('div',{style:{width:16,height:16,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 3px rgba(0,0,0,0.18)'}})
+            R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FFFFFF',border:'2px solid #9CA3AF'}})
+          ):null,
+
+          // Node 2: AI Agent (magenta — highlighted, dashed border, with 6 Atlassian icons row)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'158px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'260px',padding:'12px 14px 10px 14px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'12px',boxShadow:'0 6px 18px rgba(225,29,116,0.18)',opacity:canvasP,zIndex:2}},
+            R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+              R('div',{style:{width:30,height:30,borderRadius:'7px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800,flexShrink:0}},'★'),
+              R('div',{style:{flex:1,minWidth:0}},
+                R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'AI Agent'),
+                R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Reasoning + tools')
+              ),
+              R('div',{style:{padding:'2px 6px',background:'#FCE7F3',color:'#B91C5C',fontSize:'9px',fontWeight:800,borderRadius:'4px'}},'ACTIVE')
+            ),
+            // Six small Atlassian "A" tool marks at the bottom of the node
+            R('div',{style:{marginTop:'10px',display:'flex',alignItems:'center',gap:'6px',padding:'6px 8px',background:'#F9FAFB',border:'1px solid #E5E7EB',borderRadius:'8px'}},
+              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.06em'}},'TOOLS'),
+              atlassianMark(14),
+              atlassianMark(14),
+              atlassianMark(14),
+              atlassianMark(14),
+              atlassianMark(14),
+              atlassianMark(14),
+              R('div',{style:{marginLeft:'auto',fontSize:'9px',color:'#6B7280',fontWeight:700}},'+28')
+            )
+          ):null,
+
+          // Node 3: Chat Output (red/orange)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'348px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
+            R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#EF4444,#DC2626)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'‹'),
+            R('div',{style:{flex:1,minWidth:0}},
+              R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Output'),
+              R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Reply to user')
+            ),
+            R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FFFFFF',border:'2px solid #9CA3AF'}})
+          ):null,
+
+          // ── Configure Tool: MCP Client modal (outer modal, floats over canvas)
+          outerModalP>0.005?R('div',{style:{position:'absolute',left:'18px',right:'18px',top:'72px',bottom:'30px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 20px 40px rgba(17,25,40,0.20)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:outerModalP,zIndex:5}},
+            // Title strip
+            R('div',{style:{height:'40px',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px'}},
+              R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Configure Tool: MCP Client'),
+              R('div',{style:{fontSize:'16px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
+            ),
+            // Body
+            R('div',{style:{padding:'14px 18px',display:'flex',flexDirection:'column',gap:'12px',flex:1,minHeight:0}},
+              R('div',{style:{fontSize:'11px',color:'#6B7280',lineHeight:1.45}},'Configure parameter values for this tool. P...'),
+              // PARAMETER row header
+              R('div',{style:{fontSize:'10px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em'}},'PARAMETER'),
+              // MCP Configuration parameter row with Edit Servers button
+              R('div',{style:{padding:'12px 14px',background:'#F9FAFB',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'12px'}},
+                R('div',{style:{flex:1,minWidth:0}},
+                  R('div',{style:{fontSize:'12px',fontWeight:800,color:'#111928'}},'MCP Configuration'),
+                  R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280',lineHeight:1.4}},'JSON configuration for MCP servers.')
+                ),
+                R('div',{style:{padding:'6px 12px',background:'#1A56DB',color:'#FFFFFF',fontSize:'10px',fontWeight:800,borderRadius:'6px'}},'Edit Servers')
+              ),
+              // Advanced Settings collapsed row
+              R('div',{style:{padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px'}},
+                R('span',{style:{fontSize:'12px'}},'⚙'),
+                R('span',{style:{flex:1,fontSize:'11px',fontWeight:700,color:'#111928'}},'Advanced Settings'),
+                R('span',{style:{fontSize:'11px',color:'#9CA3AF'}},'▾')
+              ),
+              // Human-in-the-loop row
+              R('div',{style:{padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px'}},
+                R('div',{style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:'8px'}},
+                  R('span',{style:{fontSize:'11px',fontWeight:700,color:'#111928'}},'Human-in-the-Loop'),
+                  R('span',{style:{padding:'2px 6px',background:'#FEF3C7',color:'#92400E',fontSize:'8px',fontWeight:800,borderRadius:'3px',letterSpacing:'0.04em'}},'COMING SOON')
+                )
+              ),
+              // Bottom buttons row
+              R('div',{style:{marginTop:'auto',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+                R('div',{style:{padding:'7px 14px',fontSize:'11px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',display:'flex',alignItems:'center',gap:'6px'}},
+                  R('span',null,'←'),R('span',null,'Back')
+                ),
+                R('div',{style:{display:'flex',gap:'8px'}},
+                  R('div',{style:{padding:'7px 14px',fontSize:'11px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px'}},'Skip & Add'),
+                  R('div',{style:{padding:'7px 14px',fontSize:'11px',fontWeight:800,color:'#FFFFFF',background:'#1A56DB',borderRadius:'6px'}},'Add with Config')
                 )
               )
+            )
+          ):null,
+
+          // ── Nested External MCP Servers modal (stacked over outer modal)
+          innerModalP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'130px',transform:'translateX(-50%) translateY('+(10*(1-innerModalP))+'px)',width:'380px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 24px 50px rgba(17,25,40,0.30)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:innerModalP,zIndex:8}},
+            // Title strip
+            R('div',{style:{padding:'14px 18px',borderBottom:'1px solid #F3F4F6',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+              R('div',{style:{fontSize:'14px',fontWeight:800,color:'#111928'}},'External MCP Servers'),
+              R('div',{style:{fontSize:'16px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
             ),
-            R('div',{style:{fontSize:'13px',color:'#6B7280',lineHeight:1.45}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
-            // MCP Configuration code card
-            R('div',{style:{flex:1,minHeight:0,border:'1.5px solid #E5E7EB',borderRadius:'10px',background:'#FFFFFF',display:'flex',flexDirection:'column',overflow:'hidden',opacity:configP}},
-              R('div',{style:{padding:'9px 14px',borderBottom:'1px solid #E5E7EB',background:'#F9FAFB',display:'flex',alignItems:'center',justifyContent:'space-between'}},
-                R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
-                  R('div',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981'}}),
-                  R('div',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'MCP Configuration')
-                ),
-                R('div',{style:{fontSize:'10px',color:'#6B7280',fontFamily:'JetBrains Mono,monospace'}},'JSON')
+            // Body
+            R('div',{style:{padding:'14px 18px',display:'flex',flexDirection:'column',gap:'12px'}},
+              // Basic Mode toggle (off, per task spec)
+              R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+                R('span',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'Basic Mode'),
+                R('div',{style:{width:32,height:18,borderRadius:'9px',background:'#D1D5DB',padding:'2px',display:'flex',justifyContent:'flex-start',alignItems:'center'}},
+                  R('div',{style:{width:14,height:14,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 2px rgba(0,0,0,0.18)'}})
+                )
               ),
-              R('div',{style:{flex:1,padding:'14px 18px',background:'#F9FAFB',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#1F2937',overflow:'hidden'}},
-                R('div',null, span('{','#6B7280')),
-                R('div',{style:{paddingLeft:'14px'}},
-                  span('"Jira"','#0084FF'), span(': {','#6B7280')
+              R('div',{style:{fontSize:'11px',color:'#6B7280',lineHeight:1.45}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
+
+              // MCP Server URL field
+              R('div',null,
+                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'MCP Server URL'),
+                R('div',{style:{padding:'8px 10px',background:'#F9FAFB',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'10px',fontFamily:'JetBrains Mono,monospace',color:'#1F2937',wordBreak:'break-all',lineHeight:1.4}},
+                  'https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b'
+                )
+              ),
+
+              // Transport dropdown
+              R('div',null,
+                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Transport'),
+                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'11px',fontFamily:'JetBrains Mono,monospace',color:'#111928',display:'flex',alignItems:'center'}},
+                  R('span',{style:{flex:1}},'streamable_http'),
+                  R('span',{style:{color:'#9CA3AF'}},'▾')
+                )
+              ),
+
+              // Authorization dropdown
+              R('div',null,
+                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Authorization'),
+                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'11px',color:'#111928',display:'flex',alignItems:'center'}},
+                  R('span',{style:{flex:1,fontWeight:700}},'Bearer Token'),
+                  R('span',{style:{color:'#9CA3AF'}},'▾')
+                )
+              ),
+
+              // Token (masked)
+              R('div',null,
+                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Token'),
+                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'13px',color:'#6B7280',letterSpacing:'2px'}},'••••••••••••••••••••••••')
+              ),
+
+              // Buttons row (Cancel + Save with breathing pulse)
+              R('div',{style:{marginTop:'4px',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'10px',opacity:saveBtnP}},
+                R('div',{style:{padding:'7px 18px',fontSize:'11px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px'}},'Cancel'),
+                R('div',{style:{padding:'7px 22px',fontSize:'11px',fontWeight:800,color:'#FFFFFF',background:'#1A56DB',borderRadius:'6px',boxShadow:'0 0 0 '+(2+10*savePulse*pulseGate)+'px rgba(0,132,255,0.22)'}},'Save')
+              )
+            )
+          ):null
+        ),
+
+        // ── RIGHT-OF-RIGHT: AI Agent config sidebar (the proof) ──
+        R('div',{style:{flex:'0 0 320px',background:'#FFFFFF',borderLeft:'1px solid #E5E7EB',display:'flex',flexDirection:'column',opacity:sidebarP,transform:'translateX('+(8*(1-sidebarP))+'px)',overflow:'hidden'}},
+
+          // Magenta header strip
+          R('div',{style:{padding:'12px 16px',background:'linear-gradient(90deg,#B91C5C,#E11D74)',color:'#FFFFFF',display:'flex',alignItems:'center',gap:'10px'}},
+            R('div',{style:{width:24,height:24,borderRadius:'5px',background:'rgba(255,255,255,0.18)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:800}},'★'),
+            R('div',{style:{flex:1,minWidth:0}},
+              R('div',{style:{fontSize:'13px',fontWeight:800,letterSpacing:'-0.1px'}},'AI Agent'),
+              R('div',{style:{marginTop:'2px',fontSize:'9px',opacity:0.85,lineHeight:1.35}},'An AI agent that can call tools to accomplish tasks.')
+            )
+          ),
+
+          // Body sections — scrollable inner column
+          R('div',{style:{flex:1,padding:'14px 16px',display:'flex',flexDirection:'column',gap:'14px',overflow:'hidden'}},
+
+            // LLM section
+            R('div',null,
+              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'LLM'),
+              R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'7px',display:'flex',alignItems:'center',gap:'8px'}},
+                R('div',{style:{width:18,height:18,borderRadius:'4px',background:'linear-gradient(135deg,#D97757,#B85B3E)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'9px',fontWeight:800,flexShrink:0}},'A'),
+                R('div',{style:{flex:1,minWidth:0}},
+                  R('div',{style:{fontSize:'10px',fontWeight:800,color:'#111928'}},'claude-4.5-haiku'),
+                  R('div',{style:{fontSize:'8px',color:'#6B7280'}},'Anthropic')
                 ),
-                R('div',{style:{paddingLeft:'28px'}},
-                  span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
-                ),
-                R('div',{style:{paddingLeft:'28px',wordBreak:'break-all'}},
-                  span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
-                ),
-                R('div',{style:{paddingLeft:'28px'}},
-                  span('"headers"','#0084FF'), span(': {','#6B7280')
-                ),
-                R('div',{style:{paddingLeft:'42px'}},
-                  span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
-                ),
-                R('div',{style:{paddingLeft:'28px'}}, span('}','#6B7280')),
-                R('div',{style:{paddingLeft:'14px'}}, span('}','#6B7280')),
-                R('div',null, span('}','#6B7280'))
+                R('div',{style:{fontSize:'10px',color:'#9CA3AF'}},'▾')
               )
             ),
-            // Buttons row
-            R('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'12px',opacity:btnsP}},
-              R('div',{style:{padding:'10px 22px',fontSize:'14px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px'}},'Cancel'),
-              R('div',{style:{padding:'10px 30px',fontSize:'14px',fontWeight:700,color:'#FFFFFF',background:'#0084FF',borderRadius:'8px',boxShadow:'0 0 0 '+(2+10*savePulse*pulseGate)+'px rgba(0,132,255,0.22)'}},'Save')
+
+            // Input section
+            R('div',null,
+              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'INPUT'),
+              R('div',{style:{padding:'8px 10px',background:'#F9FAFB',border:'1px solid #E5E7EB',borderRadius:'7px',display:'flex',alignItems:'center',gap:'6px',minHeight:'24px'}},
+                R('div',{style:{padding:'2px 8px',background:'#EFF6FF',color:'#1A56DB',fontSize:'9px',fontWeight:800,borderRadius:'10px',fontFamily:'JetBrains Mono,monospace'}},'{input}')
+              )
+            ),
+
+            // Tools section — THE proof. MCP Client tool row highlighted.
+            R('div',null,
+              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'TOOLS'),
+              // MCP Client tool row (highlighted magenta)
+              R('div',{style:{padding:'8px 10px',background:'#FDF2F8',border:'1.5px solid #E11D74',borderRadius:'7px',display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 2px 6px rgba(225,29,116,0.12)',opacity:toolRowP,transform:'translateY('+(6*(1-toolRowP))+'px)'}},
+                R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'10px',fontWeight:800,flexShrink:0}},'★'),
+                R('div',{style:{flex:1,minWidth:0}},
+                  R('div',{style:{fontSize:'10px',fontWeight:800,color:'#111928'}},'MCP Client'),
+                  R('div',{style:{fontSize:'8px',color:'#6B7280',marginTop:'1px'}},'1 locked param')
+                ),
+                R('div',{style:{padding:'2px 7px',background:'#FCE7F3',color:'#B91C5C',fontSize:'8px',fontWeight:800,borderRadius:'10px',letterSpacing:'0.04em'}},'TOOLS')
+              ),
+              // + Add Tool button
+              R('div',{style:{marginTop:'6px',padding:'6px 10px',background:'#FFFFFF',border:'1px dashed #D1D5DB',borderRadius:'7px',fontSize:'10px',fontWeight:700,color:'#6B7280',textAlign:'center'}},'+ Add Tool')
+            ),
+
+            // System Message section
+            R('div',null,
+              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'SYSTEM MESSAGE'),
+              R('div',{style:{padding:'7px 10px',background:'#F9FAFB',border:'1px solid #E5E7EB',borderRadius:'7px',fontSize:'10px',color:'#374151',lineHeight:1.4,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'You are a helpful assistant.')
+            ),
+
+            // Max Iterations
+            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+              R('div',{style:{flex:1,fontSize:'10px',fontWeight:700,color:'#111928'}},'Max Iterations'),
+              R('div',{style:{padding:'4px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'5px',fontSize:'10px',fontWeight:800,color:'#111928',fontFamily:'JetBrains Mono,monospace'}},'20')
+            ),
+
+            // Show Progress toggle (on)
+            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+              R('div',{style:{flex:1,fontSize:'10px',fontWeight:700,color:'#111928'}},'Show Progress'),
+              R('div',{style:{width:30,height:17,borderRadius:'9px',background:'#0084FF',padding:'2px',display:'flex',justifyContent:'flex-end',alignItems:'center'}},
+                R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 2px rgba(0,0,0,0.18)'}})
+              )
             )
           )
         )
@@ -1690,6 +2112,19 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
     ):null
   );
 }`;
+
+/* ============================================================================
+ * SUMMARY (3 lines)
+ * 1. Replaces the right-side FlowHunt panel: dotted-grid agent canvas with three
+ *    vertical nodes (Chat Input/AI Agent/Chat Output) plus stacked Configure
+ *    Tool: MCP Client + External MCP Servers modals over them.
+ * 2. Adds a 320px AI Agent right-side config sidebar with a highlighted MCP
+ *    Client tool row (the visual proof the agent has the tool attached) plus
+ *    LLM, Input, System Message, Max Iterations, Show Progress controls.
+ * 3. Left Claude Code terminal is kept verbatim; eyebrow/title tightened to
+ *    "THE SAME MCP, BOTH SIDES" / "One server. Use it locally or inside a
+ *    FlowHunt agent."; Save-button pulse formula and pulseStart=200 unchanged.
+ * ========================================================================== */
 
 /* ============================================================================
  * CTA scene - FlowHunt logo + blog title + button + URL.
@@ -1765,6 +2200,7 @@ const template = {
     DemoScene:             { type: 'inline', code: DemoScene },
     ArchScene:             { type: 'inline', code: ArchScene },
     SnapshotScene:         { type: 'inline', code: SnapshotScene },
+    ClaudeCodeDirectScene: { type: 'inline', code: ClaudeCodeDirectScene },
     FlowHuntOAuthScene:    { type: 'inline', code: FlowHuntOAuthScene },
     FlowHuntMcpServerScene:{ type: 'inline', code: FlowHuntMcpServerScene },
     FlowHuntBridgeScene:   { type: 'inline', code: FlowHuntBridgeScene },
@@ -1775,15 +2211,16 @@ const template = {
   inputs: [],
   composition: {
     scenes: [
-      scene('s1-pivot',      F.pivot,     'PivotScene'),
-      scene('s2-explainer',  F.snapshot,  'SnapshotScene'),          // Project-code primer
-      scene('s3-demo',       F.demo,      'DemoScene'),              // Claude Code bug-triage
-      scene('s4-arch',       F.arch,      'ArchScene'),              // Architecture
-      scene('s5-fh-oauth',   F.fhOAuth,   'FlowHuntOAuthScene'),     // FlowHunt + Atlassian OAuth
-      scene('s6-fh-mcp',     F.fhMcp,     'FlowHuntMcpServerScene'), // MCP Server config + Connect JSON
-      scene('s7-fh-bridge',  F.fhBridge,  'FlowHuntBridgeScene'),    // One JSON, two surfaces
-      scene('s8-fh-usage',   F.fhUsage,   'FlowHuntUsageScene'),     // FlowHunt agent answering
-      scene('s9-cta',        F.cta,       'CTAScene', { type: 'fade', duration: 26 }),
+      scene('s01-pivot',       F.pivot,     'PivotScene'),
+      scene('s02-explainer',   F.snapshot,  'SnapshotScene'),           // Project-code primer
+      scene('s03-demo',        F.demo,      'DemoScene'),               // Claude Code bug-triage
+      scene('s04-arch',        F.arch,      'ArchScene'),               // Architecture
+      scene('s05-cc-direct',   F.ccDirect,  'ClaudeCodeDirectScene'),   // Path 3: Claude Code direct to Atlassian
+      scene('s06-fh-oauth',    F.fhOAuth,   'FlowHuntOAuthScene'),      // Path 1+2 setup: Token-Auth
+      scene('s07-fh-mcp',      F.fhMcp,     'FlowHuntMcpServerScene'),  // Path 2 setup: MCP Server + Connect JSON
+      scene('s08-fh-bridge',   F.fhBridge,  'FlowHuntBridgeScene'),     // Path 2 wire-up: local + online
+      scene('s09-fh-usage',    F.fhUsage,   'FlowHuntUsageScene'),      // Path 1 in action
+      scene('s10-cta',         F.cta,       'CTAScene', { type: 'fade', duration: 26 }),
     ],
   },
 };

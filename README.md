@@ -2,23 +2,29 @@
 
 Motion-graphics promo for the FlowHunt blog **"How to Use Claude Code with the Jira MCP"**.
 
-~69.3 seconds at 30 fps. 9 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
+~78.8 seconds at 30 fps. 10 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
 
 ## Scenes (playback order)
 
-| # | id | name | range | dur |
-|---|---|---|---|---|
-| 1 | s1-pivot      | Pivot                                | 0–90       | 3 s    |
-| 2 | s2-explainer  | Project codes                        | 90–330     | 8 s    |
-| 3 | s3-demo       | Demo (bug triage, 2x)                | 330–570    | 8 s    |
-| 4 | s4-arch       | Architecture                         | 570–730    | ~5.3 s |
-| 5 | s5-fh-oauth   | FlowHunt + Atlassian OAuth           | 730–1015   | 9.5 s  |
-| 6 | s6-fh-mcp     | MCP Server config + Connect JSON     | 1015–1300  | 9.5 s  |
-| 7 | s7-fh-bridge  | One JSON, two surfaces (local + online) | 1300–1570 | 9 s   |
-| 8 | s8-fh-usage   | FlowHunt agent in action             | 1570–1840  | 9 s    |
-| 9 | s9-cta        | CTA                                  | 1840–2080  | 8 s    |
+| # | id | name | range | dur | path |
+|---|---|---|---|---|---|
+| 1  | s01-pivot       | Pivot                                | 0–90       | 3 s    | — |
+| 2  | s02-explainer   | Project codes                        | 90–330     | 8 s    | — |
+| 3  | s03-demo        | Demo (bug triage, 2x)                | 330–570    | 8 s    | — |
+| 4  | s04-arch        | Architecture                         | 570–730    | ~5.3 s | — |
+| 5  | s05-cc-direct   | Claude Code direct to Atlassian      | 730–1015   | 9.5 s  | Path 3 |
+| 6  | s06-fh-oauth    | FlowHunt Token-based Auth            | 1015–1300  | 9.5 s  | Path 1+2 setup |
+| 7  | s07-fh-mcp      | MCP Server config + Connect JSON     | 1300–1585  | 9.5 s  | Path 2 setup |
+| 8  | s08-fh-bridge   | Same MCP, both sides                 | 1585–1855  | 9 s    | Path 2 wire-up |
+| 9  | s09-fh-usage    | FlowHunt agent in action             | 1855–2125  | 9 s    | Path 1 in action |
+| 10 | s10-cta         | CTA                                  | 2125–2365  | 8 s    | — |
 
-See `ALTERNATIVES.md` for the other scene-structure options (compress / expanded). The current structure is "Option 1" from that file.
+**The three paths:**
+- **Path 1** — FlowHunt agent using Atlassian as a built-in tool via the Token-Auth integration (no MCP). Set up in Scene 6, shown in action in Scene 9.
+- **Path 2** — FlowHunt-hosted MCP server (`mcp.flowhunt.io`), usable from FlowHunt agents OR Claude Code via the JSON config. Set up in Scenes 6–7, wired in Scene 8.
+- **Path 3** — Claude Code direct to Atlassian's own MCP server (`mcp.atlassian.com`), no FlowHunt needed. Shown in Scene 5 as the simpler alternative.
+
+See `ALTERNATIVES.md` for other scene-structure options.
 
 ## Brand assets
 
