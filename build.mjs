@@ -9,13 +9,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const FPS = 30;
 const F = {
   pivot:    { start: 0,    end: 90,   dur: 90  },  // 3s
-  demo:     { start: 90,   end: 450,  dur: 360 },  // 12s
-  arch:     { start: 450,  end: 610,  dur: 160 },  // ~5.33s (1.5x speed-up of 8s)
-  install:  { start: 610,  end: 790,  dur: 180 },  // 6s
-  snapshot: { start: 790,  end: 1030, dur: 240 },  // 8s
-  cta:      { start: 1030, end: 1270, dur: 240 },  // 8s
+  demo:     { start: 90,   end: 570,  dur: 480 },  // 16s — extended for plain-English pacing
+  arch:     { start: 570,  end: 730,  dur: 160 },  // ~5.33s (1.5x speed-up of 8s)
+  install:  { start: 730,  end: 910,  dur: 180 },  // 6s
+  snapshot: { start: 910,  end: 1150, dur: 240 },  // 8s
+  cta:      { start: 1150, end: 1390, dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1270;
+const TOTAL_FRAMES = 1390;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -45,40 +45,40 @@ const PivotScene = `function PivotScene(props){${HELPERS}
 }`;
 
 /* ============================================================================
- * SCENE 2 — Demo (360f, 12s) — terminal + animated Jira issue card
+ * SCENE 2 — Demo (480f, 16s) — terminal + animated Jira card
+ * Slower beats + plain-English copy so a non-technical viewer can follow:
+ * each step holds long enough to read before the next one fires.
  * ========================================================================== */
 const DemoScene = `function DemoScene(props){${HELPERS}
   var f=props.frame||0;
-  var END=360;
+  var END=480;
   var sceneOut=easeIn(cl((f-(END-20))/20));
   var op=1-sceneOut;
   // Left terminal slides in
   var termIn=ease(cl(f/26));
-  // Prompt typing
-  // Real Jira use case: find unowned bugs, file a triage task.
-  // (Bug triage is Jira's bread-and-butter — far more recognisable than a
-  // vague "sprint summary" output.)
-  var promptCmd='Find any open bug in KAN with no owner. File a triage task.';
-  var typeStart=34, typeDur=46;
+  // Prompt — written like someone talking, not Jira jargon
+  var promptCmd='Find any bug nobody is fixing. Make a reminder ticket.';
+  var typeStart=34, typeDur=50;
   var promptTyped=promptCmd.slice(0, Math.floor(cl((f-typeStart)/typeDur)*promptCmd.length));
   var caretOn=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+30;
   function lineAt(d){return ease(cl((f-d)/9));}
-  // Tool 1: getVisibleJiraProjects
-  var t1Call=lineAt(84), t1Res=lineAt(100);
-  // Tool 2: searchJiraIssuesUsingJql
-  var t2Call=lineAt(128), t2Jql=lineAt(142), t2Res=lineAt(160);
-  // Tool 3: createJiraIssue
-  var t3Call=lineAt(190), t3Fields=lineAt(206), t3Done=lineAt(230), t3Url=lineAt(244);
-  // Right pane: Jira issue card morph
-  var cardIn=ease(cl((f-80)/24));
-  var k3In=ease(cl((f-140)/20));
-  var morphP=easeInOut(cl((f-240)/40));   // search-result card → new sprint-summary card
-  var k4Fade=ease(cl((f-280)/20));
+  // Tool 1 — fires after ~50f hold so the viewer can read the prompt
+  var t1Call=lineAt(130), t1Res=lineAt(150);
+  // Tool 2 — fires after ~60f hold so the viewer can read "using KAN"
+  var t2Call=lineAt(210), t2Jql=lineAt(228), t2Res=lineAt(248);
+  // Tool 3 — fires after ~70f hold so the viewer can read the bug line
+  var t3Call=lineAt(320), t3Fields=lineAt(338), t3Done=lineAt(364), t3Url=lineAt(380);
+  // Right pane: card fades in with tool 1, KAN-3 row with tool 2 result,
+  // then morphs into the new reminder card when tool 3 fires.
+  var cardIn=ease(cl((f-130)/30));
+  var k3In=ease(cl((f-248)/24));
+  var morphP=easeInOut(cl((f-340)/44));
+  var k4Fade=ease(cl((f-388)/22));
   // KAN-3 / KAN-4 explainer pills — both sit in the mid-bottom of the
   // terminal, both styled the same way (dark plate + yellow mono key).
   // They fade in as each key first appears on screen and stay until scene-out.
-  var ann1=ease(cl((f-160)/22));   // KAN-3 explainer (after JQL returns)
-  var ann2=ease(cl((f-270)/22));   // KAN-4 explainer (after create succeeds)
+  var ann1=ease(cl((f-264)/22));   // KAN-3 explainer (after search result lands)
+  var ann2=ease(cl((f-388)/22));   // KAN-4 explainer (after create succeeds)
 
   return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op,overflow:'hidden'}},
 
@@ -104,7 +104,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('span',{style:{color:'#FBBF24'}},'getVisibleJiraProjects'),
           R('span',{style:{color:'#94A3B8'}},')')
         ):null,
-        t1Res>0.01?R('div',{style:{opacity:t1Res,color:'#94A3B8'}},'  ⎿  2 projects · picked ',R('span',{style:{color:'#22D3EE',fontWeight:700}},'KAN')):null,
+        t1Res>0.01?R('div',{style:{opacity:t1Res,color:'#94A3B8'}},'  ⎿  Found your project: ',R('span',{style:{color:'#22D3EE',fontWeight:700}},'KAN')):null,
         // tool 2
         t2Call>0.01?R('div',{style:{marginTop:14,opacity:t2Call}},
           R('span',{style:{color:'#94A3B8'}},'⏺ '),
@@ -113,8 +113,9 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('span',{style:{color:'#FBBF24'}},'searchJiraIssuesUsingJql'),
           R('span',{style:{color:'#94A3B8'}},')')
         ):null,
-        t2Jql>0.01?R('div',{style:{opacity:t2Jql,color:'#E2E8F0',marginLeft:'24px'}},'project = ',R('span',{style:{color:'#22D3EE'}},'KAN'),' AND type = ',R('span',{style:{color:'#FBBF24'}},'Bug'),' AND assignee is ',R('span',{style:{color:'#FBBF24'}},'EMPTY')):null,
-        t2Res>0.01?R('div',{style:{opacity:t2Res,color:'#94A3B8'}},'  ⎿  1 bug · ',R('span',{style:{color:'#22D3EE'}},'KAN-3'),' Login form rejects valid emails'):null,
+        t2Jql>0.01?R('div',{style:{opacity:t2Jql,color:'#94A3B8',marginLeft:'24px'}},'looking for: ',R('span',{style:{color:'#E2E8F0'}},'bugs in '),R('span',{style:{color:'#22D3EE'}},'KAN'),R('span',{style:{color:'#E2E8F0'}},' with no one assigned')):null,
+        t2Res>0.01?R('div',{style:{opacity:t2Res,color:'#94A3B8'}},'  ⎿  Found 1 bug nobody is fixing:'):null,
+        t2Res>0.01?R('div',{style:{opacity:t2Res,color:'#E2E8F0',marginLeft:'24px'}},R('span',{style:{color:'#22D3EE',fontWeight:700}},'KAN-3'),'  Login form rejects valid emails'):null,
         // tool 3
         t3Call>0.01?R('div',{style:{marginTop:14,opacity:t3Call}},
           R('span',{style:{color:'#94A3B8'}},'⏺ '),
@@ -123,12 +124,11 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('span',{style:{color:'#FBBF24'}},'createJiraIssue'),
           R('span',{style:{color:'#94A3B8'}},')')
         ):null,
-        t3Fields>0.01?R('div',{style:{opacity:t3Fields,color:'#E2E8F0',marginLeft:'24px'}},
-          R('div',null,'project: ',R('span',{style:{color:'#22D3EE'}},'KAN'),' · type: ',R('span',{style:{color:'#22D3EE'}},'Task')),
-          R('div',null,'summary: ',R('span',{style:{color:'#FBBF24'}},'"Triage: unowned bug in KAN"')),
-          R('div',null,'links: blocks ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
+        t3Fields>0.01?R('div',{style:{opacity:t3Fields,color:'#94A3B8',marginLeft:'24px'}},
+          R('div',null,'title: ',R('span',{style:{color:'#FBBF24'}},'"A bug needs an owner"')),
+          R('div',null,'reminds the team to fix: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
         ):null,
-        t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ ',R('span',{style:{fontWeight:700}},'KAN-4'),' Triage: unowned bug in KAN'):null,
+        t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ New ticket created · ',R('span',{style:{fontWeight:700}},'KAN-4')):null,
         t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'flowhunt.atlassian.net/browse/KAN-4'):null
       )
     ),
@@ -142,7 +142,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
       ),
       // Pre-morph state: KAN-3 search result card (the open, unowned bug)
       morphP<0.95?R('div',{style:{padding:'40px 50px',opacity:1-morphP}},
-        R('div',{style:{fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'SEARCH RESULTS · type = Bug · assignee is EMPTY'),
+        R('div',{style:{fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'BUGS NOBODY IS FIXING'),
         R('div',{style:{marginTop:'20px',padding:'18px 22px',background:'#FAFBFC',borderRadius:'6px',border:'1px solid #DFE1E6',display:'flex',alignItems:'center',gap:'16px',opacity:k3In}},
           R('div',{style:{width:'30px',height:'30px',background:'#DE350B',borderRadius:'4px',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'Inter,system-ui,sans-serif',fontSize:'14px'}},'!'),
           R('div',{style:{flex:1}},
@@ -160,21 +160,21 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('div',{style:{padding:'2px 8px',background:'#E3FCEF',color:'#006644',fontSize:'11px',fontWeight:700,borderRadius:'3px'}},'TASK'),
           R('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'14px',color:'#0052CC',fontWeight:700}},'KAN-4')
         ),
-        R('div',{style:{marginTop:'14px',fontSize:'32px',fontWeight:800,color:'#172B4D',opacity:k4Fade}},'Triage: unowned bug in KAN'),
+        R('div',{style:{marginTop:'14px',fontSize:'32px',fontWeight:800,color:'#172B4D',opacity:k4Fade}},'A bug needs an owner'),
         R('div',{style:{marginTop:'10px',display:'flex',gap:'10px'}},
           R('div',{style:{padding:'3px 10px',background:'#EAECF0',color:'#42526E',fontSize:'11px',fontWeight:700,borderRadius:'3px'}},'TO DO')
         ),
-        R('div',{style:{marginTop:'30px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'BLOCKS'),
+        R('div',{style:{marginTop:'30px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'REMINDS THE TEAM TO FIX'),
         R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'8px'}}),
         R('div',{style:{marginTop:'16px',padding:'12px 14px',background:'#FAFBFC',border:'1px solid #DFE1E6',borderRadius:'6px',display:'flex',alignItems:'center',gap:'12px'}},
           R('div',{style:{width:'22px',height:'22px',background:'#DE350B',borderRadius:'4px',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'12px'}},'!'),
           R('span',{style:{color:'#0052CC',fontWeight:700,fontFamily:'JetBrains Mono,monospace',fontSize:'14px'}},'KAN-3'),
           R('span',{style:{fontSize:'15px',color:'#172B4D'}},'Login form rejects valid emails'),
-          R('span',{style:{marginLeft:'auto',fontSize:'12px',color:'#6B778C'}},'Open · Unassigned')
+          R('span',{style:{marginLeft:'auto',fontSize:'12px',color:'#6B778C'}},'Open · No owner')
         ),
         R('div',{style:{marginTop:'22px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'DESCRIPTION'),
         R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'8px'}}),
-        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Assign an owner by EOD. Reproduce on Firefox + Safari. Add a fix-by date.')
+        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Someone on the team needs to claim this bug. This ticket stays open until they do, so it does not slip.')
       ):null
     ):null,
 
@@ -187,12 +187,12 @@ const DemoScene = `function DemoScene(props){${HELPERS}
     ann1>0.005?R('div',{style:{position:'absolute',left:'490px',top:'760px',transform:'translateX(-50%) translateY('+(8*(1-ann1))+'px)',opacity:ann1,background:'#111928',color:'#FFFFFF',padding:'12px 22px',borderRadius:'10px',fontSize:'17px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,0,0,0.40)',zIndex:10,display:'flex',alignItems:'center',gap:'12px'}},
       R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:800}},'KAN-3'),
       R('span',{style:{color:'#94A3B8'}},'—'),
-      R('span',null,'the bug Jira returned')
+      R('span',null,'an existing bug nobody is fixing')
     ):null,
     ann2>0.005?R('div',{style:{position:'absolute',left:'490px',top:'825px',transform:'translateX(-50%) translateY('+(8*(1-ann2))+'px)',opacity:ann2,background:'#111928',color:'#FFFFFF',padding:'12px 22px',borderRadius:'10px',fontSize:'17px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,0,0,0.40)',zIndex:10,display:'flex',alignItems:'center',gap:'12px'}},
       R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:800}},'KAN-4'),
       R('span',{style:{color:'#94A3B8'}},'—'),
-      R('span',null,'the triage task Claude filed')
+      R('span',null,'Claude\\'s new reminder ticket')
     ):null
   );
 }`;
@@ -397,8 +397,8 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
       R('div',{style:{marginTop:'4px',marginLeft:'68px'}},
         row({prog:i1In,key:'KAN-1',summary:'Spike: evaluate options'}),
         row({prog:i2In,key:'KAN-2',summary:'Refactor auth flow'}),
-        row({prog:i3In,key:'KAN-3',summary:'Login form rejects valid emails',tag:'JQL match',tagColor:'#10B981'}),
-        row({prog:i4In,key:'KAN-4',summary:'Triage: unowned bug in KAN',tag:'Claude created',tagColor:'#0084FF'})
+        row({prog:i3In,key:'KAN-3',summary:'Login form rejects valid emails',tag:'Claude found',tagColor:'#10B981'}),
+        row({prog:i4In,key:'KAN-4',summary:'A bug needs an owner',tag:'Claude made',tagColor:'#0084FF'})
       )
     ),
 

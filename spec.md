@@ -1,17 +1,17 @@
 # claude-code-jira-mcp — scene spec
 
-**Total**: ~42.3 s · 30 fps · 1270 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
+**Total**: ~46.3 s · 30 fps · 1390 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
 
 Scenes are contiguous; no cross-scene cuts inside a scene's `endFrame`. FlowHunt watermark on every scene via `scene()` builder. No em dashes in copy.
 
 | # | id | name | range | dur | role |
 |---|---|---|---|---|---|
 | 1 | s1-pivot | Pivot | 0–90 | 3.0 s | Title card. "Claude Code reads Jira." |
-| 2 | s2-demo | Demo | 90–450 | 12.0 s | Terminal showing the 3 tool calls, real KAN data |
-| 3 | s3-arch | Architecture | 450–610 | ~5.3 s | Pipeline diagram (1.5x speed) |
-| 4 | s4-install | Install | 610–790 | 6.0 s | The `claude mcp add` one-liner + OAuth flash |
-| 5 | s5-snapshot | Snapshot magic | 790–1030 | 8.0 s | "What is a KAN?" hierarchy + tool surface |
-| 6 | s6-cta | CTA | 1030–1270 | 8.0 s | FlowHunt logo + blog title + button + URL |
+| 2 | s2-demo | Demo | 90–570 | 16.0 s | Bug-triage flow in plain English (paced for non-tech viewers) |
+| 3 | s3-arch | Architecture | 570–730 | ~5.3 s | Pipeline diagram (1.5x speed) |
+| 4 | s4-install | Install | 730–910 | 6.0 s | The `claude mcp add` one-liner + OAuth flash |
+| 5 | s5-snapshot | Snapshot magic | 910–1150 | 8.0 s | "What is a KAN?" hierarchy + tool surface |
+| 6 | s6-cta | CTA | 1150–1390 | 8.0 s | FlowHunt logo + blog title + button + URL |
 
 ## Scene 1 — Pivot (0–90)
 
@@ -82,7 +82,7 @@ End card. FlowHunt logo + blog title + button + URL.
 
 ## Constraints recap
 
-- `output.duration * fps == 1270`. Verify on every build.
+- `output.duration * fps == 1390`. Verify on every build.
 - Watermark layer at y=994, height 50, on every scene.
 - No real screenshots embedded; recreate Jira chrome inline with `React.createElement` so it can be animated.
 - Source of truth: edit `build.mjs`, run `node build.mjs`, click Load in the playground.
