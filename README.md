@@ -2,18 +2,18 @@
 
 Motion-graphics promo for the FlowHunt blog **"How to Use Claude Code with the Jira MCP"**.
 
-~46.3 seconds at 30 fps. 6 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
+~48.3 seconds at 30 fps. 6 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
 
-## Scenes
+## Scenes (playback order)
 
 | # | id | name | range | dur |
 |---|---|---|---|---|
-| 1 | s1-pivot    | Pivot          | 0–90       | 3 s    |
-| 2 | s2-demo     | Demo           | 90–570     | 16 s   |
-| 3 | s3-arch     | Architecture   | 570–730    | ~5.3 s |
-| 4 | s4-install  | Install        | 730–910    | 6 s    |
-| 5 | s5-snapshot | Snapshot magic | 910–1150   | 8 s    |
-| 6 | s6-cta      | CTA            | 1150–1390  | 8 s    |
+| 1 | s1-pivot     | Pivot                | 0–90       | 3 s    |
+| 2 | s2-explainer | KAN, explained       | 90–330     | 8 s    |
+| 3 | s3-demo      | Demo (bug triage)    | 330–810    | 16 s   |
+| 4 | s4-arch      | Architecture         | 810–970    | ~5.3 s |
+| 5 | s5-install   | Install + OAuth      | 970–1210   | 8 s    |
+| 6 | s6-cta       | CTA                  | 1210–1450  | 8 s    |
 
 See `spec.md` for the frame-level beat sheet.
 

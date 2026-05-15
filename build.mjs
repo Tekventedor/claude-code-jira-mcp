@@ -7,15 +7,18 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const FPS = 30;
+// Playback order: pivot → KAN explainer → demo → arch → install → cta.
+// (The "snapshot" key is the KAN-explainer scene; we kept the F key name
+// stable so the component map below didn't have to be rewritten.)
 const F = {
-  pivot:    { start: 0,    end: 90,   dur: 90  },  // 3s
-  demo:     { start: 90,   end: 570,  dur: 480 },  // 16s — extended for plain-English pacing
-  arch:     { start: 570,  end: 730,  dur: 160 },  // ~5.33s (1.5x speed-up of 8s)
-  install:  { start: 730,  end: 910,  dur: 180 },  // 6s
-  snapshot: { start: 910,  end: 1150, dur: 240 },  // 8s
-  cta:      { start: 1150, end: 1390, dur: 240 },  // 8s
+  pivot:    { start: 0,    end: 90,    dur: 90  },  // 3s
+  snapshot: { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
+  demo:     { start: 330,  end: 810,   dur: 480 },  // 16s  — bug-triage walkthrough
+  arch:     { start: 810,  end: 970,   dur: 160 },  // ~5.3s
+  install:  { start: 970,  end: 1210,  dur: 240 },  // 8s   — expanded redesign
+  cta:      { start: 1210, end: 1450,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1390;
+const TOTAL_FRAMES = 1450;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -267,58 +270,159 @@ const ArchScene = `function ArchScene(props){${HELPERS}
 /* ============================================================================
  * SCENE 4 — Install (180f, 6s) — one-liner command + OAuth flash
  * ========================================================================== */
+/* ============================================================================
+ * SCENE 4 — Install (240f, 8s)
+ *   Phase A (0–130): a tall terminal centred on screen, takes most of the
+ *     vertical space. Command types in, result lands.
+ *   Phase B (130–170): terminal scales down + fades out; a Chrome browser
+ *     window slides up from the bottom, like a new tab popping open.
+ *   Phase C (170–230): Chrome window full-size, Atlassian-branded OAuth
+ *     consent screen. Big "Claude Code is requesting access" header,
+ *     permission rows with descriptions, Accept button pulses.
+ *   Phase D (230–240): scene-out fade.
+ * ========================================================================== */
 const InstallScene = `function InstallScene(props){${HELPERS}
   var f=props.frame||0;
-  var END=180;
+  var END=240;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
-  var termIn=ease(cl(f/20));
+
+  // ─── Phase A: terminal ─────────────────────────────────────────────
+  var termIn=ease(cl(f/24));
   var promptCmd='claude mcp add --transport http atlassian https://mcp.atlassian.com/v1/mcp/authv2';
-  var typeStart=24, typeDur=60;
+  var typeStart=30, typeDur=72;
   var promptTyped=promptCmd.slice(0, Math.floor(cl((f-typeStart)/typeDur)*promptCmd.length));
   var caretOn=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+30;
-  var resultP=ease(cl((f-86)/16));
-  var oauthIn=ease(cl((f-120)/22));
-  var acceptPulse=0.5+0.5*Math.sin((f-150)*0.22);
-  // syntax-colour the command into spans
-  function span(t,c){return R('span',{style:{color:c}},t);}
-  return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
-    // Title
-    R('div',{style:{position:'absolute',left:'50%',top:'160px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'INSTALL'),
-    R('div',{style:{position:'absolute',left:'50%',top:'200px',transform:'translateX(-50%)',fontSize:'32px',fontWeight:800,color:'#111928'}},'One command. One OAuth click.'),
+  var resultP=ease(cl((f-108)/16));
 
-    // Terminal
-    R('div',{style:{position:'absolute',left:'50%',top:'320px',transform:'translateX(-50%)',width:'1400px',background:'#0F172A',borderRadius:'12px',overflow:'hidden',boxShadow:'0 24px 50px rgba(17,25,40,0.20)',opacity:termIn,transform:'translateX(-50%) translateY('+(15*(1-termIn))+'px)'}},
-      R('div',{style:{height:'40px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px'}},
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#FF5F57'}}),
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#FEBC2E'}}),
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#28C840'}})
+  // ─── Phase B: terminal exit + chrome enter ─────────────────────────
+  var termOut=easeIn(cl((f-130)/30));
+  var termOpacity=cl(termIn-termOut);
+  var termScale=1-0.06*termOut;
+  var termShift=-30*termOut;
+
+  var chromeP=ease(cl((f-130)/40));
+  var chromeRise=lerp(120, 0, chromeP);
+
+  // ─── Phase C: OAuth content reveals ────────────────────────────────
+  var headerP=ease(cl((f-170)/22));
+  function rowIn(d){return ease(cl((f-(176+d))/18));}
+  var r1=rowIn(0), r2=rowIn(14), r3=rowIn(28);
+  var btnP=ease(cl((f-216)/16));
+  var acceptPulse=0.5+0.5*Math.sin((f-220)*0.22);
+
+  function span(t,c){return R('span',{style:{color:c}},t);}
+
+  // The Atlassian "two chevrons" mark, recreated in SVG so the Chrome
+  // window reads as an Atlassian-branded OAuth page at a glance.
+  function atlassianMark(size){
+    var s=size||56;
+    return R('svg',{width:s,height:s,viewBox:'0 0 280 280',style:{display:'block'}},
+      R('defs',null,
+        R('linearGradient',{id:'atl_top',x1:0,y1:0,x2:280,y2:280,gradientUnits:'userSpaceOnUse'},
+          R('stop',{stopColor:'#2684FF'}),R('stop',{offset:1,stopColor:'#0052CC'}))
       ),
-      R('div',{style:{padding:'40px 40px',fontFamily:'JetBrains Mono,monospace',fontSize:'22px',lineHeight:1.55,color:'#E2E8F0'}},
-        R('div',null,
+      // bottom chevron (solid darker)
+      R('path',{d:'M30 240 L140 80 L250 240 Z',fill:'#0052CC'}),
+      // top chevron (gradient)
+      R('path',{d:'M70 240 L140 130 L210 240 Z',fill:'url(#atl_top)'})
+    );
+  }
+
+  return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
+
+    // ─── Header ─────────────────────────────────────────────────────
+    R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'INSTALL'),
+    R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'One command. One OAuth click.'),
+
+    // ─── Tall terminal (Phase A → fades during Phase B) ─────────────
+    termOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1600px',transform:'translateX(-50%) translateY('+termShift+'px) scale('+termScale+')',transformOrigin:'top center',background:'#0F172A',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.25)',opacity:termOpacity}},
+      R('div',{style:{height:'46px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 16px',gap:'10px'}},
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'14px',fontSize:'13px',color:'#94A3B8',fontFamily:'JetBrains Mono,monospace'}},'~  ·  zsh')
+      ),
+      R('div',{style:{padding:'60px 60px',fontFamily:'JetBrains Mono,monospace',fontSize:'26px',lineHeight:1.6,color:'#E2E8F0',minHeight:'440px'}},
+        R('div',{style:{wordBreak:'break-all'}},
           span('$ ', '#22C55E'),
           R('span',null, promptTyped),
-          caretOn?R('span',{style:{display:'inline-block',width:11,height:22,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
+          caretOn?R('span',{style:{display:'inline-block',width:13,height:26,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
         ),
-        resultP>0.01?R('div',{style:{marginTop:24,opacity:resultP,color:'#22C55E'}},'✓ Added MCP server "atlassian" (http, OAuth 2.1)'):null
+        resultP>0.01?R('div',{style:{marginTop:34,opacity:resultP,color:'#22C55E'}},'✓ Added MCP server "atlassian" (http, OAuth 2.1)'):null,
+        resultP>0.01?R('div',{style:{marginTop:14,opacity:resultP,color:'#94A3B8',fontSize:'22px'}},'opening browser to sign in...'):null
       )
-    ),
+    ):null,
 
-    // OAuth flash card bottom-right
-    oauthIn>0.005?R('div',{style:{position:'absolute',right:'80px',bottom:'120px',width:'520px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 24px 50px rgba(17,25,40,0.20)',overflow:'hidden',opacity:oauthIn,transform:'translateY('+(20*(1-oauthIn))+'px)'}},
-      R('div',{style:{height:'34px',background:'#E8EAF0',display:'flex',alignItems:'center',padding:'0 12px',gap:'8px'}},
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FF5F57'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FEBC2E'}}),
-        R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#28C840'}}),
-        R('div',{style:{marginLeft:'10px',padding:'3px 10px',background:'#FFFFFF',borderRadius:'4px',fontSize:'10px',color:'#6B7280'}},'atlassian.com / o / authorize')
+    // ─── Chrome browser window (Phase B/C) ──────────────────────────
+    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(200+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+
+      // Chrome chrome bar — tabs row
+      R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
+        R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{position:'absolute',left:54,top:14,width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'90px',height:'34px',padding:'0 18px',background:'#F4F5F7',borderTopLeftRadius:'10px',borderTopRightRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#172B4D',fontWeight:600}},
+          atlassianMark(16),
+          R('span',null,'Sign in to Atlassian')
+        )
       ),
-      R('div',{style:{padding:'22px 24px'}},
-        R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928',marginBottom:'12px'}},'Claude Code is requesting access'),
-        R('div',{style:{marginBottom:'8px',padding:'10px 14px',background:'#F3F4F6',borderRadius:'6px',fontSize:'13px',color:'#111928'}},'✓  Read'),
-        R('div',{style:{marginBottom:'8px',padding:'10px 14px',background:'#F3F4F6',borderRadius:'6px',fontSize:'13px',color:'#111928'}},'✓  Search'),
-        R('div',{style:{marginBottom:'14px',padding:'10px 14px',background:'#F3F4F6',borderRadius:'6px',fontSize:'13px',color:'#111928'}},'✓  Write'),
-        R('div',{style:{display:'flex',justifyContent:'flex-end',gap:'8px'}},
-          R('div',{style:{padding:'7px 16px',fontSize:'12px',fontWeight:600,color:'#6B7280'}},'Cancel'),
-          R('div',{style:{padding:'7px 20px',fontSize:'12px',fontWeight:700,color:'#FFFFFF',background:'#0052CC',borderRadius:'4px',boxShadow:'0 0 0 '+(4+8*acceptPulse)+'px rgba(0,82,204,0.18)'}},'Accept')
+
+      // URL bar
+      R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
+        R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
+          R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
+        ),
+        R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
+          R('span',{style:{color:'#172B4D'}},'auth.atlassian.com'),
+          R('span',{style:{color:'#6B7280'}},'/o/oauth2/authorize?client_id=claude-code&scope=read+search+write')
+        )
+      ),
+
+      // Body — Atlassian OAuth consent
+      R('div',{style:{padding:'60px 80px',display:'flex',flexDirection:'column',alignItems:'center'}},
+
+        // Atlassian wordmark + logo
+        R('div',{style:{display:'flex',alignItems:'center',gap:'14px',marginBottom:'40px',opacity:chromeP}},
+          atlassianMark(56),
+          R('div',{style:{fontSize:'32px',fontWeight:700,color:'#172B4D',letterSpacing:'-0.5px'}},'Atlassian')
+        ),
+
+        // Big header
+        R('div',{style:{textAlign:'center',opacity:headerP,transform:'translateY('+(10*(1-headerP))+'px)'}},
+          R('div',{style:{fontSize:'38px',fontWeight:800,color:'#172B4D',letterSpacing:'-0.4px'}},'Claude Code is requesting access'),
+          R('div',{style:{marginTop:'10px',fontSize:'20px',color:'#6B7280'}},'to your Atlassian account')
+        ),
+
+        // Permission rows — bigger, with descriptions
+        R('div',{style:{marginTop:'42px',width:'780px',display:'flex',flexDirection:'column',gap:'12px'}},
+          R('div',{style:{opacity:r1,transform:'translateX('+((1-r1)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Read your Jira and Confluence content'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'View projects, issues, pages — like you would in the web app.')
+            )
+          ),
+          R('div',{style:{opacity:r2,transform:'translateX('+((1-r2)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Search across your workspace'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'Run JQL and full-text searches over your tickets and pages.')
+            )
+          ),
+          R('div',{style:{opacity:r3,transform:'translateX('+((1-r3)*-14)+'px)',padding:'18px 22px',background:'#F4F5F7',border:'1px solid #DFE1E6',borderRadius:'10px',display:'flex',alignItems:'center',gap:'18px'}},
+            R('div',{style:{width:32,height:32,borderRadius:'50%',background:'#0052CC',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px'}},'✓'),
+            R('div',{style:{flex:1}},
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#172B4D'}},'Create and update tickets'),
+              R('div',{style:{marginTop:'2px',fontSize:'14px',color:'#6B7280'}},'File new Jira issues, leave comments, change status.')
+            )
+          )
+        ),
+
+        // Buttons row
+        R('div',{style:{marginTop:'40px',width:'780px',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'18px',opacity:btnP,transform:'translateY('+(8*(1-btnP))+'px)'}},
+          R('div',{style:{padding:'14px 26px',fontSize:'16px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'8px'}},'Cancel'),
+          R('div',{style:{padding:'14px 36px',fontSize:'17px',fontWeight:700,color:'#FFFFFF',background:'#0052CC',borderRadius:'8px',boxShadow:'0 0 0 '+(4+10*acceptPulse)+'px rgba(0,82,204,0.18)'}},'Accept')
         )
       )
     ):null
@@ -326,13 +430,12 @@ const InstallScene = `function InstallScene(props){${HELPERS}
 }`;
 
 /* ============================================================================
- * SCENE 5 — Snapshot magic (240f, 8s) — query JSON → real Jira issue
- * ========================================================================== */
-/* ============================================================================
- * SCENE 5 — "Your Jira, mapped" (240f, 8s)
- * Explains what KAN is (project key), what KAN-3 / KAN-4 are (issue keys),
- * and shows the broader tool surface so viewers see the demo is one of many
- * shapes the Atlassian MCP supports. Not a repeat of Scene 2's snapshot.
+ * KAN explainer (240f, 8s) — plays SECOND in the timeline (after the pivot
+ * title card, before the demo). Sets up vocabulary the viewer needs to
+ * follow the bug-triage demo: what a project key is, what an issue key
+ * is, and what else the same Atlassian login lets Claude do.
+ * The component name is SnapshotScene for historical reasons; the F key
+ * is `snapshot`. Don't be misled by the name — there's no snapshot here.
  * ========================================================================== */
 const SnapshotScene = `function SnapshotScene(props){${HELPERS}
   var f=props.frame||0;
@@ -372,7 +475,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
     // ─── Eyebrow + title ───
     R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'KAN, EXPLAINED'),
     R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'What is a KAN?'),
-    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Your Jira project key, and the issue keys that live inside it.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Every project has a short code. Every ticket inside it shares the same code.'),
 
     // ─── LEFT (60%): the hierarchy tree ───
     R('div',{style:{position:'absolute',left:'80px',top:'230px',width:'1050px'}},
@@ -388,10 +491,10 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
       R('div',{style:{marginTop:'14px',marginLeft:'34px',opacity:projIn,transform:'translateX('+((1-projIn)*-14)+'px)',display:'flex',alignItems:'center',gap:'14px',padding:'14px 18px',background:'linear-gradient(90deg,rgba(0,132,255,0.08),rgba(26,86,219,0.04))',border:'1.5px solid #0084FF',borderRadius:'12px'}},
         R('div',{style:{padding:'6px 14px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'20px',fontWeight:800,borderRadius:'8px'}},'KAN'),
         R('div',{style:{flex:1}},
-          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'PROJECT KEY'),
+          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'YOUR PROJECT'),
           R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'Kanban demo board')
         ),
-        R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:600}}, '4 issues')
+        R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:600}}, '4 tickets')
       ),
       // Issues — nested
       R('div',{style:{marginTop:'4px',marginLeft:'68px'}},
@@ -408,37 +511,40 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
       R('div',{style:{opacity:l1,transform:'translateY('+(10*(1-l1))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
           R('div',{style:{padding:'4px 12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN'),
-          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= the project key')
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= your project\\'s short code')
         ),
-        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Three or four letters Jira gives every project. Yours might be ENG, OPS, DATA — same idea.')
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Three or four letters Jira gives every project. Yours could be ENG, OPS, or DATA. Same idea.')
       ),
       // Legend card 2 — issue keys
       R('div',{style:{marginTop:'18px',opacity:l2,transform:'translateY('+(10*(1-l2))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
           R('div',{style:{padding:'4px 12px',background:'#0052CC',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN-N'),
-          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= an issue key')
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= a ticket inside it')
         ),
-        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Every ticket gets the project key plus a number. ',
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Every ticket shares the project code plus a number. ',
           R('span',{style:{color:'#10B981',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-3'),
-          ' is what JQL found. ',
+          ' is an existing bug. ',
           R('span',{style:{color:'#0084FF',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-4'),
-          ' is what Claude just filed.'
+          ' is the reminder Claude will make.'
         )
       )
     ),
 
-    // ─── BOTTOM ribbon: tool categories the Atlassian MCP exposes ───
-    rib>0.005?R('div',{style:{position:'absolute',left:'80px',right:'80px',bottom:'120px',opacity:rib,transform:'translateY('+(10*(1-rib))+'px)'}},
-      R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:700,letterSpacing:'0.08em',textAlign:'center',marginBottom:'14px'}},'AND THE SAME KEY UNLOCKS EVERYTHING ELSE'),
+    // ─── BOTTOM ribbon: what else Claude can do with the same login ───
+    //  Positioned high enough that the pill (below it) clears the FlowHunt
+    //  watermark (the watermark layer sits at y≈994–1044; pill at bottom:160
+    //  is at y≈920–970, ribbon at bottom:280 is at y≈760–840).
+    rib>0.005?R('div',{style:{position:'absolute',left:'80px',right:'80px',bottom:'280px',opacity:rib,transform:'translateY('+(10*(1-rib))+'px)'}},
+      R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:700,letterSpacing:'0.08em',textAlign:'center',marginBottom:'14px'}},'WITH THE SAME LOGIN, CLAUDE CAN ALSO:'),
       R('div',{style:{display:'flex',gap:'14px',justifyContent:'center',flexWrap:'nowrap'}},
-        [{p:c1,t:'Search issues'},{p:c2,t:'Create / update'},{p:c3,t:'Transitions'},{p:c4,t:'Comments'},{p:c5,t:'Sprints'},{p:c6,t:'Confluence pages'}].map(function(o,i){
+        [{p:c1,t:'Search tickets'},{p:c2,t:'Make new tickets'},{p:c3,t:'Move them along'},{p:c4,t:'Add comments'},{p:c5,t:'Plan sprints'},{p:c6,t:'Write Confluence pages'}].map(function(o,i){
           return R('div',{key:i,style:{opacity:o.p,transform:'translateY('+(8*(1-o.p))+'px) scale('+(0.9+0.1*o.p)+')',padding:'12px 22px',background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'999px',fontSize:'17px',fontWeight:700,color:'#111928',whiteSpace:'nowrap',boxShadow:'0 4px 12px rgba(17,25,40,0.05)'}}, o.t);
         })
       )
     ):null,
 
-    // ─── Bottom-centre narrator pill ───
-    pillP>0.005?R('div',{style:{position:'absolute',left:'50%',bottom:'46px',transform:'translateX(-50%) translateY('+(8*(1-pillP))+'px)',opacity:pillP,background:'#111928',color:'#FFFFFF',borderRadius:'999px',padding:'12px 28px',fontSize:'20px',fontWeight:700,boxShadow:'0 8px 22px rgba(17,25,40,0.20)',whiteSpace:'nowrap',zIndex:10}}, 'Learn the key. Use the whole product.'):null
+    // ─── Narrator pill — moved up so it sits above the FlowHunt watermark ───
+    pillP>0.005?R('div',{style:{position:'absolute',left:'50%',bottom:'160px',transform:'translateX(-50%) translateY('+(8*(1-pillP))+'px)',opacity:pillP,background:'#111928',color:'#FFFFFF',borderRadius:'999px',padding:'12px 28px',fontSize:'20px',fontWeight:700,boxShadow:'0 8px 22px rgba(17,25,40,0.20)',whiteSpace:'nowrap',zIndex:10}}, 'Know the code. Use the whole product.'):null
   );
 }`;
 
@@ -523,12 +629,12 @@ const template = {
   inputs: [],
   composition: {
     scenes: [
-      scene('s1-pivot',    F.pivot,    'PivotScene'),
-      scene('s2-demo',     F.demo,     'DemoScene'),
-      scene('s3-arch',     F.arch,     'ArchScene'),
-      scene('s4-install',  F.install,  'InstallScene'),
-      scene('s5-snapshot', F.snapshot, 'SnapshotScene'),
-      scene('s6-cta',      F.cta,      'CTAScene', { type: 'fade', duration: 26 }),
+      scene('s1-pivot',     F.pivot,    'PivotScene'),
+      scene('s2-explainer', F.snapshot, 'SnapshotScene'),   // KAN explainer (plays 2nd)
+      scene('s3-demo',      F.demo,     'DemoScene'),       // bug-triage walkthrough
+      scene('s4-arch',      F.arch,     'ArchScene'),
+      scene('s5-install',   F.install,  'InstallScene'),
+      scene('s6-cta',       F.cta,      'CTAScene', { type: 'fade', duration: 26 }),
     ],
   },
 };
