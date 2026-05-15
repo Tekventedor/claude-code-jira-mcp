@@ -273,25 +273,28 @@ const ArchScene = `function ArchScene(props){${HELPERS}
     R('div',{style:{position:'absolute',left:'50%',top:'128px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px',whiteSpace:'nowrap'}},'Your prompt becomes a tool call. Real Jira data comes back.'),
     R('div',{style:{position:'absolute',left:'50%',top:'192px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500,whiteSpace:'nowrap'}},'Claude Code reaches your Jira through one of two MCP endpoints. Atlassian directly, or FlowHunt as a bridge.'),
 
-    // ─── Connecting lines (drawn under the nodes) ──────────────────
+    // ─── Connecting lines — only STRAIGHT segments (right-angle elbows)
+    //   You -> Claude Code: straight horizontal
+    //   Top branch: out of the TOP of Claude Code, up, then right
+    //   Bottom branch: out of the BOTTOM of Claude Code, down, then right
     R('svg',{style:{position:'absolute',left:0,top:0,pointerEvents:'none'},width:1920,height:1080},
-      // You -> Claude Code (straight horizontal)
       R('line',{x1:youR,y1:ny,x2:claudeL,y2:ny,stroke:'#E5E7EB',strokeWidth:2}),
-      // Fork from Claude Code to Atlassian (upper branch)
-      R('line',{x1:claudeR,y1:ny,x2:mcpL,y2:atlY,stroke:'#E5E7EB',strokeWidth:2}),
-      // Fork from Claude Code to FlowHunt MCP (lower branch)
-      R('line',{x1:claudeR,y1:ny,x2:mcpL,y2:fhMcpY,stroke:'#E5E7EB',strokeWidth:2})
+      // Top branch (appears with the Atlassian node, n3)
+      R('polyline',{points:claudeX+','+(ny-nh/2)+' '+claudeX+','+atlY+' '+mcpL+','+atlY,stroke:'#E5E7EB',strokeWidth:2,fill:'none',opacity:n3}),
+      // Bottom branch (appears with the FlowHunt node, n4)
+      R('polyline',{points:claudeX+','+(ny+nh/2)+' '+claudeX+','+fhMcpY+' '+mcpL+','+fhMcpY,stroke:'#E5E7EB',strokeWidth:2,fill:'none',opacity:n4})
     ),
 
     // ─── Labels centred along each segment ─────────────────────────
     // You -> Claude Code (label above + below)
     l1>0.005?R('div',{style:{position:'absolute',left:youR+'px',top:(ny-32)+'px',width:(claudeL-youR)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#0084FF',opacity:l1}},'natural-language prompt'):null,
     l1>0.005?R('div',{style:{position:'absolute',left:youR+'px',top:(ny+14)+'px',width:(claudeL-youR)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#6B7280',opacity:l1}},'agent answer'):null,
-    // Fork branch labels — anchored near the midpoint of each diagonal
-    l2>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+atlY)/2-44)+'px',width:'180px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0052CC',opacity:l2}},'direct'):null,
-    l2>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+atlY)/2-22)+'px',width:'180px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l2}},"Atlassian's MCP"):null,
-    l3>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+fhMcpY)/2+12)+'px',width:'180px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0084FF',opacity:l3}},'via FlowHunt'):null,
-    l3>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+fhMcpY)/2+34)+'px',width:'180px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l3}},'FlowHunt hosted MCP'):null,
+    // Top branch labels — over the long horizontal segment at y=atlY
+    l2>0.005?R('div',{style:{position:'absolute',left:claudeX+'px',top:(atlY-40)+'px',width:(mcpL-claudeX)+'px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0052CC',opacity:l2}},'direct'):null,
+    l2>0.005?R('div',{style:{position:'absolute',left:claudeX+'px',top:(atlY-18)+'px',width:(mcpL-claudeX)+'px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l2}},"Atlassian's MCP"):null,
+    // Bottom branch labels — below the long horizontal segment at y=fhMcpY
+    l3>0.005?R('div',{style:{position:'absolute',left:claudeX+'px',top:(fhMcpY+12)+'px',width:(mcpL-claudeX)+'px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0084FF',opacity:l3}},'via FlowHunt'):null,
+    l3>0.005?R('div',{style:{position:'absolute',left:claudeX+'px',top:(fhMcpY+34)+'px',width:(mcpL-claudeX)+'px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l3}},'FlowHunt hosted MCP'):null,
 
     // ─── Nodes ─────────────────────────────────────────────────────
     node(youX,   ny,     termIcon(),      'You',                  'your prompt',     n1),

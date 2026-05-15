@@ -24,9 +24,11 @@ Spell "K-A-N" out so non-technical viewers register that it's a code, not a word
 
 The scene runs at 2x so each step is brief — keep the read tight and conversational, matching the typewriter cadence.
 
-## Scene 4 — Architecture · frames 570–730 · ~5.3 s · ~21 words
+## Scene 4 — Architecture · frames 570–730 · ~5.3 s · ~26 words
 
-> Under the hood, every prompt takes a single round trip. Claude Code forwards your request to the Atlassian MCP server, which returns live data.
+> Your prompt becomes a tool call. Claude Code reaches your Jira through one of two MCP endpoints. Atlassian's directly, or FlowHunt's hosted bridge.
+
+Pace the read so "directly" lands as the top connector reaches the Atlassian MCP node and "FlowHunt's hosted bridge" lands as the bottom connector reaches the FlowHunt MCP node.
 
 Tight read — the scene runs at 1.5x. Match the cadence of the node fade-ins; don't pause between beats.
 
