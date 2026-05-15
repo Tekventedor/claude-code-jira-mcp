@@ -1,6 +1,6 @@
 # Voice-over script — claude-code-jira-mcp
 
-**Total runtime**: ~49.3 s. Target ~165 WPM informational. Read like a presenter explaining a product, not a punchy ad. Full sentences, complete thoughts. The visuals are deliberately sparse so the narration carries the substance.
+**Total runtime**: ~49.8 s. Target ~165 WPM informational. Read like a presenter explaining a product, not a punchy ad. Full sentences, complete thoughts. The visuals are deliberately sparse so the narration carries the substance.
 
 Each scene block lists: frame range · scene id · timing budget · approximate word count · narration. Pauses are implicit at every period; commas are a half-beat. Speak `KAN-3` as "Kan three" (not "Kan dash three"). Speak the URL as "flowhunt dot io slash blog".
 
@@ -30,13 +30,13 @@ Pace this section slowly. Each of the three on-screen steps gets its own sentenc
 
 Tight read — the scene runs at 1.5x. Match the cadence of the node fade-ins; don't pause between beats.
 
-## Scene 5 — Install · frames 970–1240 · 9.0 s · ~32 words
+## Scene 5 — Install · frames 970–1255 · 9.5 s · ~32 words
 
 > Setup is a single terminal command. After you paste it, Claude Code opens an Atlassian sign-in page in your browser, where you approve three scopes — read, search, and write — and the connection goes live.
 
 Pace the read with the visual choreography: command types in, terminal recedes, the browser window rises with the consent screen. Land "the connection goes live" right before the Accept button settles into its slow breathing pulse.
 
-## Scene 6 — CTA · frames 1240–1480 · 8.0 s · ~26 words
+## Scene 6 — CTA · frames 1255–1495 · 8.0 s · ~26 words
 
 > The complete step-by-step setup guide is on the FlowHunt blog. It walks through the install command, the OAuth consent screen, and worked examples for both Jira and Confluence.
 
@@ -46,7 +46,7 @@ Trail off softly. The final line should land as the gradient button pulses.
 
 ## Total word count
 
-~164 words across ~49.3 s. Comfortable at 166 WPM. Read flat — no upspeak, no hyped energy.
+~164 words across ~49.8 s. Comfortable at 165 WPM. Read flat — no upspeak, no hyped energy.
 
 ## Recording notes
 

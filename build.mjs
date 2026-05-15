@@ -15,10 +15,10 @@ const F = {
   snapshot: { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
   demo:     { start: 330,  end: 810,   dur: 480 },  // 16s  — bug-triage walkthrough
   arch:     { start: 810,  end: 970,   dur: 160 },  // ~5.3s
-  install:  { start: 970,  end: 1240,  dur: 270 },  // 9s   — expanded redesign + slow Accept pulse tail
-  cta:      { start: 1240, end: 1480,  dur: 240 },  // 8s
+  install:  { start: 970,  end: 1255,  dur: 285 },  // 9.5s — expanded redesign + slow Accept pulse tail
+  cta:      { start: 1255, end: 1495,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1480;
+const TOTAL_FRAMES = 1495;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -271,7 +271,7 @@ const ArchScene = `function ArchScene(props){${HELPERS}
  * SCENE 4 — Install (180f, 6s) — one-liner command + OAuth flash
  * ========================================================================== */
 /* ============================================================================
- * SCENE 4 — Install (270f, 9s)
+ * SCENE 4 — Install (285f, 9.5s)
  *   Phase A (0–130): a tall terminal centred on screen, takes most of the
  *     vertical space. Command types in, result lands.
  *   Phase B (130–170): terminal scales down + fades out; a Chrome browser
@@ -279,14 +279,14 @@ const ArchScene = `function ArchScene(props){${HELPERS}
  *   Phase C (170–230): Chrome window full-size, Atlassian-branded OAuth
  *     consent screen reveals (header, rows, buttons). Accept button has
  *     a quick pulse so the viewer notices it.
- *   Phase D (230–250): hold — everything stays on screen and the Accept
+ *   Phase D (230–265): hold — everything stays on screen and the Accept
  *     ring breathes in a slower rhythm so the viewer can take the panel
  *     in before we cut.
- *   Phase E (250–270): scene-out fade.
+ *   Phase E (265–285): scene-out fade.
  * ========================================================================== */
 const InstallScene = `function InstallScene(props){${HELPERS}
   var f=props.frame||0;
-  var END=270;
+  var END=285;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
   // ─── Phase A: terminal ─────────────────────────────────────────────
