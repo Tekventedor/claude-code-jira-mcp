@@ -4,6 +4,7 @@
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { CLAUDE_ICON, ATLASSIAN_MARK } from './assets.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const FPS = 30;
@@ -11,14 +12,16 @@ const FPS = 30;
 // (The "snapshot" key is the KAN-explainer scene; we kept the F key name
 // stable so the component map below didn't have to be rewritten.)
 const F = {
-  pivot:    { start: 0,    end: 90,    dur: 90  },  // 3s
-  snapshot: { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
-  demo:     { start: 330,  end: 570,   dur: 240 },  // 8s   — bug-triage walkthrough at 2x
-  arch:     { start: 570,  end: 730,   dur: 160 },  // ~5.3s
-  install:  { start: 730,  end: 1015,  dur: 285 },  // 9.5s — expanded redesign + slow Accept pulse tail
-  cta:      { start: 1015, end: 1255,  dur: 240 },  // 8s
+  pivot:      { start: 0,    end: 90,    dur: 90  },  // 3s
+  snapshot:   { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
+  demo:       { start: 330,  end: 570,   dur: 240 },  // 8s   — bug-triage walkthrough at 2x
+  arch:       { start: 570,  end: 730,   dur: 160 },  // ~5.3s
+  install:    { start: 730,  end: 1015,  dur: 285 },  // 9.5s — Claude Code install + OAuth
+  fhSetup:    { start: 1015, end: 1300,  dur: 285 },  // 9.5s — FlowHunt setup (parallel pattern to install)
+  fhUsage:    { start: 1300, end: 1570,  dur: 270 },  // 9s   — FlowHunt agent in action (scroll)
+  cta:        { start: 1570, end: 1810,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1255;
+const TOTAL_FRAMES = 1810;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -92,10 +95,9 @@ const DemoScene = `function DemoScene(props){${HELPERS}
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FF5F57'}}),
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FEBC2E'}}),
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#28C840'}}),
-        // Claude Code badge — orange mark + wordmark, prominent so the
-        // viewer can tell this terminal IS Claude Code, not just any shell.
+        // Claude Code badge — real Claude AI mark (PNG/webp inlined via assets.mjs).
         R('div',{style:{marginLeft:'18px',display:'flex',alignItems:'center',gap:'10px',padding:'5px 12px',background:'rgba(217,119,87,0.14)',border:'1px solid rgba(217,119,87,0.40)',borderRadius:'8px'}},
-          R('div',{style:{width:26,height:26,borderRadius:'7px',background:'linear-gradient(135deg,#E89372,#D97757)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:900,fontSize:'15px',fontFamily:'Inter,system-ui,sans-serif',boxShadow:'0 2px 6px rgba(217,119,87,0.35)'}},'C'),
+          R('img',{src:'${CLAUDE_ICON}',style:{width:26,height:26,display:'block',borderRadius:'6px',boxShadow:'0 2px 6px rgba(217,119,87,0.35)'}}),
           R('div',{style:{fontSize:'15px',color:'#F8FAFC',fontWeight:700,letterSpacing:'-0.2px'}},'Claude Code')
         ),
         R('div',{style:{marginLeft:'12px',fontSize:'12px',color:'#64748B',fontFamily:'JetBrains Mono,monospace'}},'·  atlassian MCP')
@@ -139,7 +141,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('div',null,'fixes: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
         ):null,
         t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ New ticket created · ',R('span',{style:{fontWeight:700}},'KAN-4')):null,
-        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'projectname.atlassian.net/browse/KAN-4'):null
+        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'project_name.atlassian.net/browse/KAN-4'):null
       )
     ),
 
@@ -148,7 +150,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
       // Jira chrome
       R('div',{style:{height:'46px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'10px'}},
         R('div',{style:{width:24,height:24,borderRadius:'4px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800}},'J'),
-        R('div',{style:{fontSize:'13px',color:'#42526E'}},'projectname.atlassian.net / projects / KAN')
+        R('div',{style:{fontSize:'13px',color:'#42526E'}},'project_name.atlassian.net / projects / KAN')
       ),
       // Pre-morph state: KAN-3 search result card (the open, unowned bug)
       morphP<0.95?R('div',{style:{padding:'40px 50px',opacity:1-morphP}},
@@ -330,20 +332,10 @@ const InstallScene = `function InstallScene(props){${HELPERS}
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
-  // The Atlassian "two chevrons" mark, recreated in SVG so the Chrome
-  // window reads as an Atlassian-branded OAuth page at a glance.
+  // The official Atlassian mark (PNG inlined via assets.mjs).
   function atlassianMark(size){
     var s=size||56;
-    return R('svg',{width:s,height:s,viewBox:'0 0 280 280',style:{display:'block'}},
-      R('defs',null,
-        R('linearGradient',{id:'atl_top',x1:0,y1:0,x2:280,y2:280,gradientUnits:'userSpaceOnUse'},
-          R('stop',{stopColor:'#2684FF'}),R('stop',{offset:1,stopColor:'#0052CC'}))
-      ),
-      // bottom chevron (solid darker)
-      R('path',{d:'M30 240 L140 80 L250 240 Z',fill:'#0052CC'}),
-      // top chevron (gradient)
-      R('path',{d:'M70 240 L140 130 L210 240 Z',fill:'url(#atl_top)'})
-    );
+    return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block'}});
   }
 
   return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
@@ -502,7 +494,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
         R('div',{style:{width:36,height:36,borderRadius:'8px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'JetBrains Mono,monospace',fontSize:'14px'}},'A'),
         R('div',null,
           R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'SITE'),
-          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'projectname.atlassian.net')
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'project_name.atlassian.net')
         )
       ),
       // Project row
@@ -510,7 +502,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
         R('div',{style:{padding:'6px 14px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'20px',fontWeight:800,borderRadius:'8px'}},'KAN'),
         R('div',{style:{flex:1}},
           R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'YOUR PROJECT'),
-          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'Kanban demo board')
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'Web app team')
         ),
         R('div',{style:{fontSize:'13px',color:'#6B7280',fontWeight:600}}, '4 tickets')
       ),
@@ -608,6 +600,556 @@ const CTAScene = `function CTAScene(props){${HELPERS}
   );
 }`;
 
+// FlowHuntSetupScene — SCENE 5b (285f, 9.5s).
+// Parallel to InstallScene: viewer has just seen Claude Code installed via
+// terminal + OAuth Chrome. This scene shows the same thing in FlowHunt.
+//   Phase A (0–130): FlowHunt Integrations page renders as a tall panel,
+//     search input types "atlas", two Atlassian integration cards reveal.
+//   Phase B (130–170): integrations panel scales down + fades out, Chrome
+//     browser window rises from below (same dims/markup as InstallScene).
+//   Phase C (170–230): full-size Chrome on app.flowhunt.io/agents/jira.
+//     Agent builder: Chat Input → AI Agent → Chat Output canvas on the left,
+//     config panel on the right. Six tool rows + six tool icons on the AI
+//     Agent node fade in staggered.
+//   Phase D (230–265): hold. Publish Agent button outer glow pulses
+//     (phase-continuous fast→slow, same pattern as InstallScene acceptPulse).
+//   Phase E (265–285): scene-out fade.
+//
+// Output is a single template-literal const so build.mjs can inline it.
+
+const FlowHuntSetupScene = `function FlowHuntSetupScene(props){${HELPERS}
+  var f=props.frame||0;
+  var END=285;
+  var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
+
+  // ─── Phase A: integrations panel ────────────────────────────────────
+  var panelIn=ease(cl(f/24));
+  var searchTerm='atlas';
+  var typeStart=10, typeDur=30;
+  var searchTyped=searchTerm.slice(0, Math.floor(cl((f-typeStart)/typeDur)*searchTerm.length));
+  var searchCaret=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+30;
+  var clearPillP=ease(cl((f-44)/16));
+  var card1P=ease(cl((f-60)/20));   // OAuth (Integrated) card
+  var card2P=ease(cl((f-78)/20));   // Token-based card
+
+  // ─── Phase B: panel exit + chrome enter ────────────────────────────
+  var panelOut=easeIn(cl((f-130)/30));
+  var panelOpacity=cl(panelIn-panelOut);
+  var panelScale=1-0.06*panelOut;
+  var panelShift=-30*panelOut;
+
+  var chromeP=ease(cl((f-130)/40));
+  var chromeRise=lerp(120, 0, chromeP);
+
+  // ─── Phase C: agent builder reveals ─────────────────────────────────
+  var toolbarP=ease(cl((f-170)/18));
+  var canvasP=ease(cl((f-176)/22));
+  var panelHeadP=ease(cl((f-184)/18));
+  // 6 tool rows + 6 AI Agent node tool icons, staggered from f=180
+  function toolIn(d){return ease(cl((f-(180+d))/16));}
+  var t1=toolIn(0), t2=toolIn(10), t3=toolIn(20), t4=toolIn(30), t5=toolIn(40), t6=toolIn(50);
+
+  // ─── Publish Agent pulse — same fast→slow phase-integrated pattern
+  //     as InstallScene's acceptPulse so the cadence reads consistent.
+  var pubStart=200;
+  var fastEnd=230;
+  var fastFreq=0.22, slowFreq=0.085;
+  var pulsePhase = f<=fastEnd
+    ? (f-pubStart)*fastFreq
+    : (fastEnd-pubStart)*fastFreq + (f-fastEnd)*slowFreq;
+  var pubPulse=0.5+0.5*Math.sin(pulsePhase);
+  var pubBtnP=ease(cl((f-188)/18));
+
+  // ─── Atlassian mark — official PNG inlined via assets.mjs ──
+  function atlassianMark(size){
+    var s=size||20;
+    return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block'}});
+  }
+
+  // FlowHunt mark — uses the brand path, gradient fill.
+  function fhMark(size){
+    var s=size||32;
+    var uid=('fh'+Math.floor(s*1000));
+    return R('svg',{width:s,height:s*(223/275),viewBox:'0 0 275 223',style:{display:'block'}},
+      R('defs',null,
+        R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+          R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+      ),
+      R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
+    );
+  }
+
+  // Tool rows (right panel)
+  var tools=[
+    {label:'Add Jira Comment',  p:t1},
+    {label:'Create Jira Issue', p:t2},
+    {label:'Get Jira Issue',    p:t3},
+    {label:'List Jira Issues',  p:t4},
+    {label:'Transition Jira Issue', p:t5},
+    {label:'Update Jira Issue', p:t6}
+  ];
+
+  // Sidebar nav items — Integrations highlighted
+  var navItems=[
+    {label:'Home',           active:false},
+    {label:'Agents Library', active:false},
+    {label:'My Agents',      active:false},
+    {label:'MCP Servers',    active:false},
+    {label:'Chatbots',       active:false},
+    {label:'History',        active:false},
+    {label:'Integrations',   active:true}
+  ];
+
+  return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
+
+    // ─── Header ─────────────────────────────────────────────────────
+    R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'IN FLOWHUNT'),
+    R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'One click. One agent. Same Jira tools.'),
+
+    // ─── Phase A: Integrations page panel ───────────────────────────
+    panelOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1600px',transform:'translateX(-50%) translateY('+panelShift+'px) scale('+panelScale+')',transformOrigin:'top center',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.18)',opacity:panelOpacity,border:'1px solid #E5E7EB',display:'flex',minHeight:'620px'}},
+
+      // Left sidebar
+      R('div',{style:{width:'260px',background:'#F9FAFB',borderRight:'1px solid #E5E7EB',padding:'22px 18px',display:'flex',flexDirection:'column',gap:'18px'}},
+        // FlowHunt logo + wordmark
+        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+          fhMark(28),
+          R('div',{style:{display:'flex',fontSize:'19px',fontWeight:800,letterSpacing:'-0.3px'}},
+            R('span',{style:{color:'#111928'}},'Flow'),
+            R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
+          )
+        ),
+        // Workspace block
+        R('div',{style:{padding:'10px 12px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:30,height:30,borderRadius:'7px',background:grad,color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'13px'}},'CS'),
+          R('div',{style:{flex:1,minWidth:0}},
+            R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'Chris Space'),
+            R('div',{style:{fontSize:'10px',color:'#6B7280',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'vzeman@qualityunit.com')
+          )
+        ),
+        // Agent heading
+        R('div',{style:{fontSize:'10px',fontWeight:700,color:'#9CA3AF',letterSpacing:'0.1em',marginTop:'4px'}},'AGENT'),
+        // Nav rail
+        R('div',{style:{display:'flex',flexDirection:'column',gap:'2px'}},
+          navItems.map(function(it,i){
+            return R('div',{key:i,style:{padding:'8px 12px',borderRadius:'6px',fontSize:'13px',fontWeight:it.active?700:500,color:it.active?'#111928':'#4B5563',background:it.active?'#E5E7EB':'transparent'}}, it.label);
+          })
+        ),
+        // Knowledge sources heading
+        R('div',{style:{fontSize:'10px',fontWeight:700,color:'#9CA3AF',letterSpacing:'0.1em',marginTop:'8px'}},'KNOWLEDGE SOURCES'),
+        R('div',{style:{padding:'6px 12px',fontSize:'13px',color:'#9CA3AF'}},'Files'),
+        // Workspace heading
+        R('div',{style:{fontSize:'10px',fontWeight:700,color:'#9CA3AF',letterSpacing:'0.1em',marginTop:'6px'}},'WORKSPACE'),
+        R('div',{style:{padding:'6px 12px',fontSize:'13px',color:'#9CA3AF'}},'Settings')
+      ),
+
+      // Main pane
+      R('div',{style:{flex:1,padding:'34px 40px'}},
+        // Title
+        R('div',{style:{fontSize:'32px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px'}},'Integrations'),
+        R('div',{style:{marginTop:'6px',fontSize:'14px',color:'#6B7280'}},'Connect FlowHunt to the tools your team already uses.'),
+
+        // Search row
+        R('div',{style:{marginTop:'24px',display:'flex',alignItems:'center',gap:'12px'}},
+          R('div',{style:{flex:1,maxWidth:'520px',padding:'12px 18px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'15px'}},
+            R('span',{style:{color:'#9CA3AF',fontWeight:700}},'⌕'),
+            R('span',{style:{color:'#111928'}}, searchTyped),
+            searchCaret?R('span',{style:{display:'inline-block',width:2,height:18,background:'#111928',marginLeft:1,verticalAlign:'middle'}}):null,
+            searchTyped.length===0?R('span',{style:{color:'#9CA3AF'}},'Search integrations'):null
+          ),
+          clearPillP>0.01?R('div',{style:{opacity:clearPillP,transform:'translateX('+((1-clearPillP)*-6)+'px)',padding:'8px 14px',background:'#F3F4F6',border:'1px solid #D1D5DB',borderRadius:'999px',fontSize:'13px',fontWeight:600,color:'#4B5563',display:'flex',alignItems:'center',gap:'6px'}},
+            R('span',null,'Clear filters'),
+            R('span',{style:{color:'#9CA3AF'}},'×')
+          ):null
+        ),
+
+        // Cards row
+        R('div',{style:{marginTop:'28px',display:'flex',gap:'18px'}},
+          // Left card — OAuth, Integrated (selected/active blue)
+          R('div',{style:{opacity:card1P,transform:'translateY('+(10*(1-card1P))+'px)',flex:1,padding:'22px 24px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'12px',position:'relative',boxShadow:'0 6px 18px rgba(0,132,255,0.12)'}},
+            // BETA pill
+            R('div',{style:{position:'absolute',top:'14px',right:'16px',padding:'3px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.06em'}},'BETA'),
+            // Logo + title
+            R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+              atlassianMark(34),
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#111928'}},'Atlassian (OAuth)')
+            ),
+            R('div',{style:{marginTop:'12px',fontSize:'13px',color:'#4B5563',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+            // Footer row
+            R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+              R('div',{style:{padding:'10px 18px',background:'#0084FF',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'8px'}},'Manage Integration'),
+              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',color:'#047857',fontSize:'13px',fontWeight:700}},
+                R('span',{style:{width:8,height:8,borderRadius:'50%',background:'#10B981',display:'inline-block'}}),
+                R('span',null,'Integrated')
+              )
+            )
+          ),
+          // Right card — Token-based
+          R('div',{style:{opacity:card2P,transform:'translateY('+(10*(1-card2P))+'px)',flex:1,padding:'22px 24px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',position:'relative'}},
+            R('div',{style:{position:'absolute',top:'14px',right:'16px',padding:'3px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.06em'}},'BETA'),
+            R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+              atlassianMark(34),
+              R('div',{style:{fontSize:'18px',fontWeight:700,color:'#111928'}},'Atlassian (Token-based Auth)')
+            ),
+            R('div',{style:{marginTop:'12px',fontSize:'13px',color:'#4B5563',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+            R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center'}},
+              R('div',{style:{padding:'10px 18px',background:'#FFFFFF',color:'#111928',fontSize:'13px',fontWeight:700,borderRadius:'8px',border:'1.5px solid #D1D5DB'}},'Integrate')
+            )
+          )
+        )
+      )
+    ):null,
+
+    // ─── Phase B/C: Chrome browser window (agent builder) ───────────
+    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(200+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+
+      // Chrome chrome bar — tabs row (same markup as InstallScene)
+      R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
+        R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{position:'absolute',left:54,top:14,width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'90px',height:'34px',padding:'0 18px',background:'#F4F5F7',borderTopLeftRadius:'10px',borderTopRightRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#172B4D',fontWeight:600}},
+          fhMark(14),
+          R('span',null,'Jira agent · FlowHunt')
+        )
+      ),
+
+      // URL bar — green dot + host (matches InstallScene shape)
+      R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
+        R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
+          R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
+        ),
+        R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
+          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+          R('span',{style:{color:'#6B7280'}},'/agents/jira')
+        )
+      ),
+
+      // Top toolbar strip inside the page
+      R('div',{style:{height:'52px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 22px',gap:'14px',opacity:toolbarP}},
+        // Left: Agents / Jira pill
+        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{fontSize:'13px',color:'#0084FF',fontWeight:600}},'Agents'),
+          R('div',{style:{color:'#9CA3AF',fontSize:'13px'}},'/'),
+          R('div',{style:{padding:'4px 10px',background:'#F3F4F6',border:'1px solid #E5E7EB',borderRadius:'6px',fontSize:'12px',fontWeight:700,color:'#111928'}},'Jira')
+        ),
+        // Centre: Edit | Run | Batch segmented
+        R('div',{style:{flex:1,display:'flex',justifyContent:'center'}},
+          R('div',{style:{display:'flex',background:'#F3F4F6',border:'1px solid #E5E7EB',borderRadius:'8px',padding:'3px',gap:'2px'}},
+            R('div',{style:{padding:'6px 16px',background:'#FFFFFF',borderRadius:'6px',fontSize:'12px',fontWeight:700,color:'#111928',boxShadow:'0 1px 2px rgba(0,0,0,0.05)'}},'Edit'),
+            R('div',{style:{padding:'6px 16px',fontSize:'12px',fontWeight:600,color:'#6B7280'}},'Run'),
+            R('div',{style:{padding:'6px 16px',fontSize:'12px',fontWeight:600,color:'#6B7280'}},'Batch')
+          )
+        ),
+        // Right: History / Version / Publish
+        R('div',{style:{display:'flex',alignItems:'center',gap:'14px'}},
+          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600}},'History'),
+          R('div',{style:{fontSize:'12px',color:'#9CA3AF'}},'|'),
+          R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600}},'Version: 2'),
+          R('div',{style:{opacity:pubBtnP,padding:'8px 18px',background:'#B91C5C',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'8px',boxShadow:'0 0 0 '+(2+8*pubPulse)+'px rgba(225,29,116,0.22)'}},'Publish Agent')
+        )
+      ),
+
+      // Body — canvas (left ~60%) + config panel (right ~40%)
+      R('div',{style:{display:'flex',height:'636px'}},
+
+        // ─── Canvas ───
+        R('div',{style:{flex:'0 0 900px',background:'#FAFAFB',position:'relative',overflow:'hidden',opacity:canvasP}},
+          // dotted grid background (subtle)
+          R('div',{style:{position:'absolute',inset:0,backgroundImage:'radial-gradient(#E5E7EB 1px, transparent 1px)',backgroundSize:'18px 18px',opacity:0.6}}),
+
+          // Three vertical nodes — centred at x≈450 of 900
+          // Node 1: Chat Input (top, y≈40-140)
+          R('div',{style:{position:'absolute',left:'50%',top:'40px',transform:'translateX(-50%)',width:'320px',background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'12px',padding:'16px 20px',display:'flex',alignItems:'center',gap:'14px',boxShadow:'0 6px 14px rgba(17,25,40,0.06)'}},
+            R('div',{style:{width:38,height:38,borderRadius:'9px',background:'linear-gradient(135deg,#10B981,#047857)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'18px',fontWeight:800}},'➔'),
+            R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'Chat Input')
+          ),
+          // Connector 1: dashed line + plus marker between Chat Input and AI Agent
+          R('div',{style:{position:'absolute',left:'50%',top:'120px',width:'2px',height:'70px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF'}}),
+          R('div',{style:{position:'absolute',left:'50%',top:'148px',transform:'translate(-50%,-50%)',width:'26px',height:'26px',borderRadius:'50%',background:'#0084FF',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px',boxShadow:'0 4px 10px rgba(0,132,255,0.30)'}},'+'),
+
+          // Node 2: AI Agent (middle, y≈200-360)
+          R('div',{style:{position:'absolute',left:'50%',top:'200px',transform:'translateX(-50%)',width:'380px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'14px',padding:'18px 22px',boxShadow:'0 8px 20px rgba(225,29,116,0.10)'}},
+            R('div',{style:{display:'flex',alignItems:'center',gap:'14px'}},
+              R('div',{style:{width:42,height:42,borderRadius:'10px',background:'linear-gradient(135deg,#E11D74,#B91C5C)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'20px',fontWeight:800}},'★'),
+              R('div',{style:{fontSize:'22px',fontWeight:800,color:'#111928'}},'AI Agent')
+            ),
+            // Six Atlassian marks in a row at the bottom — fade in synced with tool rows
+            R('div',{style:{marginTop:'18px',display:'flex',gap:'14px',justifyContent:'center'}},
+              [t1,t2,t3,t4,t5,t6].map(function(p,i){
+                return R('div',{key:i,style:{opacity:p,transform:'scale('+(0.6+0.4*p)+')'}}, atlassianMark(28));
+              })
+            )
+          ),
+          // Connector 2: dashed line + plus between AI Agent and Chat Output
+          R('div',{style:{position:'absolute',left:'50%',top:'400px',width:'2px',height:'70px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF'}}),
+          R('div',{style:{position:'absolute',left:'50%',top:'428px',transform:'translate(-50%,-50%)',width:'26px',height:'26px',borderRadius:'50%',background:'#0084FF',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'18px',boxShadow:'0 4px 10px rgba(0,132,255,0.30)'}},'+'),
+
+          // Node 3: Chat Output (bottom, y≈480-560)
+          R('div',{style:{position:'absolute',left:'50%',top:'480px',transform:'translateX(-50%)',width:'320px',background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'12px',padding:'16px 20px',display:'flex',alignItems:'center',gap:'14px',boxShadow:'0 6px 14px rgba(17,25,40,0.06)'}},
+            R('div',{style:{width:38,height:38,borderRadius:'9px',background:'linear-gradient(135deg,#EF4444,#DC2626)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'18px',fontWeight:800}},'➔'),
+            R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'Chat Output')
+          )
+        ),
+
+        // ─── Right config panel ───
+        R('div',{style:{flex:1,background:'#FFFFFF',borderLeft:'1px solid #E5E7EB',display:'flex',flexDirection:'column',opacity:panelHeadP}},
+          // Magenta header strip
+          R('div',{style:{padding:'14px 20px',background:'linear-gradient(90deg,#B91C5C,#E11D74)',color:'#FFFFFF'}},
+            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+              R('div',{style:{width:24,height:24,borderRadius:'6px',background:'rgba(255,255,255,0.22)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'13px'}},'★'),
+              R('div',{style:{fontSize:'16px',fontWeight:800}},'AI Agent')
+            ),
+            R('div',{style:{marginTop:'4px',fontSize:'11px',color:'rgba(255,255,255,0.85)'}},'An AI agent that can call tools to accomplish tasks.')
+          ),
+
+          // Body
+          R('div',{style:{flex:1,padding:'16px 18px',overflow:'hidden',display:'flex',flexDirection:'column',gap:'14px'}},
+
+            // LLM
+            R('div',null,
+              R('div',{style:{fontSize:'10px',fontWeight:700,color:'#6B7280',letterSpacing:'0.08em'}},'LLM'),
+              R('div',{style:{marginTop:'6px',padding:'10px 12px',border:'1px solid #E5E7EB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px'}},
+                R('div',{style:{width:24,height:24,borderRadius:'5px',background:'#F3F4F6',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',fontWeight:800,color:'#6B7280'}},'A'),
+                R('div',{style:{flex:1}},
+                  R('div',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'claude-4.5-haiku'),
+                  R('div',{style:{fontSize:'10px',color:'#6B7280'}},'Anthropic')
+                ),
+                R('div',{style:{color:'#9CA3AF',fontSize:'12px'}},'▾')
+              )
+            ),
+
+            // Input
+            R('div',null,
+              R('div',{style:{fontSize:'10px',fontWeight:700,color:'#6B7280',letterSpacing:'0.08em'}},'INPUT'),
+              R('div',{style:{marginTop:'6px',padding:'10px 12px',border:'1px solid #E5E7EB',borderRadius:'8px',background:'#FAFAFB'}},
+                R('span',{style:{padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:700,borderRadius:'4px',fontFamily:'JetBrains Mono,monospace'}},'{input}')
+              )
+            ),
+
+            // Tools
+            R('div',{style:{flex:1,minHeight:0,display:'flex',flexDirection:'column'}},
+              R('div',{style:{fontSize:'10px',fontWeight:700,color:'#6B7280',letterSpacing:'0.08em'}},'TOOLS'),
+              R('div',{style:{marginTop:'6px',display:'flex',flexDirection:'column',gap:'5px'}},
+                tools.map(function(tool,i){
+                  return R('div',{key:i,style:{opacity:tool.p,transform:'translateX('+((1-tool.p)*-10)+'px)',padding:'7px 10px',border:'1px solid #E5E7EB',borderRadius:'7px',display:'flex',alignItems:'center',gap:'9px',background:'#FFFFFF'}},
+                    R('div',{style:{width:18,height:18,display:'flex',alignItems:'center',justifyContent:'center'}}, atlassianMark(16)),
+                    R('div',{style:{flex:1,fontSize:'12px',fontWeight:600,color:'#111928'}}, tool.label),
+                    R('div',{style:{padding:'2px 7px',background:'#EFF6FF',color:'#0052CC',fontSize:'9px',fontWeight:700,borderRadius:'4px'}},'atlassian')
+                  );
+                })
+              )
+            ),
+
+            // System Message
+            R('div',null,
+              R('div',{style:{fontSize:'10px',fontWeight:700,color:'#6B7280',letterSpacing:'0.08em'}},'SYSTEM MESSAGE'),
+              R('div',{style:{marginTop:'6px',padding:'10px 12px',border:'1px solid #E5E7EB',borderRadius:'8px',background:'#FAFAFB',fontSize:'12px',color:'#4B5563',lineHeight:1.4}},'You are a helpful assistant.')
+            )
+          )
+        )
+      )
+    ):null
+  );
+}`;
+
+/* ============================================================================
+ * FlowHuntUsageScene (270f, 9s) - a scrolling chat-response panel showing
+ * a FlowHunt Jira agent answering "what can this agent do with Atlassian?".
+ *
+ * Phase layout (frame-local):
+ *   0–25     in: window fades + slides up from below
+ *   25–55    hold at top of response (user prompt + H1 + intro + first list)
+ *   55–180   slow eased scroll down to the bottom of the reply
+ *   180–230  hold at bottom (How to Use Me + closing line)
+ *   230–270  scene-out fade
+ *
+ * The "scroll" is implemented by translating an inner content div inside
+ * an overflow:hidden viewport, NOT by relying on browser scroll behaviour.
+ * ========================================================================== */
+const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
+  var f=props.frame||0;
+  var END=270;
+  var op=ease(cl(f/22))-easeIn(cl((f-(END-22))/22));
+
+  // Window enters: fade + rise from below
+  var inP=ease(cl(f/25));
+  var rise=lerp(40, 0, inP);
+
+  // Scroll: ease the content's translateY from 0 (top) to a negative value
+  // (bottom) across frames 55–180. easeInOut keeps the motion calm at the
+  // start and end so it feels like a mouse-scroll, not a snap-cut.
+  var scrollT=easeInOut(cl((f-55)/125));
+  var scrollY=lerp(0, -1180, scrollT);
+
+  // Chat window geometry
+  var winW=1500, winH=880;
+  var winX=(1920-winW)/2;     // 210
+  var winY=100;
+  var headerH=46;
+  var sidebarW=280;
+  var inputBarH=72;
+  var mainW=winW-sidebarW;    // 1220
+  var mainH=winH-headerH;     // 834
+  var viewportH=mainH-inputBarH; // 762
+
+  // Small reusable bits ----------------------------------------------------
+  function bullet(){
+    return R('div',{style:{width:6,height:6,borderRadius:'50%',background:'#172B4D',marginTop:11,marginRight:14,flexShrink:0}});
+  }
+  function bulletItem(text){
+    return R('div',{style:{display:'flex',alignItems:'flex-start',marginTop:8}},
+      bullet(),
+      R('div',{style:{fontSize:'18px',color:'#172B4D',lineHeight:1.55,flex:1}}, text)
+    );
+  }
+  function numberedBlock(num, title, items){
+    return R('div',{style:{marginTop:22}},
+      R('div',{style:{fontSize:'22px',fontWeight:800,color:'#172B4D',lineHeight:1.35}}, num+'. '+title),
+      R('div',{style:{marginTop:6}}, items.map(function(t,i){return R('div',{key:i},bulletItem(t));}))
+    );
+  }
+  function h1(text){
+    return R('div',{style:{fontSize:'36px',fontWeight:800,color:'#172B4D',letterSpacing:'-0.3px',lineHeight:1.2}}, text);
+  }
+  function h2(text){
+    return R('div',{style:{marginTop:28,fontSize:'26px',fontWeight:800,color:'#172B4D',letterSpacing:'-0.2px',lineHeight:1.25}}, text);
+  }
+  function para(text, muted){
+    return R('div',{style:{marginTop:10,fontSize:'18px',color:muted?'#6B7280':'#172B4D',lineHeight:1.6}}, text);
+  }
+
+  // FH blue square icon (used in window header + user bubble area)
+  function fhSquare(size){
+    var s=size||26;
+    return R('div',{style:{width:s,height:s,borderRadius:'6px',background:grad,display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.round(s*0.55)+'px',boxShadow:'0 2px 6px rgba(0,82,204,0.30)'}}, 'J');
+  }
+
+  // User bubble at top of conversation (right-aligned, FH blue gradient)
+  var userBubble=R('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:24}},
+    R('div',{style:{maxWidth:'72%',background:grad,color:'#FFFFFF',padding:'14px 20px',borderRadius:'18px 18px 4px 18px',fontSize:'18px',fontWeight:500,lineHeight:1.5,boxShadow:'0 6px 18px rgba(0,82,204,0.18)'}},
+      'What can this FlowHunt agent do here, and with my Atlassian workspace?'
+    )
+  );
+
+  // Assistant reply card - the long scrollable content.
+  var assistantCard=R('div',{style:{background:'#F4F5F7',borderRadius:'14px',padding:'34px 38px',color:'#172B4D'}},
+    h1('What I Can Do Here and in Atlassian Jira'),
+    para("I'm your assistant for managing Jira issues and projects. Here's what I can help you with:"),
+
+    h2('Jira Issue Management'),
+
+    numberedBlock(1,'Create Issues',[
+      'Create new tasks, bugs, stories, epics, or sub-tasks',
+      'Set summaries, descriptions, assignees, priorities, and labels',
+      'Organize work in your Jira projects'
+    ]),
+    numberedBlock(2,'View & Search Issues',[
+      'Get detailed information about specific issues',
+      'Search for issues using JQL (Jira Query Language)',
+      'Filter by project, status, assignee, priority, and more',
+      'View comments and issue history'
+    ]),
+    numberedBlock(3,'Update Issues',[
+      'Modify issue titles (summaries) and descriptions',
+      'Change assignees',
+      'Update priorities and labels',
+      'Keep information current'
+    ]),
+    numberedBlock(4,'Transition Issues',[
+      'Move issues between statuses (e.g., Open to In Progress to Done)',
+      'Manage workflow progression',
+      'Track issue lifecycle'
+    ]),
+    numberedBlock(5,'Add Comments',[
+      'Comment on issues with Markdown support',
+      'Create internal notes (visible only to agents)',
+      'Collaborate with your team',
+      'Document decisions and progress'
+    ]),
+
+    h2('How to Use Me'),
+    para('Just tell me what you need. For example:'),
+    R('div',{style:{marginTop:6}},
+      bulletItem('"Create a bug for the login issue"'),
+      bulletItem('"Show me all open tasks in project X"'),
+      bulletItem('"Move issue ABC-123 to In Progress"'),
+      bulletItem('"Add a comment to ABC-123"'),
+      bulletItem('"Update the priority of ABC-123 to High"')
+    ),
+    R('div',{style:{marginTop:22,fontSize:'18px',color:'#172B4D',lineHeight:1.6,fontStyle:'italic'}},
+      "I'll use the appropriate tools and get you accurate information from your Atlassian workspace. What would you like to do?"
+    )
+  );
+
+  // The scrollable inner content stack: user bubble first, then assistant.
+  var contentStack=R('div',{style:{padding:'30px 40px 40px 40px'}},
+    userBubble,
+    assistantCard
+  );
+
+  // ─── Render ────────────────────────────────────────────────────────────
+  return R('div',{style:{width:'100%',height:'100%',background:'#EEF1F4',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
+
+    // Soft eyebrow at the very top so the scene has a frame of reference
+    R('div',{style:{position:'absolute',left:'50%',top:'40px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'FLOWHUNT'),
+
+    // Chat window
+    R('div',{style:{position:'absolute',left:winX+'px',top:(winY+rise)+'px',width:winW+'px',height:winH+'px',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.18)',border:'1px solid #DFE1E6',opacity:inP}},
+
+      // ── Top header bar ──
+      R('div',{style:{height:headerH+'px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'12px'}},
+        fhSquare(26),
+        R('div',{style:{fontSize:'16px',fontWeight:700,color:'#172B4D'}},'Jira'),
+        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'14px',color:'#6B7280',fontSize:'18px'}},
+          R('span',null,'↻'),
+          R('span',{style:{fontSize:'16px',fontWeight:600}},'×')
+        )
+      ),
+
+      // ── Body row: sidebar + main ──
+      R('div',{style:{display:'flex',height:(winH-headerH)+'px'}},
+
+        // Sidebar
+        R('div',{style:{width:sidebarW+'px',background:'#FAFBFC',borderRight:'1px solid #DFE1E6',padding:'18px 14px',display:'flex',flexDirection:'column',gap:'14px'}},
+          // Session dropdown chip
+          R('div',{style:{padding:'10px 14px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#42526E',fontWeight:600}},
+            // Tiny calendar glyph (rounded square with two top ticks)
+            R('div',{style:{width:16,height:16,border:'1.5px solid #6B7280',borderRadius:'3px',position:'relative',flexShrink:0}},
+              R('div',{style:{position:'absolute',left:2,top:-3,width:3,height:4,background:'#6B7280',borderRadius:'1px'}}),
+              R('div',{style:{position:'absolute',right:2,top:-3,width:3,height:4,background:'#6B7280',borderRadius:'1px'}}),
+              R('div',{style:{position:'absolute',left:2,right:2,top:5,height:1.5,background:'#6B7280'}})
+            ),
+            R('span',null,'Session'),
+            R('span',{style:{marginLeft:'auto',color:'#9AA0A6',fontSize:'12px'}},'▾')
+          ),
+          // Highlighted entry: Current session
+          R('div',{style:{padding:'10px 12px',background:'#EBECF0',borderRadius:'6px',fontSize:'14px',color:'#172B4D',fontWeight:600}},'Current session')
+        ),
+
+        // Main pane
+        R('div',{style:{width:mainW+'px',position:'relative',background:'#FFFFFF'}},
+          // Scrolling viewport (overflow clipped)
+          R('div',{style:{position:'absolute',left:0,top:0,width:'100%',height:viewportH+'px',overflow:'hidden'}},
+            R('div',{style:{transform:'translateY('+scrollY+'px)'}}, contentStack)
+          ),
+
+          // Sticky chat input bar at the bottom of the main pane
+          R('div',{style:{position:'absolute',left:0,right:0,bottom:0,height:inputBarH+'px',background:'#FFFFFF',borderTop:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 22px',gap:'14px'}},
+            // + icon
+            R('div',{style:{width:34,height:34,borderRadius:'50%',background:'#F4F5F7',border:'1px solid #DFE1E6',display:'flex',alignItems:'center',justifyContent:'center',color:'#6B7280',fontSize:'20px',fontWeight:600,flexShrink:0}},'+'),
+            R('div',{style:{flex:1,fontSize:'16px',color:'#9AA0A6'}},'Ask me any question...'),
+            // Send arrow
+            R('div',{style:{width:36,height:36,borderRadius:'50%',background:'#EBECF0',display:'flex',alignItems:'center',justifyContent:'center',color:'#6B7280',fontSize:'18px',fontWeight:700,flexShrink:0}},'↑')
+          )
+        )
+      )
+    )
+  );
+}`;
+
+
 /* ============================================================================
  * Watermark — bottom of every scene.
  * "Flow" auto-inverts on dark backgrounds (mix-blend-mode is not reliable in
@@ -640,23 +1182,27 @@ const template = {
   version: '1.0.0',
   output: { type: 'video', width: 1920, height: 1080, fps: FPS, duration: TOTAL_SECONDS, backgroundColor: '#FFFFFF' },
   customComponents: {
-    PivotScene:    { type: 'inline', code: PivotScene },
-    DemoScene:     { type: 'inline', code: DemoScene },
-    ArchScene:     { type: 'inline', code: ArchScene },
-    InstallScene:  { type: 'inline', code: InstallScene },
-    SnapshotScene: { type: 'inline', code: SnapshotScene },
-    CTAScene:      { type: 'inline', code: CTAScene },
-    Watermark:     { type: 'inline', code: Watermark },
+    PivotScene:        { type: 'inline', code: PivotScene },
+    DemoScene:         { type: 'inline', code: DemoScene },
+    ArchScene:         { type: 'inline', code: ArchScene },
+    InstallScene:      { type: 'inline', code: InstallScene },
+    SnapshotScene:     { type: 'inline', code: SnapshotScene },
+    FlowHuntSetupScene:{ type: 'inline', code: FlowHuntSetupScene },
+    FlowHuntUsageScene:{ type: 'inline', code: FlowHuntUsageScene },
+    CTAScene:          { type: 'inline', code: CTAScene },
+    Watermark:         { type: 'inline', code: Watermark },
   },
   inputs: [],
   composition: {
     scenes: [
       scene('s1-pivot',     F.pivot,    'PivotScene'),
-      scene('s2-explainer', F.snapshot, 'SnapshotScene'),   // KAN explainer (plays 2nd)
-      scene('s3-demo',      F.demo,     'DemoScene'),       // bug-triage walkthrough
+      scene('s2-explainer', F.snapshot, 'SnapshotScene'),       // Project-code primer
+      scene('s3-demo',      F.demo,     'DemoScene'),           // Claude Code bug-triage
       scene('s4-arch',      F.arch,     'ArchScene'),
-      scene('s5-install',   F.install,  'InstallScene'),
-      scene('s6-cta',       F.cta,      'CTAScene', { type: 'fade', duration: 26 }),
+      scene('s5-install',   F.install,  'InstallScene'),        // Claude Code install + OAuth
+      scene('s6-fh-setup',  F.fhSetup,  'FlowHuntSetupScene'),  // Same flow in FlowHunt
+      scene('s7-fh-usage',  F.fhUsage,  'FlowHuntUsageScene'),  // FlowHunt agent answering
+      scene('s8-cta',       F.cta,      'CTAScene', { type: 'fade', duration: 26 }),
     ],
   },
 };

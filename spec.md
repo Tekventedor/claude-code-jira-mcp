@@ -1,6 +1,6 @@
 # claude-code-jira-mcp — scene spec
 
-**Total**: ~41.8 s · 30 fps · 1255 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
+**Total**: ~60.3 s · 30 fps · 1810 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
 
 Scenes are contiguous; no cross-scene cuts inside a scene's `endFrame`. FlowHunt watermark on every scene via `scene()` builder. No em dashes in copy.
 
@@ -10,8 +10,10 @@ Scenes are contiguous; no cross-scene cuts inside a scene's `endFrame`. FlowHunt
 | 2 | s2-explainer | Project codes | 90–330 | 8.0 s | Vocabulary primer; uses OPS on the right to show the code is arbitrary |
 | 3 | s3-demo | Demo | 330–570 | 8.0 s | Bug-triage walkthrough at 2x speed; Claude Code badge in terminal chrome |
 | 4 | s4-arch | Architecture | 570–730 | ~5.3 s | Pipeline diagram (1.5x speed) |
-| 5 | s5-install | Install + OAuth | 730–1015 | 9.5 s | Tall terminal → Atlassian Chrome OAuth, slow Accept-pulse tail |
-| 6 | s6-cta | CTA | 1015–1255 | 8.0 s | FlowHunt logo + blog title + button + URL |
+| 5 | s5-install | Claude Code install + OAuth | 730–1015 | 9.5 s | Tall terminal → real Atlassian-branded Chrome OAuth |
+| 6 | s6-fh-setup | FlowHunt setup | 1015–1300 | 9.5 s | FlowHunt Integrations page → FlowHunt agent builder (parallel to Install) |
+| 7 | s7-fh-usage | FlowHunt agent in action | 1300–1570 | 9.0 s | Scrolling chat response: "what can this agent do with Atlassian?" |
+| 8 | s8-cta | CTA | 1570–1810 | 8.0 s | FlowHunt logo + blog title + button + URL |
 
 ## Scene 1 — Pivot (0–90)
 
@@ -82,7 +84,7 @@ End card. FlowHunt logo + blog title + button + URL.
 
 ## Constraints recap
 
-- `output.duration * fps == 1255`. Verify on every build.
+- `output.duration * fps == 1810`. Verify on every build.
 - Watermark layer at y=994, height 50, on every scene.
 - No real screenshots embedded; recreate Jira chrome inline with `React.createElement` so it can be animated.
 - Source of truth: edit `build.mjs`, run `node build.mjs`, click Load in the playground.

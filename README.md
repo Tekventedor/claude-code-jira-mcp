@@ -2,18 +2,24 @@
 
 Motion-graphics promo for the FlowHunt blog **"How to Use Claude Code with the Jira MCP"**.
 
-~41.8 seconds at 30 fps. 6 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
+~60.3 seconds at 30 fps. 8 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
 
 ## Scenes (playback order)
 
 | # | id | name | range | dur |
 |---|---|---|---|---|
-| 1 | s1-pivot     | Pivot                  | 0–90       | 3 s    |
-| 2 | s2-explainer | Project codes          | 90–330     | 8 s    |
-| 3 | s3-demo      | Demo (bug triage, 2x)  | 330–570    | 8 s    |
-| 4 | s4-arch      | Architecture           | 570–730    | ~5.3 s |
-| 5 | s5-install   | Install + OAuth        | 730–1015   | 9.5 s  |
-| 6 | s6-cta       | CTA                    | 1015–1255  | 8 s    |
+| 1 | s1-pivot     | Pivot                       | 0–90       | 3 s    |
+| 2 | s2-explainer | Project codes               | 90–330     | 8 s    |
+| 3 | s3-demo      | Demo (bug triage, 2x)       | 330–570    | 8 s    |
+| 4 | s4-arch      | Architecture                | 570–730    | ~5.3 s |
+| 5 | s5-install   | Claude Code install + OAuth | 730–1015   | 9.5 s  |
+| 6 | s6-fh-setup  | FlowHunt setup              | 1015–1300  | 9.5 s  |
+| 7 | s7-fh-usage  | FlowHunt agent in action    | 1300–1570  | 9 s    |
+| 8 | s8-cta       | CTA                         | 1570–1810  | 8 s    |
+
+## Brand assets
+
+The real Claude AI mark + Atlassian two-chevron mark are inlined as base64 data URIs via `assets.mjs`. Source files are in `./assets/`. Regenerate by re-running the encode block in `assets.mjs` (or `base64 -i assets/<file> | tr -d '\n'`).
 
 See `spec.md` for the frame-level beat sheet.
 
