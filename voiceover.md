@@ -1,6 +1,6 @@
 # Voice-over script — claude-code-jira-mcp
 
-**Total runtime**: 45 s. Target ~190 WPM conversational. Read with energy, slightly faster than natural; the cuts are tight.
+**Total runtime**: ~42.3 s. Target ~190 WPM conversational. Read with energy, slightly faster than natural; the cuts are tight.
 
 Each scene block lists: frame range · scene id · timing budget · approximate word count · narration. Pauses are implicit at every period; em-dashes are a beat. Speak `KAN-3` as "Kan three" (not "Kan dash three"). Speak the URL as "flowhunt dot io slash blog".
 
@@ -18,25 +18,25 @@ Hard cut into the demo.
 
 Land "KAN four" exactly as `createJiraIssue` resolves on screen (~frame 230).
 
-## Scene 3 — Architecture · frames 450–690 · 8.0 s · ~25 words
+## Scene 3 — Architecture · frames 450–610 · ~5.3 s · ~16 words
 
-> That's the whole loop. Your prompt goes to Claude Code. Claude Code calls the Atlassian MCP server. Atlassian answers with your real data. No tabs. No copy-paste.
+> The whole loop. Your prompt to Claude Code. Claude Code to Atlassian. Atlassian back with real data.
 
-Time the last two beats to the node entries.
+Tight read — scene runs at 1.5x. Don't pause between beats.
 
-## Scene 4 — Install · frames 690–870 · 6.0 s · ~19 words
+## Scene 4 — Install · frames 610–790 · 6.0 s · ~19 words
 
 > One command sets it up. `claude mcp add atlassian`. OAuth in the browser. And you're connected. Free tier included.
 
 Read the command flat, matching the on-screen typewriter cadence.
 
-## Scene 5 — KAN, explained · frames 870–1110 · 8.0 s · ~26 words
+## Scene 5 — KAN, explained · frames 790–1030 · 8.0 s · ~26 words
 
 > Quick decoder. `KAN` is your project key — every Jira project has one. `KAN-3`, `KAN-4` — those are issue keys inside it. Learn the key. The MCP unlocks everything else.
 
 Land "Learn the key" right when the bottom ribbon of tool categories fans in.
 
-## Scene 6 — CTA · frames 1110–1350 · 8.0 s · ~25 words
+## Scene 6 — CTA · frames 1030–1270 · 8.0 s · ~25 words
 
 > Read the full setup guide at flowhunt dot io slash blog. Claude Code plus the Atlassian MCP server. Your terminal. Your tickets.
 
@@ -46,7 +46,7 @@ Trail off softly. Last line lands as the gradient button pulses.
 
 ## Total word count
 
-~141 words across 45 s. Comfortable at 188 WPM. If you slow down to 170 WPM, drop the "Free tier included." line in Scene 4 and the "No copy-paste." line in Scene 3 to fit.
+~132 words across ~42.3 s. Comfortable at 187 WPM. If you slow down to 170 WPM, drop the "Free tier included." line in Scene 4 to fit.
 
 ## Recording notes
 

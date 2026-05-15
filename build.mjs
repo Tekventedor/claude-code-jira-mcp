@@ -10,12 +10,12 @@ const FPS = 30;
 const F = {
   pivot:    { start: 0,    end: 90,   dur: 90  },  // 3s
   demo:     { start: 90,   end: 450,  dur: 360 },  // 12s
-  arch:     { start: 450,  end: 690,  dur: 240 },  // 8s
-  install:  { start: 690,  end: 870,  dur: 180 },  // 6s
-  snapshot: { start: 870,  end: 1110, dur: 240 },  // 8s
-  cta:      { start: 1110, end: 1350, dur: 240 },  // 8s
+  arch:     { start: 450,  end: 610,  dur: 160 },  // ~5.33s (1.5x speed-up of 8s)
+  install:  { start: 610,  end: 790,  dur: 180 },  // 6s
+  snapshot: { start: 790,  end: 1030, dur: 240 },  // 8s
+  cta:      { start: 1030, end: 1270, dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1350;
+const TOTAL_FRAMES = 1270;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -198,10 +198,12 @@ const DemoScene = `function DemoScene(props){${HELPERS}
 }`;
 
 /* ============================================================================
- * SCENE 3 — Architecture (240f, 8s) — pipeline diagram
+ * SCENE 3 — Architecture (160f, ~5.3s) — pipeline diagram, 1.5x speed
+ * Internal animation curves keep their original timings; we remap the
+ * incoming frame counter by ×1.5 so the whole scene plays 1.5x faster.
  * ========================================================================== */
 const ArchScene = `function ArchScene(props){${HELPERS}
-  var f=props.frame||0;
+  var f=(props.frame||0)*1.5;   // 1.5x speed-up — see header comment
   var END=240;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
   function nIn(d){return easeBack(cl((f-d)/22));}
