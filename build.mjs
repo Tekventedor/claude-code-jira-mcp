@@ -485,10 +485,15 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
     return R('div',{style:{marginTop:10,fontSize:'18px',color:muted?'#6B7280':'#172B4D',lineHeight:1.6}}, text);
   }
 
-  // FH blue square icon (used in window header + user bubble area)
+  // FlowHunt mark on a blue-gradient tile — replaces the old "J"
+  // letter icon. Uses the brand path FH_MARK_PATH already in scope.
   function fhSquare(size){
     var s=size||26;
-    return R('div',{style:{width:s,height:s,borderRadius:'6px',background:grad,display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.round(s*0.55)+'px',boxShadow:'0 2px 6px rgba(0,82,204,0.30)'}}, 'J');
+    return R('div',{style:{width:s,height:s,borderRadius:'6px',background:grad,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 6px rgba(0,82,204,0.30)'}},
+      R('svg',{width:Math.round(s*0.66),height:Math.round(s*0.53),viewBox:'0 0 275 223',fill:'none'},
+        R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
+      )
+    );
   }
 
   // User bubble at top of conversation — short, natural question that a
@@ -599,7 +604,7 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
           R('span',null,'Agents')
         ),
         R('div',{style:{display:'flex',alignItems:'center',gap:'4px',fontSize:'13px',color:'#111928',fontWeight:700}},
-          R('span',null,'Jira'),
+          R('span',null,'Atlassian Agent'),
           R('span',{style:{color:'#9CA3AF',fontWeight:500}},'▾')
         ),
         // Centre: Edit | Run | Batch pill toggle (Run active = dark pill)
@@ -1406,7 +1411,7 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
     R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'Wire up the Atlassian Jira MCP server.'),
 
     // ─── Chrome browser window (visible throughout) ─────────────────
-    R('div',{style:{position:'absolute',left:'50%',top:'180px',width:'1700px',height:'860px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+    R('div',{style:{position:'absolute',left:'50%',top:'160px',width:'1700px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
 
       // Chrome chrome bar — traffic lights + tab
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
@@ -1982,7 +1987,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           ):null,
 
           // ── Configure Tool: MCP Client modal (outer modal, floats over canvas)
-          outerModalP>0.005?R('div',{style:{position:'absolute',left:'18px',right:'18px',top:'72px',bottom:'30px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 20px 40px rgba(17,25,40,0.20)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:outerModalP,zIndex:5}},
+          outerModalP>0.005?R('div',{style:{position:'absolute',left:'18px',right:'18px',top:'58px',bottom:'72px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 20px 40px rgba(17,25,40,0.20)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:outerModalP,zIndex:5}},
             // Title strip
             R('div',{style:{height:'40px',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 16px'}},
               R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Configure Tool: MCP Client'),
