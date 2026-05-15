@@ -906,8 +906,8 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
 
   // ─── Phase A: Integrations page reveal + search typewriter ─────────
   var pageIn=ease(cl(f/18));
-  // Typewriter "atlas" across the first ~40 frames
-  var searchText='atlas';
+  // Typewriter "atlassian" across the first ~70 frames
+  var searchText='atlassian';
   var searchChars=Math.max(0,Math.min(searchText.length, Math.floor((f-6)/7)));
   var searchTyped=searchText.slice(0, searchChars);
   // Caret blink while typing, hidden once full text is in
@@ -1940,17 +1940,6 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
                 R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Reasoning + tools')
               ),
               R('div',{style:{padding:'2px 6px',background:'#FCE7F3',color:'#B91C5C',fontSize:'9px',fontWeight:800,borderRadius:'4px'}},'ACTIVE')
-            ),
-            // Six small Atlassian "A" tool marks at the bottom of the node
-            R('div',{style:{marginTop:'10px',display:'flex',alignItems:'center',gap:'6px',padding:'6px 8px',background:'#F9FAFB',border:'1px solid #E5E7EB',borderRadius:'8px'}},
-              R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.06em'}},'TOOLS'),
-              atlassianMark(14),
-              atlassianMark(14),
-              atlassianMark(14),
-              atlassianMark(14),
-              atlassianMark(14),
-              atlassianMark(14),
-              R('div',{style:{marginLeft:'auto',fontSize:'9px',color:'#6B7280',fontWeight:700}},'+28')
             )
           ):null,
 
