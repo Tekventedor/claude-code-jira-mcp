@@ -1,17 +1,17 @@
 # claude-code-jira-mcp — scene spec
 
-**Total**: ~49.8 s · 30 fps · 1495 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
+**Total**: ~41.8 s · 30 fps · 1255 frames · 1920 × 1080 · FlowHunt palette · Inter + JetBrains Mono.
 
 Scenes are contiguous; no cross-scene cuts inside a scene's `endFrame`. FlowHunt watermark on every scene via `scene()` builder. No em dashes in copy.
 
 | # | id | name | range | dur | role |
 |---|---|---|---|---|---|
 | 1 | s1-pivot | Pivot | 0–90 | 3.0 s | Title card. "Claude Code reads Jira." |
-| 2 | s2-explainer | KAN, explained | 90–330 | 8.0 s | Vocabulary primer: project codes + ticket codes, plain English |
-| 3 | s3-demo | Demo | 330–810 | 16.0 s | Bug-triage walkthrough, paced for non-tech viewers |
-| 4 | s4-arch | Architecture | 810–970 | ~5.3 s | Pipeline diagram (1.5x speed) |
-| 5 | s5-install | Install + OAuth | 970–1255 | 9.5 s | Tall terminal → Atlassian Chrome OAuth, slow Accept-pulse tail |
-| 6 | s6-cta | CTA | 1255–1495 | 8.0 s | FlowHunt logo + blog title + button + URL |
+| 2 | s2-explainer | Project codes | 90–330 | 8.0 s | Vocabulary primer; uses OPS on the right to show the code is arbitrary |
+| 3 | s3-demo | Demo | 330–570 | 8.0 s | Bug-triage walkthrough at 2x speed; Claude Code badge in terminal chrome |
+| 4 | s4-arch | Architecture | 570–730 | ~5.3 s | Pipeline diagram (1.5x speed) |
+| 5 | s5-install | Install + OAuth | 730–1015 | 9.5 s | Tall terminal → Atlassian Chrome OAuth, slow Accept-pulse tail |
+| 6 | s6-cta | CTA | 1015–1255 | 8.0 s | FlowHunt logo + blog title + button + URL |
 
 ## Scene 1 — Pivot (0–90)
 
@@ -82,7 +82,7 @@ End card. FlowHunt logo + blog title + button + URL.
 
 ## Constraints recap
 
-- `output.duration * fps == 1495`. Verify on every build.
+- `output.duration * fps == 1255`. Verify on every build.
 - Watermark layer at y=994, height 50, on every scene.
 - No real screenshots embedded; recreate Jira chrome inline with `React.createElement` so it can be animated.
 - Source of truth: edit `build.mjs`, run `node build.mjs`, click Load in the playground.

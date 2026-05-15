@@ -13,12 +13,12 @@ const FPS = 30;
 const F = {
   pivot:    { start: 0,    end: 90,    dur: 90  },  // 3s
   snapshot: { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
-  demo:     { start: 330,  end: 810,   dur: 480 },  // 16s  — bug-triage walkthrough
-  arch:     { start: 810,  end: 970,   dur: 160 },  // ~5.3s
-  install:  { start: 970,  end: 1255,  dur: 285 },  // 9.5s — expanded redesign + slow Accept pulse tail
-  cta:      { start: 1255, end: 1495,  dur: 240 },  // 8s
+  demo:     { start: 330,  end: 570,   dur: 240 },  // 8s   — bug-triage walkthrough at 2x
+  arch:     { start: 570,  end: 730,   dur: 160 },  // ~5.3s
+  install:  { start: 730,  end: 1015,  dur: 285 },  // 9.5s — expanded redesign + slow Accept pulse tail
+  cta:      { start: 1015, end: 1255,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1495;
+const TOTAL_FRAMES = 1255;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -48,12 +48,13 @@ const PivotScene = `function PivotScene(props){${HELPERS}
 }`;
 
 /* ============================================================================
- * SCENE 2 — Demo (480f, 16s) — terminal + animated Jira card
- * Slower beats + plain-English copy so a non-technical viewer can follow:
- * each step holds long enough to read before the next one fires.
+ * SCENE 2 — Demo (slot 240f / 8s; internal 480f animation at 2x speed)
+ * Frames are remapped ×2 so the whole walkthrough finishes twice as fast
+ * while keeping the original beat timings (each tool call still gets its
+ * hold, just compressed). Same plain-English copy throughout.
  * ========================================================================== */
 const DemoScene = `function DemoScene(props){${HELPERS}
-  var f=props.frame||0;
+  var f=(props.frame||0)*2;     // 2x speed-up — see header comment
   var END=480;
   var sceneOut=easeIn(cl((f-(END-20))/20));
   var op=1-sceneOut;
@@ -87,11 +88,17 @@ const DemoScene = `function DemoScene(props){${HELPERS}
 
     // LEFT — Claude Code terminal
     R('div',{style:{position:'absolute',left:'40px',top:'40px',width:'900px',height:'920px',background:'#0F172A',borderRadius:'10px',boxShadow:'0 24px 50px rgba(17,25,40,0.20)',overflow:'hidden',opacity:termIn,transform:'translateX('+(-30*(1-termIn))+'px)'}},
-      R('div',{style:{height:'36px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 12px',gap:'10px'}},
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#FF5F57'}}),
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#FEBC2E'}}),
-        R('div',{style:{width:11,height:11,borderRadius:'50%',background:'#28C840'}}),
-        R('div',{style:{marginLeft:'14px',fontSize:'12px',color:'#94A3B8',fontFamily:'JetBrains Mono,monospace'}},'claude  ·  atlassian MCP')
+      R('div',{style:{height:'52px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px'}},
+        R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#28C840'}}),
+        // Claude Code badge — orange mark + wordmark, prominent so the
+        // viewer can tell this terminal IS Claude Code, not just any shell.
+        R('div',{style:{marginLeft:'18px',display:'flex',alignItems:'center',gap:'10px',padding:'5px 12px',background:'rgba(217,119,87,0.14)',border:'1px solid rgba(217,119,87,0.40)',borderRadius:'8px'}},
+          R('div',{style:{width:26,height:26,borderRadius:'7px',background:'linear-gradient(135deg,#E89372,#D97757)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:900,fontSize:'15px',fontFamily:'Inter,system-ui,sans-serif',boxShadow:'0 2px 6px rgba(217,119,87,0.35)'}},'C'),
+          R('div',{style:{fontSize:'15px',color:'#F8FAFC',fontWeight:700,letterSpacing:'-0.2px'}},'Claude Code')
+        ),
+        R('div',{style:{marginLeft:'12px',fontSize:'12px',color:'#64748B',fontFamily:'JetBrains Mono,monospace'}},'·  atlassian MCP')
       ),
       R('div',{style:{padding:'30px 36px',fontFamily:'JetBrains Mono,monospace',fontSize:'16px',lineHeight:1.55,color:'#E2E8F0'}},
         R('div',null,
@@ -132,7 +139,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('div',null,'fixes: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
         ):null,
         t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ New ticket created · ',R('span',{style:{fontWeight:700}},'KAN-4')):null,
-        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'flowhunt.atlassian.net/browse/KAN-4'):null
+        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'projectname.atlassian.net/browse/KAN-4'):null
       )
     ),
 
@@ -141,7 +148,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
       // Jira chrome
       R('div',{style:{height:'46px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'10px'}},
         R('div',{style:{width:24,height:24,borderRadius:'4px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800}},'J'),
-        R('div',{style:{fontSize:'13px',color:'#42526E'}},'flowhunt.atlassian.net / projects / KAN')
+        R('div',{style:{fontSize:'13px',color:'#42526E'}},'projectname.atlassian.net / projects / KAN')
       ),
       // Pre-morph state: KAN-3 search result card (the open, unowned bug)
       morphP<0.95?R('div',{style:{padding:'40px 50px',opacity:1-morphP}},
@@ -190,7 +197,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
     ann1>0.005?R('div',{style:{position:'absolute',left:'490px',top:'760px',transform:'translateX(-50%) translateY('+(8*(1-ann1))+'px)',opacity:ann1,background:'#111928',color:'#FFFFFF',padding:'12px 22px',borderRadius:'10px',fontSize:'17px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,0,0,0.40)',zIndex:10,display:'flex',alignItems:'center',gap:'12px'}},
       R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:800}},'KAN-3'),
       R('span',{style:{color:'#94A3B8'}},'—'),
-      R('span',null,'an existing bug nobody is fixing')
+      R('span',null,'An existing bug nobody is fixing')
     ):null,
     ann2>0.005?R('div',{style:{position:'absolute',left:'490px',top:'825px',transform:'translateX(-50%) translateY('+(8*(1-ann2))+'px)',opacity:ann2,background:'#111928',color:'#FFFFFF',padding:'12px 22px',borderRadius:'10px',fontSize:'17px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,0,0,0.40)',zIndex:10,display:'flex',alignItems:'center',gap:'12px'}},
       R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:800}},'KAN-4'),
@@ -484,9 +491,9 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
   return R('div',{style:{width:'100%',height:'100%',background:'#F9FAFB',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
     // ─── Eyebrow + title ───
-    R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'KAN, EXPLAINED'),
-    R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'What is a KAN?'),
-    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Every project has a short code. Every ticket inside it shares the same code.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'PROJECT CODES'),
+    R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'Every project has a short code'),
+    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Ours is KAN because we used a Kanban template. Yours can be anything.'),
 
     // ─── LEFT (60%): the hierarchy tree ───
     R('div',{style:{position:'absolute',left:'80px',top:'230px',width:'1050px'}},
@@ -495,7 +502,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
         R('div',{style:{width:36,height:36,borderRadius:'8px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'JetBrains Mono,monospace',fontSize:'14px'}},'A'),
         R('div',null,
           R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'SITE'),
-          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'flowhunt.atlassian.net')
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'projectname.atlassian.net')
         )
       ),
       // Project row
@@ -516,27 +523,31 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
       )
     ),
 
-    // ─── RIGHT (40%): the legend panel ───
+    // ─── RIGHT (40%): legend panel — uses a DIFFERENT example code
+    //     (OPS) on purpose, so the viewer reads KAN as "just one possible
+    //     short code" rather than something Atlassian-specific.
     R('div',{style:{position:'absolute',right:'80px',top:'230px',width:'620px'}},
-      // Legend card 1 — project key
+      // Legend card 1 — what a project code is
       R('div',{style:{opacity:l1,transform:'translateY('+(10*(1-l1))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
-          R('div',{style:{padding:'4px 12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN'),
-          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= your project\\'s short code')
+          R('div',{style:{padding:'4px 12px',background:'#6366F1',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'OPS'),
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= an example project code')
         ),
-        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Three or four letters Jira gives every project. Yours could be ENG, OPS, or DATA. Same idea.')
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Three or four letters Jira assigns every project. Could be ENG, OPS, DATA, MOBILE — whatever your team picks.')
       ),
-      // Legend card 2 — issue keys
+      // Legend card 2 — what a ticket key is
       R('div',{style:{marginTop:'18px',opacity:l2,transform:'translateY('+(10*(1-l2))+'px)',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',padding:'22px 24px',boxShadow:'0 8px 22px rgba(17,25,40,0.05)'}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
-          R('div',{style:{padding:'4px 12px',background:'#0052CC',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'KAN-N'),
-          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= a ticket inside it')
+          R('div',{style:{padding:'4px 12px',background:'#6366F1',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'18px',fontWeight:800,borderRadius:'6px'}},'OPS-7'),
+          R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928'}},'= a ticket inside that project')
         ),
-        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Every ticket shares the project code plus a number. ',
+        R('div',{style:{marginTop:'10px',fontSize:'16px',color:'#6B7280',lineHeight:1.5}},'Every ticket gets the project code plus a number — OPS-7, OPS-42, etc. In our demo the project is ',
+          R('span',{style:{color:'#0084FF',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN'),
+          ', so its tickets are ',
           R('span',{style:{color:'#10B981',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-3'),
-          ' is an existing bug. ',
+          ', ',
           R('span',{style:{color:'#0084FF',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-4'),
-          ' is the fix task Claude will file.'
+          ', and so on.'
         )
       )
     ),
