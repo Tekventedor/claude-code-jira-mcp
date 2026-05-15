@@ -795,8 +795,8 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
   return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
     // ─── Header ─────────────────────────────────────────────────────
-    R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'CONNECT THE ACCOUNT'),
-    R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'FlowHunt holds the Atlassian credentials.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'STEP 1 · TOKEN-BASED AUTH'),
+    R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'Connect Atlassian to FlowHunt with an API token.'),
 
     // ─── Phase A: Integrations page panel with the modal open ───────
     panelOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1600px',transform:'translateX(-50%) translateY('+panelShift+'px) scale('+panelScale+')',transformOrigin:'top center',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.18)',opacity:panelOpacity,border:'1px solid #E5E7EB',minHeight:'660px',position:'absolute'}},
@@ -920,122 +920,110 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
       )
     ):null,
 
-    // ─── Phase B/C: Chrome browser window (Atlassian OAuth consent) ──
+    // ─── Phase B/C: Chrome browser window — FlowHunt Integrations
+    //     page in its "Token-based Auth successfully integrated" state.
+    //     (No OAuth tab. Token-Auth happens entirely inside FlowHunt;
+    //     this Chrome window just lets us reveal the success page after
+    //     the modal exits.)
     chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(200+chromeRise)+'px',width:'1500px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
 
-      // Chrome chrome bar — tabs row (same markup as InstallScene)
+      // Chrome chrome bar — tabs row
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
         R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
         R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
         R('div',{style:{position:'absolute',left:54,top:14,width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
         R('div',{style:{marginLeft:'90px',height:'34px',padding:'0 18px',background:'#F4F5F7',borderTopLeftRadius:'10px',borderTopRightRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#172B4D',fontWeight:600}},
-          atlassianMark(16),
-          R('span',null,'Authorize - Atlassian')
+          R('div',{style:{width:14,height:14,borderRadius:'3px',background:'linear-gradient(135deg,#0084FF,#1A56DB)'}}),
+          R('span',null,'Integrations · FlowHunt')
         )
       ),
 
-      // URL bar — green dot + host (matches InstallScene shape)
+      // URL bar
       R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
         R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
           R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
         ),
         R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
-          R('span',{style:{color:'#172B4D'}},'auth.atlassian.com'),
-          R('span',{style:{color:'#6B7280'}},'/authorize?client_id=flowhunt&audience=api.atlassian.com')
+          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+          R('span',{style:{color:'#6B7280'}},'/integrations')
         )
       ),
 
-      // ─── OAuth consent body ─────────────────────────────────────
-      R('div',{style:{position:'relative',padding:'24px 48px',height:'688px',display:'flex',flexDirection:'column',alignItems:'center',background:'#FFFFFF'}},
-
-        // Top-left: small Atlassian wordmark
-        R('div',{style:{position:'absolute',left:'32px',top:'18px',display:'flex',alignItems:'center',gap:'8px'}},
-          atlassianMark(22),
-          R('div',{style:{fontSize:'20px',fontWeight:800,color:'#0052CC',letterSpacing:'-0.4px'}},'Atlassian')
+      // ─── FlowHunt page-level header inside the browser ──────────
+      R('div',{style:{height:'48px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 28px',gap:'14px'}},
+        R('div',{style:{display:'flex',alignItems:'center',fontSize:'18px',fontWeight:800,letterSpacing:'-0.3px'}},
+          R('span',{style:{color:'#111928'}},'Flow'),
+          R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
         ),
-        // Top-right: account avatar circle (HP)
-        R('div',{style:{position:'absolute',right:'32px',top:'18px',width:'30px',height:'30px',borderRadius:'50%',background:'#42526E',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:700}},'HP'),
+        R('div',{style:{marginLeft:'14px',fontSize:'13px',color:'#111928',fontWeight:700}},'Integrations'),
+        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'12px',fontSize:'12px',color:'#6B7280'}},
+          R('div',{style:{padding:'5px 11px',background:'#F4F5F7',borderRadius:'14px',fontWeight:600}},'Example Workspace')
+        )
+      ),
 
-        // Icon strip: FH mark · arrows · Atlassian mark + MCP tag
-        R('div',{style:{marginTop:'28px',display:'flex',alignItems:'center',gap:'14px',opacity:iconStripP,transform:'translateY('+(8*(1-iconStripP))+'px)'}},
-          fhMark(30),
-          // two-direction arrow glyph (drawn with two stacked arrows)
-          R('div',{style:{display:'flex',flexDirection:'column',gap:'1px',color:'#42526E',fontSize:'12px',lineHeight:1,fontFamily:'monospace'}},
-            R('span',null,'→'), R('span',null,'←')
+      // ─── Body: Integrations page success state ──────────────────
+      R('div',{style:{position:'relative',padding:'28px 48px',height:'640px',background:'#F9FAFB'}},
+
+        // Page title
+        R('div',{style:{fontSize:'28px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px'}},'Integrations'),
+
+        // Search bar pre-filled
+        R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{flex:'0 0 320px',padding:'9px 14px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px'}},
+            R('span',{style:{color:'#9CA3AF',fontWeight:700}},'⌕'),
+            R('div',{style:{display:'inline-flex',alignItems:'center',color:'#111928'}},
+              R('span',null,'atlas')
+            ),
+            R('span',{style:{marginLeft:'auto',color:'#9CA3AF',fontSize:'14px',cursor:'pointer'}},'×')
           ),
-          // Atlassian mark with a tiny MCP tag overlapping it
-          R('div',{style:{position:'relative'}},
-            atlassianMark(34),
-            R('div',{style:{position:'absolute',right:'-12px',top:'-4px',padding:'1px 5px',background:'#0052CC',color:'#FFFFFF',fontSize:'9px',fontWeight:800,borderRadius:'3px',letterSpacing:'0.04em'}},'MCP')
+          R('div',{style:{padding:'9px 14px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px',fontSize:'14px',color:'#42526E',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
+            R('span',null,'Category'),
+            R('span',{style:{color:'#9CA3AF'}},'▾')
+          ),
+          R('div',{style:{padding:'9px 14px',fontSize:'14px',color:'#6B7280',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
+            R('span',null,'×'),
+            R('span',null,'Clear filters')
           )
         ),
 
-        // Centred header
-        R('div',{style:{marginTop:'16px',textAlign:'center',maxWidth:'700px',opacity:headerP,transform:'translateY('+(8*(1-headerP))+'px)'}},
-          R('div',{style:{fontSize:'30px',fontWeight:800,color:'#172B4D',letterSpacing:'-0.4px',lineHeight:1.25}},'FlowHunt is requesting access to your Atlassian account.')
-        ),
+        // Two integration cards side by side
+        R('div',{style:{marginTop:'24px',display:'flex',gap:'18px'}},
 
-        // Use app on / domain
-        R('div',{style:{marginTop:'16px',textAlign:'center',opacity:useAppP}},
-          R('div',{style:{fontSize:'12px',color:'#6B7280'}},'Use app on'),
-          R('div',{style:{marginTop:'4px',fontSize:'14px',fontWeight:700,color:'#172B4D'}},'flowhunt.atlassian.net')
-        ),
+          // LEFT card: Atlassian (OAuth) — alternative path, NOT selected
+          R('div',{style:{flex:1,padding:'22px 24px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',position:'relative'}},
+            R('div',{style:{position:'absolute',top:'14px',right:'14px',padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA'),
+            atlassianMark(38),
+            R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (OAuth)'),
+            R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+            R('div',{style:{marginTop:'18px',padding:'8px 16px',background:'#FFFFFF',border:'1px solid #D1D5DB',color:'#172B4D',fontSize:'13px',fontWeight:700,borderRadius:'6px',display:'inline-block'}},'Integrate')
+          ),
 
-        // ─── Three scope sections (stacked, with dividers) ────────
-        R('div',{style:{marginTop:'14px',width:'620px'}},
-          // Section 1 — In Jira
-          scopeSection({
-            prog:s1, accent:'#2684FF', divider:true,
-            productLine:'In Jira, it would like to:',
-            rows:[
-              {action:'Manage', scopes:'jira-project, jira-webhook'},
-              {action:'View',   scopes:'jira-user, jira-work'},
-              {action:'Update', scopes:'jira-work'}
-            ]
-          }),
-          // Section 2 — In Confluence
-          scopeSection({
-            prog:s2, accent:'#0052CC', divider:true,
-            productLine:'In Confluence, it would like to:',
-            rows:[
-              {action:'Delete', scopes:'Page'},
-              {action:'View',   scopes:'Page, Space details, confluence-content.all, confluence-space.summary'},
-              {action:'Update', scopes:'Page, confluence-content'},
-              {action:'Search', scopes:'confluence'}
-            ]
-          }),
-          // Section 3 — In Jira (servicedesk)
-          scopeSection({
-            prog:s3, accent:'#2684FF', divider:false,
-            productLine:'In Jira, it would like to:',
-            rows:[
-              {action:'View',   scopes:'servicedesk-request'},
-              {action:'Update', scopes:'servicedesk-request'}
-            ]
-          })
-        ),
-
-        // Footer legal text + button row
-        footerP>0.005?R('div',{style:{marginTop:'14px',width:'620px',opacity:footerP}},
-          R('div',{style:{paddingTop:'14px',borderTop:'1px solid #DFE1E6',fontSize:'11px',color:'#6B7280',lineHeight:1.55}},
-            R('div',{style:{fontWeight:700,color:'#42526E'}},'By accepting this app, you:'),
-            R('div',{style:{marginTop:'4px'}},'• Grant the app access to your data in all places you can access where the app is installed.'),
-            R('div',null,'• Agree to AiMingle, s.r.o.\\'s ',R('span',{style:{color:'#0052CC'}},'privacy policy'),' and ',R('span',{style:{color:'#0052CC'}},'terms of use'),'.'),
-            R('div',{style:{marginTop:'6px'}},'9 users have consented to using FlowHunt.')
+          // RIGHT card: Atlassian (Token-based Auth) — INTEGRATED (highlight)
+          R('div',{style:{flex:1,padding:'22px 24px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'14px',position:'relative',boxShadow:'0 8px 22px rgba(0,132,255,0.10)'}},
+            R('div',{style:{position:'absolute',top:'14px',right:'14px',display:'flex',gap:'6px'}},
+              R('div',{style:{padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA')
+            ),
+            atlassianMark(38),
+            R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
+            R('div',{style:{marginTop:'8px',fontSize:'13px',color:'#6B7280',lineHeight:1.5}},'Integrate Atlassian to automate your Jira and Confluence processes.'),
+            R('div',{style:{marginTop:'18px',display:'flex',alignItems:'center',gap:'10px'}},
+              R('div',{style:{padding:'8px 16px',background:'#0084FF',color:'#FFFFFF',fontSize:'13px',fontWeight:700,borderRadius:'6px',boxShadow:'0 0 0 '+(2+8*acceptPulse)+'px rgba(0,132,255,0.18)'}},'Manage Integration'),
+              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',color:'#047857',fontSize:'13px',fontWeight:700}},
+                R('div',{style:{width:18,height:18,borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'11px'}},'✓'),
+                R('span',null,'Integrated')
+              )
+            )
           )
-        ):null,
+        ),
 
-        // Accept / Cancel row (bottom-right)
-        btnP>0.005?R('div',{style:{position:'absolute',right:'48px',bottom:'28px',display:'flex',alignItems:'center',gap:'18px',opacity:btnP,transform:'translateY('+(8*(1-btnP))+'px)'}},
-          R('div',{style:{padding:'10px 24px',fontSize:'14px',fontWeight:700,color:'#FFFFFF',background:'#0052CC',borderRadius:'6px',boxShadow:'0 0 0 '+(4+10*acceptPulse)+'px rgba(0,82,204,0.20)'}},'Accept'),
-          R('div',{style:{fontSize:'14px',fontWeight:600,color:'#0052CC'}},'Cancel')
-        ):null,
-
-        // ─── Success toast (bottom-right of Chrome) ──────────────
-        toastP>0.005?R('div',{style:{position:'absolute',right:'24px',bottom:'88px',opacity:toastP,transform:'translateY('+(12*(1-toastP))+'px)',padding:'12px 16px',background:'#ECFDF5',border:'1px solid #10B981',borderRadius:'10px',display:'flex',alignItems:'center',gap:'12px',boxShadow:'0 10px 24px rgba(16,185,129,0.18)',minWidth:'380px'}},
-          R('div',{style:{width:'26px',height:'26px',borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'14px'}},'✓'),
-          R('div',{style:{flex:1,fontSize:'13px',color:'#065F46',fontWeight:600,lineHeight:1.35}},'Atlassian (Token-based Auth) was successfully integrated')
+        // ─── Success toast (top-right) ───────────────────────────
+        toastP>0.005?R('div',{style:{position:'absolute',right:'48px',top:'30px',opacity:toastP,transform:'translateY('+(-12*(1-toastP))+'px)',padding:'14px 18px',background:'#ECFDF5',border:'1px solid #10B981',borderRadius:'12px',display:'flex',alignItems:'center',gap:'14px',boxShadow:'0 12px 28px rgba(16,185,129,0.22)',maxWidth:'440px'}},
+          R('div',{style:{width:'30px',height:'30px',borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'16px'}},'✓'),
+          R('div',{style:{flex:1}},
+            R('div',{style:{fontSize:'14px',color:'#065F46',fontWeight:700,lineHeight:1.35}},'Atlassian (Token-based Auth) was successfully integrated'),
+            R('div',{style:{marginTop:'4px',fontSize:'12px',color:'#047857',lineHeight:1.4}},'Your API token is stored. FlowHunt agents can now use Atlassian tools.')
+          )
         ):null
       )
     ):null
@@ -1224,12 +1212,16 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
 
           R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928'}},'Select MCP Server'),
 
-          // Search input (pre-filled "atlassi" via typewriter)
+          // Search input (pre-filled "atlassi" via typewriter).
+          // The caret + text live inside one flex child so the parent's
+          // gap:10px doesn't separate them — fixes the "a   |" spacing bug.
           R('div',{style:{padding:'12px 16px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'15px'}},
             R('span',{style:{color:'#9CA3AF',fontWeight:700}},'⌕'),
-            R('span',{style:{color:'#111928'}}, searchTyped),
-            searchCaret?R('span',{style:{display:'inline-block',width:2,height:18,background:'#111928',marginLeft:1,verticalAlign:'middle'}}):null,
-            searchTyped.length===0?R('span',{style:{color:'#9CA3AF'}},'Search MCP servers'):null
+            R('div',{style:{display:'inline-flex',alignItems:'center',color:'#111928'}},
+              R('span',null, searchTyped),
+              searchCaret?R('span',{style:{display:'inline-block',width:2,height:18,background:'#111928',marginLeft:1,verticalAlign:'middle'}}):null,
+              searchTyped.length===0?R('span',{style:{color:'#9CA3AF'}},'Search MCP servers'):null
+            )
           ),
 
           // Connected Servers (1)
