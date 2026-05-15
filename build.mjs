@@ -440,16 +440,23 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
   // example list landing inside the viewport at the bottom hold.
   var scrollY=lerp(0, -2080, scrollT);
 
-  // Chat window geometry
-  var winW=1500, winH=880;
-  var winX=(1920-winW)/2;     // 210
-  var winY=100;
+  // Browser window geometry — this scene now renders inside a full Chrome
+  // window so it visually reads as a real FlowHunt page (matches scenes 5–7).
+  var browserW=1760, browserH=960;
+  var browserX=(1920-browserW)/2;   // 80
+  var browserY=60;
+  var chromeChromeH=42;             // tabs row
+  var urlBarH=44;                   // URL bar row
+  // Chat window sits *inside* the browser body, slightly inset.
+  var winW=1500, winH=820;
+  var winX=browserX+(browserW-winW)/2;   // centred inside browser
+  var winY=browserY+chromeChromeH+urlBarH+18;
   var headerH=46;
   var sidebarW=280;
   var inputBarH=72;
   var mainW=winW-sidebarW;    // 1220
-  var mainH=winH-headerH;     // 834
-  var viewportH=mainH-inputBarH; // 762
+  var mainH=winH-headerH;     // 774
+  var viewportH=mainH-inputBarH; // 702
 
   // Small reusable bits ----------------------------------------------------
   function bullet(){
@@ -576,10 +583,47 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
   // ─── Render ────────────────────────────────────────────────────────────
   return R('div',{style:{width:'100%',height:'100%',background:'#EEF1F4',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
-    // Soft eyebrow at the very top so the scene has a frame of reference
-    R('div',{style:{position:'absolute',left:'50%',top:'40px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'FLOWHUNT'),
+    // ─── Chrome browser window wrapping the whole FlowHunt page ─────
+    R('div',{style:{position:'absolute',left:browserX+'px',top:browserY+'px',width:browserW+'px',height:browserH+'px',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.22)',border:'1px solid #D1D5DB',opacity:inP}},
+      // Chrome chrome bar — traffic lights + tab
+      R('div',{style:{height:chromeChromeH+'px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',position:'relative'}},
+        R('div',{style:{position:'absolute',left:14,top:14,width:12,height:12,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{position:'absolute',left:34,top:14,width:12,height:12,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{position:'absolute',left:54,top:14,width:12,height:12,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'90px',height:'32px',padding:'0 16px',background:'#F4F5F7',borderTopLeftRadius:'9px',borderTopRightRadius:'9px',display:'flex',alignItems:'center',gap:'9px',fontSize:'13px',color:'#172B4D',fontWeight:600}},
+          fhSquare(14),
+          R('span',null,'Jira agent · FlowHunt')
+        )
+      ),
+      // URL bar
+      R('div',{style:{height:urlBarH+'px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 16px',gap:'12px'}},
+        R('div',{style:{display:'flex',gap:'12px',color:'#9AA0A6',fontSize:'16px'}},
+          R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
+        ),
+        R('div',{style:{flex:1,padding:'7px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'18px',fontSize:'13px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:7,height:7,borderRadius:'50%',background:'#22C55E'}}),
+          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+          R('span',{style:{color:'#6B7280'}},'/agents/jira/chat')
+        )
+      ),
+      // FlowHunt page-level header inside the browser
+      R('div',{style:{height:'48px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 28px',gap:'14px'}},
+        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{display:'flex',alignItems:'center',fontSize:'18px',fontWeight:800,letterSpacing:'-0.3px'}},
+            R('span',{style:{color:'#111928'}},'Flow'),
+            R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
+          )
+        ),
+        R('div',{style:{marginLeft:'14px',fontSize:'13px',color:'#6B7280'}},'Agents'),
+        R('div',{style:{fontSize:'13px',color:'#6B7280'}},'/'),
+        R('div',{style:{fontSize:'13px',color:'#111928',fontWeight:700}},'Jira'),
+        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'12px',fontSize:'12px',color:'#6B7280'}},
+          R('div',{style:{padding:'5px 11px',background:'#F4F5F7',borderRadius:'14px',fontWeight:600}},'Example Workspace')
+        )
+      )
+    ),
 
-    // Chat window
+    // ─── Chat window — sits inside the browser body ─────────────────
     R('div',{style:{position:'absolute',left:winX+'px',top:(winY+rise)+'px',width:winW+'px',height:winH+'px',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.18)',border:'1px solid #DFE1E6',opacity:inP}},
 
       // ── Top header bar ──
@@ -1434,16 +1478,21 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
 /* ============================================================================
  * FlowHuntBridgeScene (270f, 9s) — Scene 7.
  *
- * Bridges the FlowHunt Connect-tab JSON to its two consumers: a local Claude
- * Code terminal (left) and an online FlowHunt agent dialog (right). The same
- * JSON config flows down from a top card and branches into both surfaces.
+ * Two side-by-side surfaces both consume the same MCP server config:
+ *   LEFT  — Claude Code terminal running `claude mcp add jira …`
+ *   RIGHT — FlowHunt's browser, showing the agent editor with the
+ *           Configure Tool: MCP Client dialog open (browser chrome
+ *           with URL bar so it visually reads as "this is FlowHunt").
+ *
+ * No top JSON card and no branching arrows — the two surfaces are visible
+ * from frame 0 with their identity labels above them, so the viewer reads
+ * the local vs online distinction immediately.
  *
  * Phase layout (frame-local):
- *   0–60     A: page fades in, top JSON card appears with FH glow
- *   60–90    B: JSON card shrinks slightly, two branch arrows draw
- *   90–230   C: terminal types Claude Code lines; FlowHunt dialog reveals
- *   230–260  D: hold + caption pills under each surface; Save button pulses
- *   260–270  E: scene-out fade
+ *   0–30     A: page + both surfaces fade in together with labels at top
+ *   30–230   B: terminal types Claude Code lines; FlowHunt dialog reveals
+ *   230–260  C: hold; FlowHunt Save button outer glow pulses (fast→slow)
+ *   260–270  D: scene-out fade
  *
  * HELPERS and CLAUDE_ICON are interpolated from the parent build.mjs scope.
  * ========================================================================== */
@@ -1453,172 +1502,93 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var END=270;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
-  // ─── Phase A: page + top JSON card ─────────────────────────────────
-  var headerP=ease(cl(f/22));
-  var cardP=ease(cl((f-10)/26));
-  // Subtle FH brand glow that breathes gently before the split.
-  var glowPhase=f*0.06;
-  var cardGlow=0.5+0.5*Math.sin(glowPhase);
+  // ─── Surfaces fade in together ─────────────────────────────────────
+  var surfP=ease(cl(f/22));
+  var surfRise=18*(1-surfP);
 
-  // ─── Phase B: split into two arrows ────────────────────────────────
-  // The card shrinks slightly after f=60 and pushes upward a touch,
-  // while two diagonal branch lines draw from its bottom corners.
-  var splitP=ease(cl((f-60)/30));
-  var cardScale=1-0.06*splitP;
-  var cardLift=-12*splitP;
-  // stroke-dasharray reveal (path length ≈ 360px per branch)
-  var branchLen=360;
-  var branchDraw=branchLen*(1-ease(cl((f-65)/24)));
-
-  // ─── Phase C: terminal + FlowHunt dialog reveal ────────────────────
-  var surfP=ease(cl((f-86)/26));
-  var surfRise=24*(1-surfP);
-
-  // ── LEFT terminal typewriter ──
-  // Frame 90: start typing the claude mcp add command.
-  // Around 170: green check line for "Added HTTP MCP server jira".
-  // Around 195: "Allowed by auto agreed classifier".
-  // Around 215: "$ claude mcp list | head -5".
-  // Around 230: "jira  ✓ Connected  34 tools" result line.
+  // ── LEFT terminal typewriter (unchanged from before, just earlier) ──
   var addCmd='claude mcp add jira --transport streamable_http https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b --header "Authorization: Bearer ********"';
-  var addStart=90, addDur=70;
+  var addStart=20, addDur=80;
   var addTyped=addCmd.slice(0, Math.floor(cl((f-addStart)/addDur)*addCmd.length));
   var addCaret=f>=addStart && (Math.floor((f-addStart)/8))%2===0 && f<addStart+addDur+20;
   function lineAt(d,dur){return ease(cl((f-d)/(dur||10)));}
-  var addedP=lineAt(170,12);
-  var allowedP=lineAt(195,10);
-  var listCmdP=lineAt(215,8);
-  var listResP=lineAt(230,10);
+  var addedP=lineAt(115,14);
+  var allowedP=lineAt(145,12);
+  var listCmdP=lineAt(170,10);
+  var listResP=lineAt(190,12);
 
-  // ── RIGHT FlowHunt dialog reveal staggers ──
-  var dialogP=ease(cl((f-90)/22));
-  var advTogP=ease(cl((f-110)/16));
-  var configP=ease(cl((f-118)/22));
-  var btnsP=ease(cl((f-150)/16));
+  // ── RIGHT FlowHunt browser reveal staggers ──
+  var browserP=surfP;            // browser appears with the left terminal
+  var dialogP=ease(cl((f-30)/22));
+  var advTogP=ease(cl((f-58)/16));
+  var configP=ease(cl((f-78)/22));
+  var btnsP=ease(cl((f-118)/16));
 
-  // ─── Phase D: caption pills + Save pulse ───────────────────────────
-  var pillP=ease(cl((f-230)/16));
-  // Same fast→slow phase-integrated pattern as InstallScene's acceptPulse,
-  // anchored at f=230 (when the Save button starts pulsing).
-  var pulseStart=230;
-  var fastEnd=246;
+  // ─── Save-button pulse (fast→slow phase-integrated) ────────────────
+  var pulseStart=200;
+  var fastEnd=230;
   var fastFreq=0.22, slowFreq=0.085;
   var pulsePhase = f<=fastEnd
     ? (f-pulseStart)*fastFreq
     : (fastEnd-pulseStart)*fastFreq + (f-fastEnd)*slowFreq;
   var savePulse=0.5+0.5*Math.sin(pulsePhase);
+  var pulseGate=cl((f-pulseStart)/14);
 
-  // Layout constants — terminal vs FlowHunt dialog.
-  var termX=60, termY=340, termW=880, termH=600;
-  var fhX=980,  fhY=340, fhW=880,  fhH=600;
-  // Top card geometry — centred, width 1200, height ~210.
-  var topCardX=(1920-1200)/2;   // 360
-  var topCardY=140;
-  var topCardW=1200;
-  var topCardH=210;
-  // Branch anchor points — bottom corners of the card.
-  var branchAY=topCardY+topCardH-10;
-  var branchALx=topCardX+260;
-  var branchARx=topCardX+topCardW-260;
-  // Branch target points — top edges of each surface, slightly inset.
-  var termTopX=termX+termW/2;
-  var fhTopX=fhX+fhW/2;
-  var surfTopY=termY-12;
+  // Layout — terminal stays small-ish; FlowHunt browser is bigger.
+  // Caption labels live above each surface from frame 0.
+  var captionY=170;
+  var surfTopY=210;
+  var termX=50,  termY=surfTopY, termW=820, termH=780;
+  var fhX=900,   fhY=180,       fhW=960,  fhH=820;
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
   return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op,overflow:'hidden'}},
 
     // ─── Header strip ───────────────────────────────────────────────
-    R('div',{style:{position:'absolute',left:'50%',top:'62px',transform:'translateX(-50%)',fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'2px',opacity:headerP}},'THE BRIDGE'),
-    R('div',{style:{position:'absolute',left:'50%',top:'94px',transform:'translateX(-50%)',fontSize:'36px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px',opacity:headerP}},'One JSON. Two surfaces.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'62px',transform:'translateX(-50%)',fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'2px',opacity:surfP}},'TWO WAYS, ONE SERVER'),
+    R('div',{style:{position:'absolute',left:'50%',top:'94px',transform:'translateX(-50%)',fontSize:'36px',fontWeight:800,color:'#111928',letterSpacing:'-0.4px',opacity:surfP}},'The same MCP. Local or online.'),
 
-    // ─── Top JSON card ──────────────────────────────────────────────
-    cardP>0.005?R('div',{style:{position:'absolute',left:topCardX+'px',top:(topCardY+cardLift)+'px',width:topCardW+'px',minHeight:topCardH+'px',transform:'scale('+cardScale+')',transformOrigin:'top center',background:'#FFFFFF',borderRadius:'14px',border:'1.5px solid #E5E7EB',boxShadow:'0 12px 30px rgba(17,25,40,0.08), 0 0 '+(20+18*cardGlow)+'px rgba(0,132,255,0.18)',opacity:cardP,overflow:'hidden'}},
-      // Header row
-      R('div',{style:{padding:'12px 20px',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',background:'linear-gradient(90deg,rgba(0,132,255,0.05),rgba(26,86,219,0.04))'}},
-        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
-          R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'11px',fontWeight:800}},'{}'),
-          R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'MCP Client Configuration'),
-          R('div',{style:{padding:'2px 8px',background:'#EFF6FF',color:'#0052CC',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'JSON')
-        ),
-        R('div',{style:{fontSize:'11px',color:'#6B7280',fontFamily:'JetBrains Mono,monospace'}},'mcp.flowhunt.io')
-      ),
-      // JSON body — compact, single key Jira
-      R('div',{style:{padding:'14px 22px',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.45,color:'#1F2937',background:'#F9FAFB'}},
-        R('div',null, span('{','#6B7280')),
-        R('div',{style:{paddingLeft:'14px'}},
-          span('"Jira"','#0084FF'), span(': {','#6B7280')
-        ),
-        R('div',{style:{paddingLeft:'28px'}},
-          span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
-        ),
-        R('div',{style:{paddingLeft:'28px'}},
-          span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
-        ),
-        R('div',{style:{paddingLeft:'28px'}},
-          span('"headers"','#0084FF'), span(': {','#6B7280')
-        ),
-        R('div',{style:{paddingLeft:'42px'}},
-          span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
-        ),
-        R('div',{style:{paddingLeft:'28px'}}, span('}','#6B7280')),
-        R('div',{style:{paddingLeft:'14px'}}, span('}','#6B7280')),
-        R('div',null, span('}','#6B7280'))
-      )
-    ):null,
-
-    // ─── Branch lines (Phase B) ─────────────────────────────────────
-    splitP>0.005?R('svg',{style:{position:'absolute',left:0,top:0,pointerEvents:'none'},width:1920,height:1080},
-      R('defs',null,
-        R('marker',{id:'fhBridgeArrow',viewBox:'0 0 10 10',refX:8,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'},
-          R('path',{d:'M0,0 L10,5 L0,10 z',fill:'#0084FF'})
-        )
-      ),
-      // Left branch: from bottom-left of card down to terminal top.
-      R('line',{x1:branchALx,y1:branchAY,x2:termTopX,y2:surfTopY,stroke:'#0084FF',strokeWidth:2.5,strokeLinecap:'round',strokeDasharray:branchLen,strokeDashoffset:branchDraw,markerEnd:'url(#fhBridgeArrow)',opacity:splitP}),
-      // Right branch: from bottom-right of card down to FlowHunt dialog top.
-      R('line',{x1:branchARx,y1:branchAY,x2:fhTopX,y2:surfTopY,stroke:'#0084FF',strokeWidth:2.5,strokeLinecap:'round',strokeDasharray:branchLen,strokeDashoffset:branchDraw,markerEnd:'url(#fhBridgeArrow)',opacity:splitP})
-    ):null,
+    // ─── Caption labels above each surface (from frame 0) ───────────
+    R('div',{style:{position:'absolute',left:(termX+termW/2)+'px',top:captionY+'px',transform:'translateX(-50%) translateY('+(8*(1-surfP))+'px)',opacity:surfP,padding:'7px 18px',background:'linear-gradient(90deg,rgba(15,23,42,0.94),rgba(30,41,59,0.94))',color:'#F8FAFC',borderRadius:'999px',fontSize:'14px',fontWeight:700,whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(17,25,40,0.18)',display:'flex',alignItems:'center',gap:'10px',zIndex:10}},
+      R('span',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E',display:'inline-block'}}),
+      R('span',null,'Local: Claude Code')
+    ),
+    R('div',{style:{position:'absolute',left:(fhX+fhW/2)+'px',top:captionY+'px',transform:'translateX(-50%) translateY('+(8*(1-surfP))+'px)',opacity:surfP,padding:'7px 18px',background:'linear-gradient(90deg,#0084FF,#1A56DB)',color:'#FFFFFF',borderRadius:'999px',fontSize:'14px',fontWeight:700,whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(0,82,204,0.28)',display:'flex',alignItems:'center',gap:'10px',zIndex:10}},
+      R('span',{style:{width:8,height:8,borderRadius:'50%',background:'#FFFFFF',display:'inline-block'}}),
+      R('span',null,'Online: FlowHunt agent')
+    ),
 
     // ─── LEFT — Claude Code terminal ────────────────────────────────
     surfP>0.005?R('div',{style:{position:'absolute',left:termX+'px',top:(termY+surfRise)+'px',width:termW+'px',height:termH+'px',background:'#0F172A',borderRadius:'12px',overflow:'hidden',boxShadow:'0 22px 50px rgba(17,25,40,0.22)',opacity:surfP}},
-      // Title bar
-      R('div',{style:{height:'46px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px'}},
+      R('div',{style:{height:'48px',background:'#1E293B',display:'flex',alignItems:'center',padding:'0 14px',gap:'10px'}},
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FF5F57'}}),
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#FEBC2E'}}),
         R('div',{style:{width:12,height:12,borderRadius:'50%',background:'#28C840'}}),
-        // Claude Code badge
         R('div',{style:{marginLeft:'18px',display:'flex',alignItems:'center',gap:'10px',padding:'4px 11px',background:'rgba(217,119,87,0.14)',border:'1px solid rgba(217,119,87,0.40)',borderRadius:'8px'}},
           R('img',{src:'${CLAUDE_ICON}',style:{width:22,height:22,display:'block',borderRadius:'5px',boxShadow:'0 2px 5px rgba(217,119,87,0.35)'}}),
           R('div',{style:{fontSize:'13px',color:'#F8FAFC',fontWeight:700,letterSpacing:'-0.2px'}},'Claude Code')
         ),
         R('div',{style:{marginLeft:'10px',fontSize:'11px',color:'#64748B',fontFamily:'JetBrains Mono,monospace'}},'·  jira MCP')
       ),
-      // Body
-      R('div',{style:{padding:'22px 26px',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#E2E8F0'}},
-        // prompt line — typewriter
+      R('div',{style:{padding:'28px 30px',fontFamily:'JetBrains Mono,monospace',fontSize:'14px',lineHeight:1.6,color:'#E2E8F0'}},
         R('div',{style:{wordBreak:'break-all'}},
           span('$ ', '#22C55E'),
           R('span',null, addTyped),
-          addCaret?R('span',{style:{display:'inline-block',width:7,height:15,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
+          addCaret?R('span',{style:{display:'inline-block',width:8,height:16,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
         ),
-        // Added line
-        addedP>0.01?R('div',{style:{marginTop:14,opacity:addedP,color:'#22C55E',wordBreak:'break-all'}},
+        addedP>0.01?R('div',{style:{marginTop:18,opacity:addedP,color:'#22C55E',wordBreak:'break-all'}},
           '✓ Added HTTP MCP server jira with URL: ',
           R('span',{style:{color:'#7DD3FC',textDecoration:'underline'}},'https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b')
         ):null,
-        // Allowed line
         allowedP>0.01?R('div',{style:{marginTop:8,opacity:allowedP,color:'#94A3B8'}},
           'Allowed by auto agreed classifier'
         ):null,
-        // list command
-        listCmdP>0.01?R('div',{style:{marginTop:22,opacity:listCmdP}},
+        listCmdP>0.01?R('div',{style:{marginTop:24,opacity:listCmdP}},
           span('$ ', '#22C55E'),
           R('span',null,'claude mcp list | head -5')
         ):null,
-        // list result row
-        listResP>0.01?R('div',{style:{marginTop:10,opacity:listResP,display:'flex',alignItems:'center',gap:'14px'}},
+        listResP>0.01?R('div',{style:{marginTop:12,opacity:listResP,display:'flex',alignItems:'center',gap:'16px'}},
           R('span',{style:{color:'#FBBF24',fontWeight:700}},'jira'),
           R('span',{style:{color:'#22C55E',fontWeight:700}},'✓ Connected'),
           R('span',{style:{color:'#E2E8F0'}},'34 tools')
@@ -1626,82 +1596,105 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       )
     ):null,
 
-    // ─── RIGHT — FlowHunt "Configure Tool: MCP Client" dialog ───────
-    surfP>0.005?R('div',{style:{position:'absolute',left:fhX+'px',top:(fhY+surfRise)+'px',width:fhW+'px',height:fhH+'px',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 22px 50px rgba(17,25,40,0.18)',border:'1px solid #E5E7EB',opacity:surfP*dialogP}},
-      // Outer modal title strip — "Configure Tool: MCP Client"
-      R('div',{style:{height:'46px',background:'#F9FAFB',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px'}},
-        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
-          R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'11px',fontWeight:800}},'★'),
-          R('div',{style:{fontSize:'14px',fontWeight:700,color:'#111928'}},'Configure Tool: MCP Client')
-        ),
-        R('div',{style:{fontSize:'18px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
+    // ─── RIGHT — FlowHunt Chrome browser window ─────────────────────
+    surfP>0.005?R('div',{style:{position:'absolute',left:fhX+'px',top:(fhY+surfRise)+'px',width:fhW+'px',height:fhH+'px',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 24px 56px rgba(17,25,40,0.22)',border:'1px solid #D1D5DB',opacity:surfP*browserP}},
+      // Chrome chrome bar — tabs row
+      R('div',{style:{height:'40px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
+        R('div',{style:{position:'absolute',left:14,top:13,width:11,height:11,borderRadius:'50%',background:'#FF5F57'}}),
+        R('div',{style:{position:'absolute',left:32,top:13,width:11,height:11,borderRadius:'50%',background:'#FEBC2E'}}),
+        R('div',{style:{position:'absolute',left:50,top:13,width:11,height:11,borderRadius:'50%',background:'#28C840'}}),
+        R('div',{style:{marginLeft:'82px',height:'30px',padding:'0 16px',background:'#F4F5F7',borderTopLeftRadius:'8px',borderTopRightRadius:'8px',display:'flex',alignItems:'center',gap:'9px',fontSize:'12px',color:'#172B4D',fontWeight:600}},
+          R('div',{style:{width:14,height:14,borderRadius:'3px',background:'linear-gradient(135deg,#0084FF,#1A56DB)'}}),
+          R('span',null,'Jira agent · FlowHunt')
+        )
       ),
-      // Inner modal body
-      R('div',{style:{padding:'20px 24px',display:'flex',flexDirection:'column',gap:'14px',height:'calc(100% - 46px)'}},
-        // Header row: External MCP Servers + Advanced Mode toggle
-        R('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
-          R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'External MCP Servers'),
-          R('div',{style:{display:'flex',alignItems:'center',gap:'10px',opacity:advTogP}},
-            R('span',{style:{fontSize:'12px',fontWeight:600,color:'#4B5563'}},'Advanced Mode'),
-            // Toggle — on, blue
-            R('div',{style:{width:36,height:20,borderRadius:'10px',background:'#0084FF',padding:'2px',display:'flex',justifyContent:'flex-end',alignItems:'center',boxShadow:'inset 0 1px 2px rgba(0,0,0,0.08)'}},
-              R('div',{style:{width:16,height:16,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 3px rgba(0,0,0,0.18)'}})
+      // URL bar
+      R('div',{style:{height:'42px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 14px',gap:'12px'}},
+        R('div',{style:{display:'flex',gap:'12px',color:'#9AA0A6',fontSize:'15px'}},
+          R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
+        ),
+        R('div',{style:{flex:1,padding:'7px 14px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'18px',fontSize:'13px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
+          R('div',{style:{width:7,height:7,borderRadius:'50%',background:'#22C55E'}}),
+          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+          R('span',{style:{color:'#6B7280'}},'/agents/jira/edit')
+        )
+      ),
+
+      // Page body — agent editor backdrop (dotted grid) with the Configure Tool modal floating over it.
+      R('div',{style:{position:'relative',height:'calc(100% - 82px)',background:'#F9FAFB',backgroundImage:'radial-gradient(circle, #D1D5DB 1px, transparent 1px)',backgroundSize:'18px 18px',overflow:'hidden'}},
+
+        // Faded agent-canvas hint behind the modal (a single dashed node)
+        R('div',{style:{position:'absolute',top:'24px',left:'50%',transform:'translateX(-50%)',width:'240px',padding:'12px 16px',background:'rgba(255,255,255,0.92)',border:'1.5px dashed #E11D74',borderRadius:'12px',display:'flex',alignItems:'center',gap:'10px',opacity:0.55}},
+          R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'12px',fontWeight:800}},'★'),
+          R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'AI Agent'),
+          R('div',{style:{marginLeft:'auto',display:'flex',gap:'4px'}},
+            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}}),
+            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}}),
+            R('div',{style:{width:13,height:13,borderRadius:'50%',background:'#0052CC'}})
+          )
+        ),
+
+        // Configure Tool: MCP Client modal floating in the page
+        R('div',{style:{position:'absolute',left:'4%',right:'4%',top:'90px',bottom:'30px',background:'#FFFFFF',borderRadius:'14px',boxShadow:'0 24px 56px rgba(17,25,40,0.22)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:dialogP}},
+          // Outer modal title strip
+          R('div',{style:{height:'44px',background:'#F9FAFB',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 18px'}},
+            R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+              R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'11px',fontWeight:800}},'★'),
+              R('div',{style:{fontSize:'14px',fontWeight:700,color:'#111928'}},'Configure Tool: MCP Client')
+            ),
+            R('div',{style:{fontSize:'18px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
+          ),
+          // Body
+          R('div',{style:{padding:'22px 26px',display:'flex',flexDirection:'column',gap:'14px',flex:1,minHeight:0}},
+            R('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+              R('div',{style:{fontSize:'19px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'External MCP Servers'),
+              R('div',{style:{display:'flex',alignItems:'center',gap:'10px',opacity:advTogP}},
+                R('span',{style:{fontSize:'12px',fontWeight:600,color:'#4B5563'}},'Advanced Mode'),
+                R('div',{style:{width:36,height:20,borderRadius:'10px',background:'#0084FF',padding:'2px',display:'flex',justifyContent:'flex-end',alignItems:'center'}},
+                  R('div',{style:{width:16,height:16,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 3px rgba(0,0,0,0.18)'}})
+                )
+              )
+            ),
+            R('div',{style:{fontSize:'13px',color:'#6B7280',lineHeight:1.45}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
+            // MCP Configuration code card
+            R('div',{style:{flex:1,minHeight:0,border:'1.5px solid #E5E7EB',borderRadius:'10px',background:'#FFFFFF',display:'flex',flexDirection:'column',overflow:'hidden',opacity:configP}},
+              R('div',{style:{padding:'9px 14px',borderBottom:'1px solid #E5E7EB',background:'#F9FAFB',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+                R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
+                  R('div',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981'}}),
+                  R('div',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'MCP Configuration')
+                ),
+                R('div',{style:{fontSize:'10px',color:'#6B7280',fontFamily:'JetBrains Mono,monospace'}},'JSON')
+              ),
+              R('div',{style:{flex:1,padding:'14px 18px',background:'#F9FAFB',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#1F2937',overflow:'hidden'}},
+                R('div',null, span('{','#6B7280')),
+                R('div',{style:{paddingLeft:'14px'}},
+                  span('"Jira"','#0084FF'), span(': {','#6B7280')
+                ),
+                R('div',{style:{paddingLeft:'28px'}},
+                  span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
+                ),
+                R('div',{style:{paddingLeft:'28px',wordBreak:'break-all'}},
+                  span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
+                ),
+                R('div',{style:{paddingLeft:'28px'}},
+                  span('"headers"','#0084FF'), span(': {','#6B7280')
+                ),
+                R('div',{style:{paddingLeft:'42px'}},
+                  span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
+                ),
+                R('div',{style:{paddingLeft:'28px'}}, span('}','#6B7280')),
+                R('div',{style:{paddingLeft:'14px'}}, span('}','#6B7280')),
+                R('div',null, span('}','#6B7280'))
+              )
+            ),
+            // Buttons row
+            R('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'12px',opacity:btnsP}},
+              R('div',{style:{padding:'10px 22px',fontSize:'14px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px'}},'Cancel'),
+              R('div',{style:{padding:'10px 30px',fontSize:'14px',fontWeight:700,color:'#FFFFFF',background:'#0084FF',borderRadius:'8px',boxShadow:'0 0 0 '+(2+10*savePulse*pulseGate)+'px rgba(0,132,255,0.22)'}},'Save')
             )
           )
-        ),
-        // Subtitle
-        R('div',{style:{fontSize:'12px',color:'#6B7280',lineHeight:1.45}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
-
-        // MCP Configuration textarea card
-        R('div',{style:{flex:1,minHeight:0,border:'1.5px solid #E5E7EB',borderRadius:'10px',background:'#FFFFFF',display:'flex',flexDirection:'column',overflow:'hidden',opacity:configP}},
-          // Card header
-          R('div',{style:{padding:'9px 14px',borderBottom:'1px solid #E5E7EB',background:'#F9FAFB',display:'flex',alignItems:'center',justifyContent:'space-between'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
-              R('div',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981'}}),
-              R('div',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'MCP Configuration')
-            ),
-            R('div',{style:{fontSize:'10px',color:'#6B7280',fontFamily:'JetBrains Mono,monospace'}},'JSON')
-          ),
-          // JSON body
-          R('div',{style:{flex:1,padding:'12px 16px',background:'#F9FAFB',fontFamily:'JetBrains Mono,monospace',fontSize:'12px',lineHeight:1.5,color:'#1F2937',overflow:'hidden'}},
-            R('div',null, span('{','#6B7280')),
-            R('div',{style:{paddingLeft:'12px'}},
-              span('"Jira"','#0084FF'), span(': {','#6B7280')
-            ),
-            R('div',{style:{paddingLeft:'24px'}},
-              span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
-            ),
-            R('div',{style:{paddingLeft:'24px',wordBreak:'break-all'}},
-              span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
-            ),
-            R('div',{style:{paddingLeft:'24px'}},
-              span('"headers"','#0084FF'), span(': {','#6B7280')
-            ),
-            R('div',{style:{paddingLeft:'36px'}},
-              span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
-            ),
-            R('div',{style:{paddingLeft:'24px'}}, span('}','#6B7280')),
-            R('div',{style:{paddingLeft:'12px'}}, span('}','#6B7280')),
-            R('div',null, span('}','#6B7280'))
-          )
-        ),
-
-        // Buttons row — Cancel + Save (FH-blue, breathing pulse)
-        R('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'10px',opacity:btnsP}},
-          R('div',{style:{padding:'9px 18px',fontSize:'13px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px'}},'Cancel'),
-          R('div',{style:{padding:'9px 26px',fontSize:'13px',fontWeight:700,color:'#FFFFFF',background:'#0084FF',borderRadius:'8px',boxShadow:'0 0 0 '+(2+8*savePulse*pillP)+'px rgba(0,132,255,0.22)'}},'Save')
         )
       )
-    ):null,
-
-    // ─── Caption pills under each surface (Phase D) ─────────────────
-    pillP>0.005?R('div',{style:{position:'absolute',left:(termX+termW/2)+'px',top:(termY+termH+18)+'px',transform:'translateX(-50%) translateY('+(8*(1-pillP))+'px)',opacity:pillP,padding:'8px 18px',background:'linear-gradient(90deg,rgba(15,23,42,0.94),rgba(30,41,59,0.94))',color:'#F8FAFC',borderRadius:'999px',fontSize:'14px',fontWeight:700,whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(17,25,40,0.20)',display:'flex',alignItems:'center',gap:'10px'}},
-      R('span',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E',display:'inline-block'}}),
-      R('span',null,'Local: Claude Code')
-    ):null,
-    pillP>0.005?R('div',{style:{position:'absolute',left:(fhX+fhW/2)+'px',top:(fhY+fhH+18)+'px',transform:'translateX(-50%) translateY('+(8*(1-pillP))+'px)',opacity:pillP,padding:'8px 18px',background:'linear-gradient(90deg,#0084FF,#1A56DB)',color:'#FFFFFF',borderRadius:'999px',fontSize:'14px',fontWeight:700,whiteSpace:'nowrap',boxShadow:'0 8px 22px rgba(0,82,204,0.30)',display:'flex',alignItems:'center',gap:'10px'}},
-      R('span',{style:{width:8,height:8,borderRadius:'50%',background:'#FFFFFF',display:'inline-block'}}),
-      R('span',null,'Online: FlowHunt agent')
     ):null
   );
 }`;
