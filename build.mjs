@@ -15,10 +15,10 @@ const F = {
   snapshot: { start: 90,   end: 330,   dur: 240 },  // 8s   — KAN explainer (plays 2nd)
   demo:     { start: 330,  end: 810,   dur: 480 },  // 16s  — bug-triage walkthrough
   arch:     { start: 810,  end: 970,   dur: 160 },  // ~5.3s
-  install:  { start: 970,  end: 1210,  dur: 240 },  // 8s   — expanded redesign
-  cta:      { start: 1210, end: 1450,  dur: 240 },  // 8s
+  install:  { start: 970,  end: 1240,  dur: 270 },  // 9s   — expanded redesign + slow Accept pulse tail
+  cta:      { start: 1240, end: 1480,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 1450;
+const TOTAL_FRAMES = 1480;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -128,8 +128,8 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('span',{style:{color:'#94A3B8'}},')')
         ):null,
         t3Fields>0.01?R('div',{style:{opacity:t3Fields,color:'#94A3B8',marginLeft:'24px'}},
-          R('div',null,'title: ',R('span',{style:{color:'#FBBF24'}},'"A bug needs an owner"')),
-          R('div',null,'reminds the team to fix: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
+          R('div',null,'title: ',R('span',{style:{color:'#FBBF24'}},'"Fix login form email validation"')),
+          R('div',null,'fixes: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
         ):null,
         t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ New ticket created · ',R('span',{style:{fontWeight:700}},'KAN-4')):null,
         t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'flowhunt.atlassian.net/browse/KAN-4'):null
@@ -163,11 +163,11 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('div',{style:{padding:'2px 8px',background:'#E3FCEF',color:'#006644',fontSize:'11px',fontWeight:700,borderRadius:'3px'}},'TASK'),
           R('div',{style:{fontFamily:'JetBrains Mono,monospace',fontSize:'14px',color:'#0052CC',fontWeight:700}},'KAN-4')
         ),
-        R('div',{style:{marginTop:'14px',fontSize:'32px',fontWeight:800,color:'#172B4D',opacity:k4Fade}},'A bug needs an owner'),
+        R('div',{style:{marginTop:'14px',fontSize:'32px',fontWeight:800,color:'#172B4D',opacity:k4Fade}},'Fix login form email validation'),
         R('div',{style:{marginTop:'10px',display:'flex',gap:'10px'}},
           R('div',{style:{padding:'3px 10px',background:'#EAECF0',color:'#42526E',fontSize:'11px',fontWeight:700,borderRadius:'3px'}},'TO DO')
         ),
-        R('div',{style:{marginTop:'30px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'REMINDS THE TEAM TO FIX'),
+        R('div',{style:{marginTop:'30px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'FIXES'),
         R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'8px'}}),
         R('div',{style:{marginTop:'16px',padding:'12px 14px',background:'#FAFBFC',border:'1px solid #DFE1E6',borderRadius:'6px',display:'flex',alignItems:'center',gap:'12px'}},
           R('div',{style:{width:'22px',height:'22px',background:'#DE350B',borderRadius:'4px',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'12px'}},'!'),
@@ -177,7 +177,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
         ),
         R('div',{style:{marginTop:'22px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'DESCRIPTION'),
         R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'8px'}}),
-        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Someone on the team needs to claim this bug. This ticket stays open until they do, so it does not slip.')
+        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Validate emails on the front end so the login form accepts standard addresses. Stays open until the bug above is resolved.')
       ):null
     ):null,
 
@@ -195,7 +195,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
     ann2>0.005?R('div',{style:{position:'absolute',left:'490px',top:'825px',transform:'translateX(-50%) translateY('+(8*(1-ann2))+'px)',opacity:ann2,background:'#111928',color:'#FFFFFF',padding:'12px 22px',borderRadius:'10px',fontSize:'17px',fontWeight:600,whiteSpace:'nowrap',boxShadow:'0 12px 28px rgba(0,0,0,0.40)',zIndex:10,display:'flex',alignItems:'center',gap:'12px'}},
       R('span',{style:{color:'#FBBF24',fontFamily:'JetBrains Mono,monospace',fontWeight:800}},'KAN-4'),
       R('span',{style:{color:'#94A3B8'}},'—'),
-      R('span',null,'Claude\\'s new reminder ticket')
+      R('span',null,'Claude\\'s new fix task')
     ):null
   );
 }`;
@@ -271,19 +271,22 @@ const ArchScene = `function ArchScene(props){${HELPERS}
  * SCENE 4 — Install (180f, 6s) — one-liner command + OAuth flash
  * ========================================================================== */
 /* ============================================================================
- * SCENE 4 — Install (240f, 8s)
+ * SCENE 4 — Install (270f, 9s)
  *   Phase A (0–130): a tall terminal centred on screen, takes most of the
  *     vertical space. Command types in, result lands.
  *   Phase B (130–170): terminal scales down + fades out; a Chrome browser
  *     window slides up from the bottom, like a new tab popping open.
  *   Phase C (170–230): Chrome window full-size, Atlassian-branded OAuth
- *     consent screen. Big "Claude Code is requesting access" header,
- *     permission rows with descriptions, Accept button pulses.
- *   Phase D (230–240): scene-out fade.
+ *     consent screen reveals (header, rows, buttons). Accept button has
+ *     a quick pulse so the viewer notices it.
+ *   Phase D (230–250): hold — everything stays on screen and the Accept
+ *     ring breathes in a slower rhythm so the viewer can take the panel
+ *     in before we cut.
+ *   Phase E (250–270): scene-out fade.
  * ========================================================================== */
 const InstallScene = `function InstallScene(props){${HELPERS}
   var f=props.frame||0;
-  var END=240;
+  var END=270;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
   // ─── Phase A: terminal ─────────────────────────────────────────────
@@ -308,7 +311,15 @@ const InstallScene = `function InstallScene(props){${HELPERS}
   function rowIn(d){return ease(cl((f-(176+d))/18));}
   var r1=rowIn(0), r2=rowIn(14), r3=rowIn(28);
   var btnP=ease(cl((f-216)/16));
-  var acceptPulse=0.5+0.5*Math.sin((f-220)*0.22);
+  // Accept ring pulse — fast/snappy when it first appears (so the viewer
+  // notices it), then slows into a calmer breathe across the final held
+  // second. Phase is integrated so there's no jump when the rate changes.
+  var fastEnd=230;
+  var fastFreq=0.22, slowFreq=0.085;
+  var pulsePhase = f<=fastEnd
+    ? (f-220)*fastFreq
+    : (fastEnd-220)*fastFreq + (f-fastEnd)*slowFreq;
+  var acceptPulse=0.5+0.5*Math.sin(pulsePhase);
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
@@ -501,7 +512,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
         row({prog:i1In,key:'KAN-1',summary:'Spike: evaluate options'}),
         row({prog:i2In,key:'KAN-2',summary:'Refactor auth flow'}),
         row({prog:i3In,key:'KAN-3',summary:'Login form rejects valid emails',tag:'Claude found',tagColor:'#10B981'}),
-        row({prog:i4In,key:'KAN-4',summary:'A bug needs an owner',tag:'Claude made',tagColor:'#0084FF'})
+        row({prog:i4In,key:'KAN-4',summary:'Fix login form email validation',tag:'Claude made',tagColor:'#0084FF'})
       )
     ),
 
@@ -525,7 +536,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
           R('span',{style:{color:'#10B981',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-3'),
           ' is an existing bug. ',
           R('span',{style:{color:'#0084FF',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN-4'),
-          ' is the reminder Claude will make.'
+          ' is the fix task Claude will file.'
         )
       )
     ),
