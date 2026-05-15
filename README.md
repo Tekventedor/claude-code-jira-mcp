@@ -2,20 +2,23 @@
 
 Motion-graphics promo for the FlowHunt blog **"How to Use Claude Code with the Jira MCP"**.
 
-~60.3 seconds at 30 fps. 8 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
+~69.3 seconds at 30 fps. 9 scenes. Built with [rendervid](https://github.com/qualityunit/rendervid).
 
 ## Scenes (playback order)
 
 | # | id | name | range | dur |
 |---|---|---|---|---|
-| 1 | s1-pivot     | Pivot                       | 0–90       | 3 s    |
-| 2 | s2-explainer | Project codes               | 90–330     | 8 s    |
-| 3 | s3-demo      | Demo (bug triage, 2x)       | 330–570    | 8 s    |
-| 4 | s4-arch      | Architecture                | 570–730    | ~5.3 s |
-| 5 | s5-install   | Claude Code install + OAuth | 730–1015   | 9.5 s  |
-| 6 | s6-fh-setup  | FlowHunt setup              | 1015–1300  | 9.5 s  |
-| 7 | s7-fh-usage  | FlowHunt agent in action    | 1300–1570  | 9 s    |
-| 8 | s8-cta       | CTA                         | 1570–1810  | 8 s    |
+| 1 | s1-pivot      | Pivot                                | 0–90       | 3 s    |
+| 2 | s2-explainer  | Project codes                        | 90–330     | 8 s    |
+| 3 | s3-demo       | Demo (bug triage, 2x)                | 330–570    | 8 s    |
+| 4 | s4-arch       | Architecture                         | 570–730    | ~5.3 s |
+| 5 | s5-fh-oauth   | FlowHunt + Atlassian OAuth           | 730–1015   | 9.5 s  |
+| 6 | s6-fh-mcp     | MCP Server config + Connect JSON     | 1015–1300  | 9.5 s  |
+| 7 | s7-fh-bridge  | One JSON, two surfaces (local + online) | 1300–1570 | 9 s   |
+| 8 | s8-fh-usage   | FlowHunt agent in action             | 1570–1840  | 9 s    |
+| 9 | s9-cta        | CTA                                  | 1840–2080  | 8 s    |
+
+See `ALTERNATIVES.md` for the other scene-structure options (compress / expanded). The current structure is "Option 1" from that file.
 
 ## Brand assets
 

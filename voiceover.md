@@ -1,6 +1,6 @@
 # Voice-over script — claude-code-jira-mcp
 
-**Total runtime**: ~60.3 s. Target ~165 WPM informational. Read like a presenter explaining a product, not a punchy ad. Full sentences, complete thoughts. The visuals are deliberately sparse so the narration carries the substance.
+**Total runtime**: ~69.3 s. Target ~165 WPM informational. Read like a presenter explaining a product, not a punchy ad. Full sentences, complete thoughts. The visuals are deliberately sparse so the narration carries the substance.
 
 Each scene block lists: frame range · scene id · timing budget · approximate word count · narration. Pauses are implicit at every period; commas are a half-beat. Speak `KAN-3` as "Kan three" (not "Kan dash three"). Speak the URL as "flowhunt dot io slash blog".
 
@@ -30,25 +30,31 @@ The scene runs at 2x so each step is brief — keep the read tight and conversat
 
 Tight read — the scene runs at 1.5x. Match the cadence of the node fade-ins; don't pause between beats.
 
-## Scene 5 — Claude Code install · frames 730–1015 · 9.5 s · ~32 words
+## Scene 5 — FlowHunt + Atlassian OAuth · frames 730–1015 · 9.5 s · ~34 words
 
-> Setup in Claude Code is a single terminal command. After you paste it, Claude opens an Atlassian sign-in page in your browser, where you approve three scopes - read, search, and write - and the connection goes live.
+> Setup begins in FlowHunt. Open the Integrations page, click Atlassian, and Atlassian's own consent screen appears asking whether you'll let FlowHunt manage your Jira and Confluence on your behalf.
 
-Pace the read with the visual choreography: command types in, terminal recedes, the browser window rises with the consent screen. Land "the connection goes live" right before the Accept button settles into its slow breathing pulse.
+Land "manage your Jira and Confluence on your behalf" as the Accept button on the consent screen settles into its slow pulse.
 
-## Scene 6 — FlowHunt setup · frames 1015–1300 · 9.5 s · ~34 words
+## Scene 6 — MCP Server config and Connect JSON · frames 1015–1300 · 9.5 s · ~38 words
 
-> The same connection is available in FlowHunt. Open the Integrations page, enable the Atlassian app, and your agent can use any of the six Jira tools, ready to publish and run.
+> Inside FlowHunt, the Atlassian integration exposes a Jira MCP Server with thirty-four tools, from creating issues to running JQL searches. Name it, save it, and FlowHunt hands back a ready-to-use MCP client configuration.
 
-Mirror the cadence of Scene 5. Land "ready to publish and run" as the Publish Agent button starts its slow pulse.
+Pace the read so "thirty-four tools" lands as the capabilities list scrolls past. "Ready-to-use MCP client configuration" lands as the JSON card appears.
 
-## Scene 7 — FlowHunt agent in action · frames 1300–1570 · 9.0 s · ~30 words
+## Scene 7 — One JSON, two surfaces · frames 1300–1570 · 9.0 s · ~34 words
 
-> Once published, the agent answers in plain English. Ask what it can do and it lists every Jira capability it has: create issues, search with JQL, update fields, transition status, and add comments.
+> The same configuration works two ways. Drop it into Claude Code with a single command, or paste it into a FlowHunt agent's MCP Client field. Both surfaces talk to the same server.
 
-Pace this with the scroll: the bullet list slides up across the middle of the scene. Hit "add comments" near the bottom of the scroll.
+Land "both surfaces talk to the same server" as the two caption pills "Local: Claude Code" and "Online: FlowHunt agent" fade in side by side.
 
-## Scene 8 — CTA · frames 1570–1810 · 8.0 s · ~26 words
+## Scene 8 — Agent in action · frames 1570–1840 · 9.0 s · ~38 words
+
+> Once connected, the agent reads your real workspace. Here it pulls seventeen open tickets across two projects, then explains the rest of what it can do: create, search, update, transition, and comment on Jira issues.
+
+Pace this with the scroll: the ticket list lands at the top, then the capability list scrolls into view below it.
+
+## Scene 9 — CTA · frames 1840–2080 · 8.0 s · ~26 words
 
 > The complete step-by-step setup guide is on the FlowHunt blog. It walks through the install command, the OAuth consent screen, and worked examples for both Jira and Confluence.
 
