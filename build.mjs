@@ -1795,13 +1795,14 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   // Layout — terminal is ~1/3 of the width, FlowHunt browser is ~2/3
   // so the agent editor inside the Chrome reads at proper proportions
   // (chat output, AI agent panel, etc. all visible at sensible sizes).
-  // Both surfaces start at the SAME y so the captions and surface
-  // borders align. Heights are sized so the bottoms clear the
-  // FlowHunt watermark at y≈994 (gap of ~50px).
-  var captionY=160;
-  var surfTopY=200;
-  var termX=40,  termY=surfTopY, termW=600,  termH=740;
-  var fhX=660,   fhY=surfTopY,   fhW=1220,   fhH=740;
+  // Both surfaces start at the SAME y so captions + surface borders
+  // align. Pushed further down so they sit closer to the FlowHunt
+  // wordmark at y≈994 and further from the Local/Online caption
+  // pills above. Bottoms land at y=940, ~54px clear of watermark.
+  var captionY=200;
+  var surfTopY=240;
+  var termX=40,  termY=surfTopY, termW=600,  termH=700;
+  var fhX=660,   fhY=surfTopY,   fhW=1220,   fhH=700;
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
@@ -1810,6 +1811,57 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   function atlassianMark(size){
     var s=size||16;
     return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block',borderRadius:'3px'}});
+  }
+
+  // ─── FlowHunt node-type icon set (matches the real agent editor) ──
+  // Chat Input  — green tile, white chat bubble + 3 typing dots
+  function chatInputIcon(size){
+    var s=size||28;
+    var sw=Math.round(s*0.62);
+    return R('div',{style:{width:s,height:s,borderRadius:'7px',background:'linear-gradient(135deg,#10B981,#047857)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 4px rgba(16,185,129,0.30)'}},
+      R('svg',{width:sw,height:sw,viewBox:'0 0 24 24',fill:'none'},
+        R('path',{d:'M4 5 a2 2 0 0 1 2-2 h12 a2 2 0 0 1 2 2 v9 a2 2 0 0 1-2 2 H10 l-4 4 v-4 H6 a2 2 0 0 1-2-2 z',fill:'#FFFFFF'}),
+        R('circle',{cx:9,cy:10,r:1.3,fill:'#047857'}),
+        R('circle',{cx:13,cy:10,r:1.3,fill:'#047857'}),
+        R('circle',{cx:17,cy:10,r:1.3,fill:'#047857'})
+      )
+    );
+  }
+  // Chat Output — red tile, white chat bubble + reply-arrow
+  function chatOutputIcon(size){
+    var s=size||28;
+    var sw=Math.round(s*0.62);
+    return R('div',{style:{width:s,height:s,borderRadius:'7px',background:'linear-gradient(135deg,#EF4444,#DC2626)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 4px rgba(239,68,68,0.30)'}},
+      R('svg',{width:sw,height:sw,viewBox:'0 0 24 24',fill:'none'},
+        R('path',{d:'M4 5 a2 2 0 0 1 2-2 h12 a2 2 0 0 1 2 2 v9 a2 2 0 0 1-2 2 H10 l-4 4 v-4 H6 a2 2 0 0 1-2-2 z',fill:'#FFFFFF'}),
+        R('path',{d:'M8 10 L15 10 M13 8 L15 10 L13 12',stroke:'#DC2626',strokeWidth:1.8,fill:'none',strokeLinecap:'round',strokeLinejoin:'round'})
+      )
+    );
+  }
+  // AI Agent — magenta tile, white robot head w/ antenna + eye holes
+  function aiAgentIcon(size){
+    var s=size||30;
+    var sw=Math.round(s*0.74);
+    return R('div',{style:{width:s,height:s,borderRadius:'7px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 6px rgba(225,29,116,0.35)'}},
+      R('svg',{width:sw,height:sw,viewBox:'0 0 24 24',fill:'none'},
+        R('rect',{x:11.2,y:2.5,width:1.6,height:3,fill:'#FFFFFF'}),
+        R('circle',{cx:12,cy:2.5,r:1.2,fill:'#FFFFFF'}),
+        R('rect',{x:5,y:6.5,width:14,height:13,rx:2.5,fill:'#FFFFFF'}),
+        R('circle',{cx:9,cy:12.5,r:1.5,fill:'#B91C5C'}),
+        R('circle',{cx:15,cy:12.5,r:1.5,fill:'#B91C5C'}),
+        R('rect',{x:9,y:16,width:6,height:1.4,rx:0.7,fill:'#B91C5C'})
+      )
+    );
+  }
+  // MCP Client paperclip — light pink tile, magenta paperclip
+  function mcpClientIcon(size){
+    var s=size||28;
+    var sw=Math.round(s*0.6);
+    return R('div',{style:{width:s,height:s,borderRadius:'6px',background:'#FCE7F3',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,border:'1px solid #F9C4DC'}},
+      R('svg',{width:sw,height:sw,viewBox:'0 0 24 24',fill:'none',stroke:'#E11D74',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},
+        R('path',{d:'M16 6 L8.5 13.5 a3 3 0 0 0 4.2 4.2 L20 10.5 a5 5 0 0 0 -7 -7 L5 11.5 a7 7 0 0 0 10 10'})
+      )
+    );
   }
 
   return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op,overflow:'hidden'}},
@@ -1949,14 +2001,14 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           //   AI Agent    top:212 (height ~56, bottom ~268)
           //   Chat Output top:392 (height ~48, bottom ~440)
 
-          // Dashed connector — Chat Input → AI Agent
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'128px',width:'2px',height:'84px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
-          // Dashed connector — AI Agent → Chat Output
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'268px',width:'2px',height:'124px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+          // Dashed connector — Chat Input → AI Agent (extended so AI Agent is centred)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'128px',width:'2px',height:'104px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+          // Dashed connector — AI Agent → Chat Output (matching height the other side)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'288px',width:'2px',height:'104px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
 
-          // Node 1: Chat Input (green)
+          // Node 1: Chat Input (green, real chat-bubble icon)
           canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'80px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
-            R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#10B981,#047857)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'›'),
+            chatInputIcon(28),
             R('div',{style:{flex:1,minWidth:0}},
               R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Input'),
               R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Entry point')
@@ -1964,10 +2016,10 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
             R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FFFFFF',border:'2px solid #9CA3AF'}})
           ):null,
 
-          // Node 2: AI Agent (magenta — highlighted, dashed border)
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'212px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'260px',padding:'12px 14px 10px 14px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'12px',boxShadow:'0 6px 18px rgba(225,29,116,0.18)',opacity:canvasP,zIndex:2}},
+          // Node 2: AI Agent — centred between Chat Input and Chat Output
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'232px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'260px',padding:'12px 14px 10px 14px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'12px',boxShadow:'0 6px 18px rgba(225,29,116,0.18)',opacity:canvasP,zIndex:2}},
             R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
-              R('div',{style:{width:30,height:30,borderRadius:'7px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800,flexShrink:0}},'★'),
+              aiAgentIcon(30),
               R('div',{style:{flex:1,minWidth:0}},
                 R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'AI Agent'),
                 R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Reasoning + tools')
@@ -1976,9 +2028,9 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
             )
           ):null,
 
-          // Node 3: Chat Output (red/orange)
+          // Node 3: Chat Output (red, real chat-bubble + reply-arrow icon)
           canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'392px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
-            R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#EF4444,#DC2626)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'‹'),
+            chatOutputIcon(28),
             R('div',{style:{flex:1,minWidth:0}},
               R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Output'),
               R('div',{style:{marginTop:'2px',fontSize:'10px',color:'#6B7280'}},'Reply to user')
@@ -2095,7 +2147,15 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
 
           // Magenta header strip
           R('div',{style:{padding:'12px 16px',background:'linear-gradient(90deg,#B91C5C,#E11D74)',color:'#FFFFFF',display:'flex',alignItems:'center',gap:'10px'}},
-            R('div',{style:{width:24,height:24,borderRadius:'5px',background:'rgba(255,255,255,0.18)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:800}},'★'),
+            R('div',{style:{width:24,height:24,borderRadius:'5px',background:'rgba(255,255,255,0.20)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+              R('svg',{width:14,height:14,viewBox:'0 0 24 24',fill:'none'},
+                R('rect',{x:11.2,y:2.5,width:1.6,height:3,fill:'#FFFFFF'}),
+                R('circle',{cx:12,cy:2.5,r:1.2,fill:'#FFFFFF'}),
+                R('rect',{x:5,y:6.5,width:14,height:13,rx:2.5,fill:'#FFFFFF'}),
+                R('circle',{cx:9,cy:12.5,r:1.5,fill:'#B91C5C'}),
+                R('circle',{cx:15,cy:12.5,r:1.5,fill:'#B91C5C'})
+              )
+            ),
             R('div',{style:{flex:1,minWidth:0}},
               R('div',{style:{fontSize:'13px',fontWeight:800,letterSpacing:'-0.1px'}},'AI Agent'),
               R('div',{style:{marginTop:'2px',fontSize:'9px',opacity:0.85,lineHeight:1.35}},'An AI agent that can call tools to accomplish tasks.')
@@ -2131,7 +2191,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
               R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'TOOLS'),
               // MCP Client tool row (highlighted magenta)
               R('div',{style:{padding:'8px 10px',background:'#FDF2F8',border:'1.5px solid #E11D74',borderRadius:'7px',display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 2px 6px rgba(225,29,116,0.12)',opacity:toolRowP,transform:'translateY('+(6*(1-toolRowP))+'px)'}},
-                R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'10px',fontWeight:800,flexShrink:0}},'★'),
+                mcpClientIcon(22),
                 R('div',{style:{flex:1,minWidth:0}},
                   R('div',{style:{fontSize:'10px',fontWeight:800,color:'#111928'}},'MCP Client'),
                   R('div',{style:{fontSize:'8px',color:'#6B7280',marginTop:'1px'}},'1 locked param')
