@@ -1269,65 +1269,62 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
 //
 // Output is a single template-literal const so build.mjs can inline it.
 
+// FlowHuntMcpServerScene v2 — SCENE 6 replacement (285f, 9.5s).
+//
+// Everything lives inside ONE Chrome browser window (1700x860 centred).
+// The FlowHunt app sidebar is visible throughout. The main pane swaps
+// between the Configure tab (Phase A — capabilities list as cards
+// scrolling through ~12 Jira tools) and the Connect tab (Phase C —
+// Client dropdown, blurb, dark JSON config card with Copy click + Copied
+// tooltip, yellow Caution callout, Create preconfigured agent card with
+// pulsing + Create AI Agent button).
+//
+// Phase plan (frame-local):
+//   0–155   A: Configure tab active, capability cards scroll
+//   155–175 B: tab transition (Configure underline → Connect underline)
+//   175–260 C: Connect tab active, JSON copy + caution + agent card
+//   260–285 D: scene-out fade
+//
+// HELPERS / ATLASSIAN_MARK / FH_MARK_PATH are interpolated at compose time
+// by build.mjs. No other files modified.
+
 const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS}
   var f=props.frame||0;
   var END=285;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
-  // ─── Phase A: MCP Servers config modal ──────────────────────────────
-  var panelIn=ease(cl(f/22));
+  // ─── Browser shell entrance ────────────────────────────────────────
+  var chromeP=ease(cl(f/22));
 
-  // Left search input typewrites "atlassi" over the first ~35 frames.
-  var searchTerm='atlassi';
-  var searchStart=6, searchDur=28;
-  var searchTyped=searchTerm.slice(0, Math.floor(cl((f-searchStart)/searchDur)*searchTerm.length));
-  var searchCaret=f>=searchStart && (Math.floor((f-searchStart)/8))%2===0 && f<searchStart+searchDur+30;
+  // ─── Phase A: Configure tab — capabilities cards ───────────────────
+  var configHeadP=ease(cl((f-12)/18));
+  var configListP=ease(cl((f-22)/22));
 
-  // Connected/Available card fade-ins (left column)
-  var connHeadP=ease(cl((f-30)/18));
-  var connCardP=ease(cl((f-40)/22));
-  var availHeadP=ease(cl((f-58)/18));
-  var availCardP=ease(cl((f-66)/22));
+  // Tab transition (Phase B): the Connect tab becomes active at ~f=160.
+  // 0..1 ramp 155→175.
+  var tabSwap=ease(cl((f-155)/20));
+  // While the Configure pane fades out, the Connect pane fades in.
+  var configPaneOpacity=cl(1-tabSwap);
+  var connectPaneOpacity=ease(cl((f-170)/18));
 
-  // Right column reveal — header + first capability rows
-  var rightHeadP=ease(cl((f-30)/18));
-  var rightListP=ease(cl((f-40)/22));
-
-  // Server-name field typewrites "Jira" around f=100
-  var nameTerm='Jira';
-  var nameStart=92, nameDur=18;
-  var nameTyped=nameTerm.slice(0, Math.floor(cl((f-nameStart)/nameDur)*nameTerm.length));
-  var nameCaret=f>=nameStart && (Math.floor((f-nameStart)/7))%2===0 && f<nameStart+nameDur+20;
-
-  // Active toggle pill — fades in early and locks blue/on
-  var activeP=ease(cl((f-12)/16));
-
-  // Add MCP Server button click flash around f=105
-  var addClickFlash=Math.max(0, 1-Math.abs(f-105)/8);
-
-  // ─── Phase B: panel exit + chrome enter ────────────────────────────
-  var panelOut=easeIn(cl((f-115)/30));
-  var panelOpacity=cl(panelIn-panelOut);
-  var panelScale=1-0.06*panelOut;
-  var panelShift=-30*panelOut;
-
-  var chromeP=ease(cl((f-115)/40));
-  var chromeRise=lerp(120, 0, chromeP);
+  // The underline lerps from over-Configure to over-Connect during swap.
+  // (Tab widths: Configure ~88px, Connect ~74px; we just animate the
+  //  underline's left offset + width across the strip.)
+  var underlineLeft=lerp(0, 110, tabSwap);
+  var underlineWidth=lerp(78, 70, tabSwap);
 
   // ─── Phase C: Connect tab content reveals ──────────────────────────
-  var tabsP=ease(cl((f-155)/18));
-  var clientP=ease(cl((f-162)/20));
-  var blurbP=ease(cl((f-170)/22));
-  var codeCardP=ease(cl((f-178)/22));
-  var cautionP=ease(cl((f-200)/22));
-  var agentCardP=ease(cl((f-210)/22));
+  var clientP=ease(cl((f-178)/18));
+  var blurbP=ease(cl((f-186)/20));
+  var codeCardP=ease(cl((f-194)/22));
+  var cautionP=ease(cl((f-208)/22));
+  var agentCardP=ease(cl((f-216)/22));
 
-  // Copy click flash + "Copied" tooltip around f=200
-  var copyClickFlash=Math.max(0, 1-Math.abs(f-200)/8);
-  var copiedTipP=ease(cl((f-200)/10))*(1-easeIn(cl((f-230)/22)));
+  // Copy click flash + "Copied" tooltip around f=220
+  var copyClickFlash=Math.max(0, 1-Math.abs(f-220)/8);
+  var copiedTipP=ease(cl((f-220)/10))*(1-easeIn(cl((f-250)/22)));
 
-  // ─── + Create AI Agent pulse — same fast→slow phase-integrated pattern
-  //     as InstallScene's acceptPulse.
+  // ─── + Create AI Agent pulse — phase-integrated fast→slow ──────────
   var pulseStart=215;
   var fastEnd=230;
   var fastFreq=0.22, slowFreq=0.085;
@@ -1335,189 +1332,87 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
     ? (f-pulseStart)*fastFreq
     : (fastEnd-pulseStart)*fastFreq + (f-fastEnd)*slowFreq;
   var agentPulse=0.5+0.5*Math.sin(pulsePhase);
+  var agentGlow=agentPulse*cl((f-pulseStart)/14);
 
-  // Capability list scroll — translateY inside overflow:hidden viewport.
-  // Scroll runs slowly across most of Phase A so the viewer sees ~5 rows pass.
-  var scrollT=easeInOut(cl((f-10)/95));
+  // ─── Capability list scroll — translateY inside overflow:hidden ────
+  // Runs across most of Phase A, scrolling ~360px so several rows pass.
+  var scrollT=easeInOut(cl((f-20)/120));
   var scrollY=lerp(0, -360, scrollT);
 
-  // Atlassian mark helper (matches InstallScene/FlowHuntSetupScene)
+  // Atlassian mark helper
   function atlassianMark(size){
     var s=size||24;
     return R('img',{src:'${ATLASSIAN_MARK}',width:s,height:s,style:{display:'block'}});
   }
 
-  // ── Capability rows (right panel) — factually accurate to the screenshots
+  // FlowHunt mark — brand path + blue gradient
+  function fhMark(size){
+    var s=size||22;
+    var uid=('fhmcp'+Math.floor(s*1000));
+    return R('svg',{width:s,height:s*(223/275),viewBox:'0 0 275 223',style:{display:'block'}},
+      R('defs',null,
+        R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+          R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+      ),
+      R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
+    );
+  }
+
+  // ── Capabilities (cards in the Configure tab) — 12 Jira tools ──
   var capabilities=[
-    {name:'get_user_profile',     desc:'Get the user profile information for a specific user.'},
-    {name:'get_issue',            desc:'Get detailed information about a Jira issue.'},
-    {name:'search_issues',        desc:'Search Jira issues using JQL.'},
-    {name:'create_issue',         desc:'Create a new Jira issue with summary, description, and fields.'},
-    {name:'update_issue',         desc:'Update an existing Jira issue.'},
-    {name:'batch_create_issues',  desc:'Create multiple issues in one call for efficiency.'},
-    {name:'batch_update_issues',  desc:'Update multiple issues in a single call.'},
-    {name:'transition_issue',     desc:'Move a Jira issue to a different status.'},
+    {name:'get_user_profile',     desc:'Retrieve profile information for a specific Jira user by email, username, or account ID. Returns...'},
+    {name:'get_issue',            desc:'Get comprehensive details of a specific Jira issue including fields, comments, attachments...'},
+    {name:'search_issues',        desc:'Search for Jira issues using JQL (Jira Query Language). Returns paginated results with c...'},
+    {name:'search_fields',        desc:'Search and discover Jira field definitions using fuzzy matching. Essential for finding cust...'},
+    {name:'create_issue',         desc:'Create a new Jira issue with standard and custom fields. Returns the created issue with i...'},
+    {name:'batch_create_issues',  desc:'Create multiple Jira issues in a single API call for improved efficiency. Useful for bulk ope...'},
+    {name:'batch_update_issues',  desc:'Update multiple Jira issues in a single API call for improved efficiency. Useful for bulk fiel...'},
+    {name:'update_issue',         desc:'Update fields of an existing Jira issue. Only provided fields will be updated. Examples: - U...'},
     {name:'delete_issue',         desc:'Delete a Jira issue.'},
     {name:'get_issue_comments',   desc:'Get comments for a specific Jira issue.'},
-    {name:'add_comment',          desc:'Add a comment to a Jira issue.'},
-    {name:'get_issue_worklogs',   desc:'Get worklog for a specific Jira issue.'},
-    {name:'add_worklog',          desc:'Add a worklog entry to a Jira issue.'},
-    {name:'get_board_issues',     desc:'Get issues for a specific board using JQL.'},
-    {name:'get_sprint_issues',    desc:'Get issues in a specific sprint.'},
-    {name:'get_projects',         desc:'Get list of Jira projects.'}
+    {name:'add_comment',          desc:'Add a comment to a Jira issue with optional visibility restrictions. Examples: - Simple com...'},
+    {name:'get_issue_worklogs',   desc:'Get worklog for a specific Jira issue.'}
   ];
 
-  // Tiny blue check chip used by every capability row
-  function blueCheck(size){
-    var s=size||18;
-    return R('div',{style:{width:s,height:s,borderRadius:'4px',background:'#0084FF',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:Math.round(s*0.62)+'px',flexShrink:0}}, '✓');
+  // ── Sidebar nav row factory ──
+  function navRow(label, opts){
+    opts=opts||{};
+    var active=!!opts.active;
+    var dim=!!opts.dim;
+    return R('div',{style:{
+      display:'flex',alignItems:'center',gap:'10px',
+      padding:'7px 10px',borderRadius:'6px',
+      background:active?'#EEF1F5':'transparent',
+      fontSize:'12.5px',
+      fontWeight:active?700:600,
+      color:active?'#111928':(dim?'#9CA3AF':'#42526E')
+    }},
+      R('div',{style:{width:14,height:14,borderRadius:'3px',background:active?'#D1D5DB':'#E5E7EB',flexShrink:0}}),
+      R('span',null,label)
+    );
   }
 
   return R('div',{style:{width:'100%',height:'100%',background:'#F3F4F6',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
 
-    // ─── Header ─────────────────────────────────────────────────────
+    // ─── Eyebrow + Title (stay throughout) ──────────────────────────
     R('div',{style:{position:'absolute',left:'50%',top:'70px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'IN FLOWHUNT · MCP SERVERS'),
     R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'Wire up the Atlassian Jira MCP server.'),
 
-    // ─── Phase A: MCP Servers config modal ──────────────────────────
-    panelOpacity>0.005?R('div',{style:{position:'absolute',left:'50%',top:'190px',width:'1700px',transform:'translateX(-50%) translateY('+panelShift+'px) scale('+panelScale+')',transformOrigin:'top center',background:'#FFFFFF',borderRadius:'14px',overflow:'hidden',boxShadow:'0 28px 60px rgba(17,25,40,0.18)',opacity:panelOpacity,border:'1px solid #E5E7EB',display:'flex',flexDirection:'column',minHeight:'760px'}},
+    // ─── Chrome browser window (visible throughout) ─────────────────
+    R('div',{style:{position:'absolute',left:'50%',top:'180px',width:'1700px',height:'860px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
 
-      // Top bar — Server name field + Active toggle
-      R('div',{style:{padding:'20px 28px',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',gap:'20px'}},
-        R('div',{style:{flex:1,display:'flex',alignItems:'center',gap:'14px'}},
-          R('div',{style:{fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'0.06em'}},'SERVER NAME'),
-          R('div',{style:{flex:1,maxWidth:'380px',padding:'10px 14px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'8px',fontSize:'15px',color:'#111928',display:'flex',alignItems:'center'}},
-            R('span',null, nameTyped),
-            nameCaret?R('span',{style:{display:'inline-block',width:2,height:18,background:'#111928',marginLeft:1,verticalAlign:'middle'}}):null,
-            nameTyped.length===0?R('span',{style:{color:'#9CA3AF'}},'Untitled MCP server'):null
-          )
-        ),
-        // Active pill toggle (on, blue)
-        R('div',{style:{display:'flex',alignItems:'center',gap:'10px',opacity:activeP}},
-          R('div',{style:{fontSize:'13px',fontWeight:600,color:'#111928'}},'Active'),
-          R('div',{style:{width:42,height:24,borderRadius:'12px',background:'#0084FF',position:'relative',boxShadow:'0 1px 3px rgba(0,82,204,0.30)'}},
-            R('div',{style:{position:'absolute',top:2,left:20,width:20,height:20,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 2px rgba(0,0,0,0.15)'}})
-          )
-        )
-      ),
-
-      // Two-column body
-      R('div',{style:{flex:1,display:'flex'}},
-
-        // ── LEFT COLUMN (~38%) — Select MCP Server ──
-        R('div',{style:{flex:'0 0 640px',padding:'24px 26px',borderRight:'1px solid #E5E7EB',display:'flex',flexDirection:'column',gap:'18px'}},
-
-          R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928'}},'Select MCP Server'),
-
-          // Search input (pre-filled "atlassi" via typewriter).
-          // The caret + text live inside one flex child so the parent's
-          // gap:10px doesn't separate them — fixes the "a   |" spacing bug.
-          R('div',{style:{padding:'12px 16px',background:'#FFFFFF',border:'1.5px solid #D1D5DB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'15px'}},
-            R('span',{style:{color:'#9CA3AF',fontWeight:700}},'⌕'),
-            R('div',{style:{display:'inline-flex',alignItems:'center',color:'#111928'}},
-              R('span',null, searchTyped),
-              searchCaret?R('span',{style:{display:'inline-block',width:2,height:18,background:'#111928',marginLeft:1,verticalAlign:'middle'}}):null,
-              searchTyped.length===0?R('span',{style:{color:'#9CA3AF'}},'Search MCP servers'):null
-            )
-          ),
-
-          // Connected Servers (1)
-          R('div',{style:{opacity:connHeadP,fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'0.06em',marginTop:'4px'}},'CONNECTED SERVERS (1)'),
-
-          // Highlighted Atlassian Jira MCP Server card
-          R('div',{style:{opacity:connCardP,transform:'translateY('+(8*(1-connCardP))+'px)',padding:'16px 18px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'12px',boxShadow:'0 6px 18px rgba(0,132,255,0.12)'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'14px'}},
-              atlassianMark(28),
-              R('div',{style:{flex:1,minWidth:0}},
-                R('div',{style:{fontSize:'16px',fontWeight:800,color:'#111928'}},'Atlassian Jira MCP Server')
-              ),
-              // Integrated pill
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',padding:'4px 10px',background:'#DCFCE7',color:'#047857',fontSize:'11px',fontWeight:800,borderRadius:'999px'}},
-                R('span',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981',display:'inline-block'}}),
-                R('span',null,'Integrated')
-              ),
-              // 34 selected + up-arrow
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',marginLeft:'4px',color:'#0084FF',fontSize:'12px',fontWeight:700}},
-                R('span',null,'34 selected'),
-                R('span',{style:{fontSize:'14px',lineHeight:1}},'▴')
-              )
-            ),
-            R('div',{style:{marginTop:'10px',fontSize:'13px',color:'#4B5563',lineHeight:1.5}},'Atlassian Jira MCP Server Plugin for managing Jira instances and data.')
-          ),
-
-          // Available Servers (1)
-          R('div',{style:{opacity:availHeadP,fontSize:'13px',fontWeight:700,color:'#6B7280',letterSpacing:'0.06em',marginTop:'4px'}},'AVAILABLE SERVERS (1)'),
-
-          // Confluence card (un-highlighted)
-          R('div',{style:{opacity:availCardP,transform:'translateY('+(8*(1-availCardP))+'px)',padding:'16px 18px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px'}},
-            R('div',{style:{display:'flex',alignItems:'center',gap:'14px'}},
-              atlassianMark(28),
-              R('div',{style:{flex:1,minWidth:0}},
-                R('div',{style:{fontSize:'16px',fontWeight:700,color:'#111928'}},'Atlassian Confluence MCP Server')
-              ),
-              R('div',{style:{display:'flex',alignItems:'center',gap:'6px',padding:'4px 10px',background:'#DCFCE7',color:'#047857',fontSize:'11px',fontWeight:800,borderRadius:'999px'}},
-                R('span',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981',display:'inline-block'}}),
-                R('span',null,'Integrated')
-              )
-            )
-          ),
-
-          // Bottom row: Add MCP Server button (gets click flash around f=105)
-          R('div',{style:{marginTop:'auto',display:'flex',justifyContent:'flex-end',paddingTop:'18px'}},
-            R('div',{style:{position:'relative',padding:'12px 22px',background:'#0084FF',color:'#FFFFFF',fontSize:'14px',fontWeight:700,borderRadius:'10px',boxShadow:'0 6px 14px rgba(0,132,255,0.30)'}},
-              R('span',null,'+ Add MCP Server'),
-              addClickFlash>0.01?R('div',{style:{position:'absolute',inset:-6,borderRadius:'14px',border:'2px solid #0084FF',opacity:addClickFlash*0.7,pointerEvents:'none'}}):null
-            )
-          )
-        ),
-
-        // ── RIGHT COLUMN (~62%) — Capabilities ──
-        R('div',{style:{flex:1,padding:'24px 28px',display:'flex',flexDirection:'column',gap:'14px',minWidth:0}},
-
-          // Header
-          R('div',{style:{opacity:rightHeadP,display:'flex',alignItems:'center',gap:'12px'}},
-            atlassianMark(26),
-            R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian Jira MCP Server capabilities'),
-            R('div',{style:{marginLeft:'auto',padding:'4px 10px',background:'#EFF6FF',color:'#0052CC',fontSize:'11px',fontWeight:800,borderRadius:'999px'}},'34 / 34 selected')
-          ),
-
-          // Scrolling viewport — translateY on inner content inside overflow:hidden
-          R('div',{style:{flex:1,minHeight:0,position:'relative',overflow:'hidden',background:'#FAFAFB',border:'1px solid #E5E7EB',borderRadius:'12px',opacity:rightListP}},
-            R('div',{style:{position:'absolute',left:0,right:0,top:0,padding:'14px 18px',transform:'translateY('+scrollY+'px)',display:'flex',flexDirection:'column',gap:'8px'}},
-              capabilities.map(function(cap,i){
-                return R('div',{key:i,style:{padding:'12px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'12px'}},
-                  blueCheck(20),
-                  R('div',{style:{flex:1,minWidth:0}},
-                    R('div',{style:{fontSize:'14px',fontWeight:800,color:'#111928',fontFamily:'JetBrains Mono,monospace'}}, cap.name),
-                    R('div',{style:{marginTop:'2px',fontSize:'12px',color:'#6B7280',lineHeight:1.4}}, cap.desc)
-                  ),
-                  R('div',{style:{padding:'3px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'ENABLED')
-                );
-              })
-            ),
-            // Soft top/bottom fades so rows feel like they're scrolling under a window
-            R('div',{style:{position:'absolute',left:0,right:0,top:0,height:'20px',background:'linear-gradient(180deg,#FAFAFB,rgba(250,250,251,0))',pointerEvents:'none'}}),
-            R('div',{style:{position:'absolute',left:0,right:0,bottom:0,height:'20px',background:'linear-gradient(0deg,#FAFAFB,rgba(250,250,251,0))',pointerEvents:'none'}})
-          )
-        )
-      )
-    ):null,
-
-    // ─── Phase B/C: Chrome browser window (Connect tab) ─────────────
-    chromeP>0.005?R('div',{style:{position:'absolute',left:'50%',top:(190+chromeRise)+'px',width:'1700px',height:'860px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
-
-      // Chrome chrome bar — tabs row (same markup as InstallScene)
+      // Chrome chrome bar — traffic lights + tab
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
         R('div',{style:{position:'absolute',left:14,top:14,width:13,height:13,borderRadius:'50%',background:'#FF5F57'}}),
         R('div',{style:{position:'absolute',left:34,top:14,width:13,height:13,borderRadius:'50%',background:'#FEBC2E'}}),
         R('div',{style:{position:'absolute',left:54,top:14,width:13,height:13,borderRadius:'50%',background:'#28C840'}}),
         R('div',{style:{marginLeft:'90px',height:'34px',padding:'0 18px',background:'#F4F5F7',borderTopLeftRadius:'10px',borderTopRightRadius:'10px',display:'flex',alignItems:'center',gap:'10px',fontSize:'14px',color:'#172B4D',fontWeight:600}},
-          atlassianMark(14),
-          R('span',null,'Jira MCP · FlowHunt')
+          fhMark(14),
+          R('span',null,'MCP Servers · FlowHunt')
         )
       ),
 
-      // URL bar — green dot + host (matches InstallScene shape)
+      // URL bar
       R('div',{style:{height:'48px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'14px'}},
         R('div',{style:{display:'flex',gap:'14px',color:'#9AA0A6',fontSize:'18px'}},
           R('span',null,'←'),R('span',null,'→'),R('span',null,'↻')
@@ -1525,139 +1420,259 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
         R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
           R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
-          R('span',{style:{color:'#6B7280'}},'/mcp/jira/connect')
+          R('span',{style:{color:'#6B7280'}},'/mcp-servers/jira')
         )
       ),
 
-      // Body — breadcrumb + tabs + content
-      R('div',{style:{padding:'20px 32px 24px 32px',display:'flex',flexDirection:'column',gap:'14px',height:'688px',overflow:'hidden'}},
+      // Body — sidebar + main pane
+      R('div',{style:{display:'flex',height:'768px',background:'#FFFFFF'}},
 
-        // Breadcrumb + tabs
-        R('div',{style:{display:'flex',flexDirection:'column',gap:'8px',opacity:tabsP}},
+        // ── Sidebar (210px) ──
+        R('div',{style:{flex:'0 0 210px',background:'#FAFBFC',borderRight:'1px solid #E5E7EB',padding:'16px 12px',display:'flex',flexDirection:'column',gap:'10px',height:'100%',overflow:'hidden'}},
+
+          // FlowHunt logo
+          R('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'4px 6px'}},
+            fhMark(20),
+            R('div',{style:{display:'flex',alignItems:'center',fontSize:'16px',fontWeight:800,letterSpacing:'-0.3px'}},
+              R('span',{style:{color:'#111928'}},'Flow'),
+              R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
+            )
+          ),
+
+          // Workspace block
+          R('div',{style:{marginTop:'4px',padding:'10px 10px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'8px'}},
+            R('div',{style:{width:24,height:24,borderRadius:'6px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'11px',flexShrink:0}},'E'),
+            R('div',{style:{flex:1,minWidth:0,overflow:'hidden'}},
+              R('div',{style:{fontSize:'11.5px',fontWeight:700,color:'#111928',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'Example Workspace'),
+              R('div',{style:{fontSize:'10px',color:'#6B7280',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'you@example.com')
+            ),
+            R('span',{style:{color:'#9CA3AF',fontSize:'10px'}},'▾')
+          ),
+
+          // Section header: Agent
+          R('div',{style:{fontSize:'10px',fontWeight:800,color:'#9CA3AF',letterSpacing:'0.08em',marginTop:'6px',padding:'0 8px'}},'AGENT'),
+
+          // Nav rows
+          navRow('Home'),
+          navRow('Agents Library'),
+          navRow('My Agents'),
+          navRow('MCP Servers', {active:true}),
+          navRow('Chatbots'),
+          navRow('History'),
+          navRow('Integrations'),
+
+          // Section header: Knowledge sources
+          R('div',{style:{fontSize:'10px',fontWeight:800,color:'#9CA3AF',letterSpacing:'0.08em',marginTop:'8px',padding:'0 8px'}},'KNOWLEDGE SOURCES'),
+          navRow('Documents', {dim:true}),
+          navRow('Categories', {dim:true}),
+
+          // Section header: Workspace
+          R('div',{style:{fontSize:'10px',fontWeight:800,color:'#9CA3AF',letterSpacing:'0.08em',marginTop:'8px',padding:'0 8px'}},'WORKSPACE'),
+          navRow('Settings', {dim:true}),
+          navRow('Billing', {dim:true})
+        ),
+
+        // ── Main pane ──
+        R('div',{style:{flex:1,display:'flex',flexDirection:'column',padding:'18px 28px 22px 28px',minWidth:0,overflow:'hidden'}},
+
+          // Breadcrumb
           R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600}},
             R('span',null,'MCP Servers'),
             R('span',{style:{color:'#9CA3AF',margin:'0 6px'}},'>'),
             R('span',{style:{color:'#111928',fontWeight:700}},'Jira')
           ),
-          R('div',{style:{display:'flex',gap:'22px',borderBottom:'1px solid #E5E7EB'}},
-            R('div',{style:{padding:'8px 2px',fontSize:'14px',fontWeight:600,color:'#6B7280'}},'Configure'),
-            R('div',{style:{padding:'8px 2px',fontSize:'14px',fontWeight:800,color:'#0084FF',borderBottom:'2px solid #0084FF',marginBottom:'-1px'}},'Connect')
-          )
-        ),
 
-        // Two-row content area: top row = client + connect-blurb + code card,
-        // bottom row = caution callout + create-agent card.
-        R('div',{style:{display:'flex',gap:'22px',alignItems:'flex-start'}},
-
-          // LEFT (~58%): client + blurb + code card
-          R('div',{style:{flex:'0 0 820px',display:'flex',flexDirection:'column',gap:'14px'}},
-
-            // Client dropdown
-            R('div',{style:{opacity:clientP}},
-              R('div',{style:{fontSize:'11px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em'}},'CLIENT'),
-              R('div',{style:{marginTop:'6px',padding:'10px 14px',border:'1.5px solid #D1D5DB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px',background:'#FFFFFF',maxWidth:'320px'}},
-                R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'11px'}},'F'),
-                R('div',{style:{flex:1,fontSize:'13px',fontWeight:700,color:'#111928'}},'FlowHunt'),
-                R('div',{style:{width:18,height:18,borderRadius:'50%',background:'#10B981',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'10px'}},'✓'),
-                R('div',{style:{color:'#9CA3AF',fontSize:'12px'}},'▾')
-              )
+          // Page header with Atlassian mark + title + status
+          R('div',{style:{marginTop:'10px',display:'flex',alignItems:'center',gap:'12px'}},
+            atlassianMark(28),
+            R('div',{style:{fontSize:'22px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'Jira'),
+            R('div',{style:{display:'flex',alignItems:'center',gap:'6px',padding:'3px 9px',background:'#DCFCE7',color:'#047857',fontSize:'10.5px',fontWeight:800,borderRadius:'999px'}},
+              R('span',{style:{width:6,height:6,borderRadius:'50%',background:'#10B981',display:'inline-block'}}),
+              R('span',null,'Active')
             ),
-
-            // Connect to FlowHunt blurb
-            R('div',{style:{opacity:blurbP}},
-              R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928'}},'Connect to FlowHunt'),
-              R('div',{style:{marginTop:'6px',fontSize:'12px',color:'#4B5563',lineHeight:1.55,maxWidth:'780px'}},
-                'Connect your MCP Server to FlowHunt AI Agent and use it in your organization. Authentication uses an ',
-                R('span',{style:{fontFamily:'JetBrains Mono,monospace',padding:'1px 5px',background:'#F3F4F6',borderRadius:'4px',color:'#111928'}},'Authorization: Bearer YOUR_API_KEY'),
-                ' header - the URL itself never contains the secret.'
-              )
-            ),
-
-            // MCP Client Configuration code card
-            R('div',{style:{opacity:codeCardP,transform:'translateY('+(8*(1-codeCardP))+'px)'}},
-              R('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}},
-                R('div',{style:{fontSize:'11px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em'}},'MCP CLIENT CONFIGURATION'),
-                R('div',{style:{fontSize:'11px',color:'#9CA3AF'}},'JSON')
-              ),
-              R('div',{style:{position:'relative',background:'#0F172A',borderRadius:'10px',padding:'18px 22px',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#E2E8F0',boxShadow:'0 8px 22px rgba(15,23,42,0.20)'}},
-                // Copy button top-right
-                R('div',{style:{position:'absolute',top:'10px',right:'10px',padding:'6px 10px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.14)',borderRadius:'8px',color:'#E2E8F0',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
-                  R('div',{style:{width:12,height:12,border:'1.5px solid #E2E8F0',borderRadius:'2px',position:'relative'}},
-                    R('div',{style:{position:'absolute',left:-3,top:-3,width:10,height:10,border:'1.5px solid #E2E8F0',borderRadius:'2px',background:'#0F172A'}})
-                  ),
-                  R('span',null,'Copy'),
-                  copyClickFlash>0.01?R('div',{style:{position:'absolute',inset:-4,borderRadius:'10px',border:'2px solid #22D3EE',opacity:copyClickFlash*0.8,pointerEvents:'none'}}):null
-                ),
-                // "Copied" tooltip above the Copy button
-                copiedTipP>0.01?R('div',{style:{position:'absolute',top:'-22px',right:'12px',padding:'4px 10px',background:'#111928',color:'#FFFFFF',fontSize:'11px',fontWeight:700,borderRadius:'6px',opacity:copiedTipP,boxShadow:'0 4px 10px rgba(0,0,0,0.30)'}},'Copied'):null,
-
-                // JSON content — coloured
-                R('div',null,R('span',{style:{color:'#E2E8F0'}},'{')),
-                R('div',{style:{paddingLeft:'18px'}},
-                  R('span',{style:{color:'#22D3EE'}},'"Jira"'),
-                  R('span',{style:{color:'#E2E8F0'}},': {')
-                ),
-                R('div',{style:{paddingLeft:'36px'}},
-                  R('span',{style:{color:'#94A3B8'}},'"transport"'),
-                  R('span',{style:{color:'#E2E8F0'}},': '),
-                  R('span',{style:{color:'#FBBF24'}},'"streamable_http"'),
-                  R('span',{style:{color:'#E2E8F0'}},',')
-                ),
-                R('div',{style:{paddingLeft:'36px',wordBreak:'break-all'}},
-                  R('span',{style:{color:'#94A3B8'}},'"url"'),
-                  R('span',{style:{color:'#E2E8F0'}},': '),
-                  R('span',{style:{color:'#FBBF24'}},'"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"'),
-                  R('span',{style:{color:'#E2E8F0'}},',')
-                ),
-                R('div',{style:{paddingLeft:'36px'}},
-                  R('span',{style:{color:'#94A3B8'}},'"headers"'),
-                  R('span',{style:{color:'#E2E8F0'}},': {')
-                ),
-                R('div',{style:{paddingLeft:'54px'}},
-                  R('span',{style:{color:'#94A3B8'}},'"Authorization"'),
-                  R('span',{style:{color:'#E2E8F0'}},': '),
-                  R('span',{style:{color:'#FBBF24'}},'"Bearer ********"')
-                ),
-                R('div',{style:{paddingLeft:'36px'}},R('span',{style:{color:'#E2E8F0'}},'}')),
-                R('div',{style:{paddingLeft:'18px'}},R('span',{style:{color:'#E2E8F0'}},'}')),
-                R('div',null,R('span',{style:{color:'#E2E8F0'}},'}'))
-              )
-            )
+            R('div',{style:{marginLeft:'auto',fontSize:'11.5px',color:'#6B7280'}},'Atlassian Jira MCP Server')
           ),
 
-          // RIGHT (~42%): caution + create-agent card
-          R('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:'14px'}},
+          // Tab strip with animated underline
+          R('div',{style:{marginTop:'12px',position:'relative',display:'flex',gap:'28px',borderBottom:'1px solid #E5E7EB'}},
+            R('div',{style:{padding:'8px 2px',fontSize:'14px',fontWeight:tabSwap<0.5?800:600,color:tabSwap<0.5?'#0084FF':'#6B7280'}},'Configure'),
+            R('div',{style:{padding:'8px 2px',fontSize:'14px',fontWeight:tabSwap>=0.5?800:600,color:tabSwap>=0.5?'#0084FF':'#6B7280'}},'Connect'),
+            // Animated underline
+            R('div',{style:{position:'absolute',bottom:'-1px',left:underlineLeft+'px',width:underlineWidth+'px',height:'2px',background:'#0084FF',borderRadius:'2px'}})
+          ),
 
-            // Caution callout (yellow)
-            R('div',{style:{opacity:cautionP,transform:'translateY('+(8*(1-cautionP))+'px)',padding:'14px 16px',background:'#FEF9C3',border:'1px solid #FACC15',borderRadius:'10px',display:'flex',alignItems:'flex-start',gap:'12px'}},
-              R('div',{style:{width:22,height:22,borderRadius:'50%',background:'#CA8A04',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'14px',flexShrink:0}},'!'),
-              R('div',null,
-                R('div',{style:{fontSize:'13px',fontWeight:800,color:'#713F12'}},'Caution'),
-                R('div',{style:{marginTop:'3px',fontSize:'12px',color:'#713F12',lineHeight:1.5}},'Treat your MCP API key like a password. Anyone with this key can run tools attached to this server and access your data.')
-              )
-            ),
+          // ── Content area: stacked panes, opacity-swapped ──
+          R('div',{style:{flex:1,position:'relative',minHeight:0,marginTop:'14px'}},
 
-            // Create preconfigured agent card
-            R('div',{style:{opacity:agentCardP,transform:'translateY('+(8*(1-agentCardP))+'px)',padding:'18px 18px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 6px 18px rgba(17,25,40,0.06)'}},
-              R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Create preconfigured agent'),
-              R('div',{style:{marginTop:'4px',fontSize:'12px',color:'#6B7280',lineHeight:1.5}},'Spin up a FlowHunt AI Agent already wired to this MCP server.'),
-              R('div',{style:{marginTop:'14px',padding:'12px 14px',background:'#FAFBFC',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'12px'}},
-                // Small FlowHunt logo tile
-                R('div',{style:{width:30,height:30,borderRadius:'8px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'13px',flexShrink:0}},'FH'),
-                R('div',{style:{flex:1,minWidth:0}},
-                  R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'AI Agent with MCP'),
-                  R('div',{style:{fontSize:'11px',color:'#6B7280'}},'Preconfigured with Jira tools')
+            // ===== Configure pane =====
+            configPaneOpacity>0.005?R('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',gap:'12px',opacity:configPaneOpacity}},
+
+              // Capabilities header row
+              R('div',{style:{opacity:configHeadP,display:'flex',alignItems:'center',gap:'12px'}},
+                R('div',null,
+                  R('div',{style:{fontSize:'16px',fontWeight:800,color:'#111928'}},'Capabilities'),
+                  R('div',{style:{marginTop:'2px',fontSize:'12px',color:'#6B7280'}},'What your MCP server can do. Add or remove tools that agents can invoke.')
                 ),
-                // The pulsing + Create AI Agent button
-                R('div',{style:{padding:'9px 16px',background:'linear-gradient(90deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontSize:'12px',fontWeight:800,borderRadius:'8px',boxShadow:'0 0 0 '+(3+10*agentPulse)+'px rgba(0,132,255,0.18), 0 6px 14px rgba(0,82,204,0.28)'}},'+ Create AI Agent')
+                R('div',{style:{marginLeft:'auto',padding:'8px 14px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'8px',fontSize:'12.5px',fontWeight:700,color:'#172B4D'}},'+ Add capability')
+              ),
+
+              // Sub-header
+              R('div',{style:{opacity:configHeadP,display:'flex',alignItems:'center',gap:'10px',marginTop:'4px'}},
+                atlassianMark(20),
+                R('div',{style:{fontSize:'13.5px',fontWeight:800,color:'#111928'}},'Atlassian Jira MCP Server'),
+                R('div',{style:{marginLeft:'auto',fontSize:'11px',color:'#6B7280',fontWeight:600}},'12 of 34 shown')
+              ),
+
+              // Scrolling viewport with cards
+              R('div',{style:{flex:1,minHeight:0,position:'relative',overflow:'hidden',background:'#FAFAFB',border:'1px solid #E5E7EB',borderRadius:'12px',opacity:configListP}},
+                R('div',{style:{position:'absolute',left:0,right:0,top:0,padding:'14px 14px',transform:'translateY('+scrollY+'px)',display:'flex',flexDirection:'column',gap:'8px'}},
+                  capabilities.map(function(cap,i){
+                    return R('div',{key:i,style:{padding:'12px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'flex-start',gap:'12px'}},
+                      R('div',{style:{flex:'0 0 22px',marginTop:'2px'}}, atlassianMark(22)),
+                      R('div',{style:{flex:1,minWidth:0}},
+                        R('div',{style:{fontSize:'13.5px',fontWeight:800,color:'#111928',fontFamily:'JetBrains Mono,monospace'}}, cap.name),
+                        R('div',{style:{marginTop:'3px',fontSize:'12px',color:'#6B7280',lineHeight:1.5}}, cap.desc)
+                      ),
+                      R('div',{style:{padding:'3px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em',flexShrink:0}},'ENABLED')
+                    );
+                  })
+                ),
+                // Soft top/bottom fades so rows feel like they're scrolling under a window
+                R('div',{style:{position:'absolute',left:0,right:0,top:0,height:'24px',background:'linear-gradient(180deg,#FAFAFB,rgba(250,250,251,0))',pointerEvents:'none'}}),
+                R('div',{style:{position:'absolute',left:0,right:0,bottom:0,height:'24px',background:'linear-gradient(0deg,#FAFAFB,rgba(250,250,251,0))',pointerEvents:'none'}})
               )
-            )
+            ):null,
+
+            // ===== Connect pane =====
+            connectPaneOpacity>0.005?R('div',{style:{position:'absolute',inset:0,display:'flex',gap:'22px',opacity:connectPaneOpacity}},
+
+              // LEFT (~58%): client + blurb + code card
+              R('div',{style:{flex:'0 0 820px',display:'flex',flexDirection:'column',gap:'12px'}},
+
+                // Client dropdown
+                R('div',{style:{opacity:clientP}},
+                  R('div',{style:{fontSize:'11px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em'}},'CLIENT'),
+                  R('div',{style:{marginTop:'6px',padding:'10px 14px',border:'1.5px solid #D1D5DB',borderRadius:'10px',display:'flex',alignItems:'center',gap:'10px',background:'#FFFFFF',maxWidth:'320px'}},
+                    R('div',{style:{width:18,height:18,borderRadius:'50%',border:'1.5px solid #D1D5DB',background:'#FFFFFF',flexShrink:0}}),
+                    R('div',{style:{width:22,height:22,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontSize:'11px',flexShrink:0}},'F'),
+                    R('div',{style:{flex:1,fontSize:'13px',fontWeight:700,color:'#111928'}},'FlowHunt'),
+                    R('div',{style:{color:'#9CA3AF',fontSize:'12px'}},'▾')
+                  )
+                ),
+
+                // Connect to FlowHunt sub-heading with faint circle
+                R('div',{style:{opacity:blurbP,display:'flex',alignItems:'center',gap:'10px',marginTop:'4px'}},
+                  R('div',{style:{width:18,height:18,borderRadius:'50%',border:'1.5px solid #D1D5DB',background:'#FFFFFF',flexShrink:0}}),
+                  R('div',{style:{fontSize:'18px',fontWeight:800,color:'#111928'}},'Connect to FlowHunt')
+                ),
+
+                // Blurb
+                R('div',{style:{opacity:blurbP,marginTop:'-2px',fontSize:'12px',color:'#4B5563',lineHeight:1.55,maxWidth:'780px'}},
+                  'Connect your MCP Server to FlowHunt AI Agent and use it in your organization. Authentication uses an ',
+                  R('span',{style:{fontFamily:'JetBrains Mono,monospace',padding:'1px 5px',background:'#F3F4F6',borderRadius:'4px',color:'#111928'}},'Authorization: Bearer YOUR_API_KEY'),
+                  ' header - the URL itself never contains the secret.'
+                ),
+
+                // MCP Client Configuration code card
+                R('div',{style:{opacity:codeCardP,transform:'translateY('+(8*(1-codeCardP))+'px)'}},
+                  R('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}},
+                    R('div',{style:{fontSize:'11px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em'}},'MCP CLIENT CONFIGURATION'),
+                    R('div',{style:{fontSize:'11px',color:'#9CA3AF'}},'JSON')
+                  ),
+                  R('div',{style:{position:'relative',background:'#0F172A',borderRadius:'10px',padding:'18px 22px',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#E2E8F0',boxShadow:'0 8px 22px rgba(15,23,42,0.20)'}},
+                    // Copy button top-right
+                    R('div',{style:{position:'absolute',top:'10px',right:'10px',padding:'6px 10px',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.14)',borderRadius:'8px',color:'#E2E8F0',fontSize:'11px',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
+                      R('div',{style:{width:12,height:12,border:'1.5px solid #E2E8F0',borderRadius:'2px',position:'relative'}},
+                        R('div',{style:{position:'absolute',left:-3,top:-3,width:10,height:10,border:'1.5px solid #E2E8F0',borderRadius:'2px',background:'#0F172A'}})
+                      ),
+                      R('span',null,'Copy'),
+                      copyClickFlash>0.01?R('div',{style:{position:'absolute',inset:-4,borderRadius:'10px',border:'2px solid #22D3EE',opacity:copyClickFlash*0.8,pointerEvents:'none'}}):null
+                    ),
+                    // "Copied" tooltip above the Copy button
+                    copiedTipP>0.01?R('div',{style:{position:'absolute',top:'-22px',right:'12px',padding:'4px 10px',background:'#111928',color:'#FFFFFF',fontSize:'11px',fontWeight:700,borderRadius:'6px',opacity:copiedTipP,boxShadow:'0 4px 10px rgba(0,0,0,0.30)'}},'Copied'):null,
+
+                    // JSON content — coloured
+                    R('div',null,R('span',{style:{color:'#E2E8F0'}},'{')),
+                    R('div',{style:{paddingLeft:'18px'}},
+                      R('span',{style:{color:'#22D3EE'}},'"Jira"'),
+                      R('span',{style:{color:'#E2E8F0'}},': {')
+                    ),
+                    R('div',{style:{paddingLeft:'36px'}},
+                      R('span',{style:{color:'#94A3B8'}},'"transport"'),
+                      R('span',{style:{color:'#E2E8F0'}},': '),
+                      R('span',{style:{color:'#FBBF24'}},'"streamable_http"'),
+                      R('span',{style:{color:'#E2E8F0'}},',')
+                    ),
+                    R('div',{style:{paddingLeft:'36px',wordBreak:'break-all'}},
+                      R('span',{style:{color:'#94A3B8'}},'"url"'),
+                      R('span',{style:{color:'#E2E8F0'}},': '),
+                      R('span',{style:{color:'#FBBF24'}},'"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"'),
+                      R('span',{style:{color:'#E2E8F0'}},',')
+                    ),
+                    R('div',{style:{paddingLeft:'36px'}},
+                      R('span',{style:{color:'#94A3B8'}},'"headers"'),
+                      R('span',{style:{color:'#E2E8F0'}},': {')
+                    ),
+                    R('div',{style:{paddingLeft:'54px'}},
+                      R('span',{style:{color:'#94A3B8'}},'"Authorization"'),
+                      R('span',{style:{color:'#E2E8F0'}},': '),
+                      R('span',{style:{color:'#FBBF24'}},'"Bearer ********"')
+                    ),
+                    R('div',{style:{paddingLeft:'36px'}},R('span',{style:{color:'#E2E8F0'}},'}')),
+                    R('div',{style:{paddingLeft:'18px'}},R('span',{style:{color:'#E2E8F0'}},'}')),
+                    R('div',null,R('span',{style:{color:'#E2E8F0'}},'}'))
+                  )
+                )
+              ),
+
+              // RIGHT (~42%): caution + create-agent card
+              R('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:'14px'}},
+
+                // Caution callout (yellow)
+                R('div',{style:{opacity:cautionP,transform:'translateY('+(8*(1-cautionP))+'px)',padding:'14px 16px',background:'#FEF9C3',border:'1px solid #FACC15',borderRadius:'10px',display:'flex',alignItems:'flex-start',gap:'12px'}},
+                  R('div',{style:{width:22,height:22,borderRadius:'50%',background:'#CA8A04',color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'14px',flexShrink:0}},'!'),
+                  R('div',null,
+                    R('div',{style:{fontSize:'13px',fontWeight:800,color:'#713F12'}},'Caution'),
+                    R('div',{style:{marginTop:'3px',fontSize:'12px',color:'#713F12',lineHeight:1.5}},'Treat your MCP API key like a password. Anyone with this key can run tools attached to this server and access your data.')
+                  )
+                ),
+
+                // Create preconfigured agent section
+                R('div',{style:{opacity:agentCardP,transform:'translateY('+(8*(1-agentCardP))+'px)',display:'flex',flexDirection:'column',gap:'8px'}},
+                  R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Create preconfigured agent'),
+                  R('div',{style:{fontSize:'11.5px',color:'#6B7280',lineHeight:1.5}},'Click button below to create agent with MCP Client configured for this MCP Server.'),
+
+                  // Card with FH mark + AI Agent with MCP + Business pill
+                  R('div',{style:{marginTop:'4px',padding:'14px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 6px 18px rgba(17,25,40,0.06)'}},
+                    R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
+                      R('div',{style:{width:34,height:34,borderRadius:'8px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+                        fhMark(18)
+                      ),
+                      R('div',{style:{flex:1,minWidth:0}},
+                        R('div',{style:{fontSize:'13.5px',fontWeight:800,color:'#111928'}},'AI Agent with MCP'),
+                        R('div',{style:{fontSize:'11px',color:'#6B7280',marginTop:'1px'}},'Preconfigured with Jira tools')
+                      ),
+                      R('div',{style:{padding:'3px 9px',background:'#DCFCE7',color:'#047857',fontSize:'10.5px',fontWeight:800,borderRadius:'999px'}},'Business')
+                    ),
+                    // + Create AI Agent pulsing button
+                    R('div',{style:{marginTop:'12px',display:'flex',justifyContent:'flex-start'}},
+                      R('div',{style:{padding:'10px 18px',background:'linear-gradient(90deg,#0084FF,#1A56DB)',color:'#FFFFFF',fontSize:'12.5px',fontWeight:800,borderRadius:'8px',boxShadow:'0 0 0 '+(3+10*agentGlow)+'px rgba(0,132,255,0.18), 0 6px 14px rgba(0,82,204,0.28)'}},'+ Create AI Agent')
+                    )
+                  )
+                )
+              )
+            ):null
           )
         )
       )
-    ):null
+    )
   );
 }`;
+
+// 3-line summary
+// FlowHuntMcpServerScene v2: a 285-frame Scene 6 replacement that lives entirely inside ONE Chrome browser window with the FlowHunt sidebar visible throughout (workspace block, Agent/Knowledge sources/Workspace nav with "MCP Servers" highlighted).
+// The main pane shows breadcrumb "MCP Servers > Jira" with a Configure | Connect tab strip whose blue underline animates from Configure to Connect at f=155–175; Configure pane (Phase A) renders a Capabilities section listing 12 Jira tools as cards with the Atlassian mark, mono tool name and muted description, scrolled via translateY(-360px) inside an overflow:hidden viewport.
+// Connect pane (Phase C) renders the Client dropdown ("FlowHunt"), "Connect to FlowHunt" subheading with blurb, dark JSON config card with Copy click flash + "Copied" tooltip at f=220, yellow Caution callout, and a "Create preconfigured agent" card whose "+ Create AI Agent" button uses the same phase-integrated fast→slow pulse (pulseStart=215, fastEnd=230, fastFreq=0.22, slowFreq=0.085); uses literal ${HELPERS}/${ATLASSIAN_MARK}/${FH_MARK_PATH} placeholders, no other files modified.
 
 // 3-line summary
 // FlowHuntMcpServerScene: a 285-frame Scene 6 replacement showing the FlowHunt MCP Servers config modal wiring up the Atlassian Jira MCP Server, then transitioning to the Connect tab in a Chrome browser window.
@@ -1722,16 +1737,30 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var surfP=ease(cl(f/22));
   var surfRise=18*(1-surfP);
 
-  // ── LEFT terminal typewriter (UNCHANGED from previous scene) ──
-  var addCmd='claude mcp add jira --transport streamable_http https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b --header "Authorization: Bearer ********"';
-  var addStart=20, addDur=80;
-  var addTyped=addCmd.slice(0, Math.floor(cl((f-addStart)/addDur)*addCmd.length));
-  var addCaret=f>=addStart && (Math.floor((f-addStart)/8))%2===0 && f<addStart+addDur+20;
+  // ── LEFT terminal — /mcp verification flow ──
+  // The user added the Jira MCP locally by pasting the SAME JSON config the
+  // FlowHunt Connect tab gave them (no claude-mcp-add one-liner). Now they
+  // run /mcp to verify it shows up. The terminal renders the "Manage MCP
+  // servers" panel with Jira connected at 34 tools, highlighted as the new row.
+  var slashCmd='/mcp';
+  var typeStart=20, typeDur=20;
+  var slashTyped=slashCmd.slice(0, Math.floor(cl((f-typeStart)/typeDur)*slashCmd.length));
+  var slashCaret=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+20;
   function lineAt(d,dur){return ease(cl((f-d)/(dur||10)));}
-  var addedP=lineAt(115,14);
-  var allowedP=lineAt(145,12);
-  var listCmdP=lineAt(170,10);
-  var listResP=lineAt(190,12);
+  var mgrHeadP=lineAt(60,12);    // "Manage MCP servers" header
+  var localHdrP=lineAt(80,10);   // "Local MCPs" sub-header
+  var localR1P=lineAt(92,10);    // atlassian row
+  var localR2P=lineAt(102,10);   // figma row
+  var localR3P=lineAt(112,10);   // playwright row
+  var userHdrP=lineAt(128,10);   // "User MCPs" sub-header
+  var jiraRowP=lineAt(142,14);   // Jira row (highlighted — the just-added one)
+  var clHdrP=lineAt(170,10);     // "claude.ai" sub-header
+  var clR1P=lineAt(180,10);
+  var clR2P=lineAt(188,10);
+  var biHdrP=lineAt(206,10);     // "Built-in MCPs"
+  var biR1P=lineAt(214,10);
+  // Subtle pulse on the Jira row's check pill to point out the new addition.
+  var jiraGlow=0.5+0.5*Math.sin((f-142)*0.18);
 
   // ── RIGHT FlowHunt browser reveal staggers ──
   var browserP=surfP;            // browser appears with the left terminal
@@ -1798,27 +1827,77 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
         ),
         R('div',{style:{marginLeft:'10px',fontSize:'11px',color:'#64748B',fontFamily:'JetBrains Mono,monospace'}},'·  jira MCP')
       ),
-      R('div',{style:{padding:'28px 30px',fontFamily:'JetBrains Mono,monospace',fontSize:'14px',lineHeight:1.6,color:'#E2E8F0'}},
-        R('div',{style:{wordBreak:'break-all'}},
-          span('$ ', '#22C55E'),
-          R('span',null, addTyped),
-          addCaret?R('span',{style:{display:'inline-block',width:8,height:16,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
+      R('div',{style:{padding:'26px 28px',fontFamily:'JetBrains Mono,monospace',fontSize:'13px',lineHeight:1.55,color:'#E2E8F0'}},
+
+        // Prompt + /mcp slash command
+        R('div',null,
+          span('> ', '#22C55E'),
+          R('span',null, slashTyped),
+          slashCaret?R('span',{style:{display:'inline-block',width:8,height:15,background:'#E2E8F0',marginLeft:2,verticalAlign:'middle'}}):null
         ),
-        addedP>0.01?R('div',{style:{marginTop:18,opacity:addedP,color:'#22C55E',wordBreak:'break-all'}},
-          '✓ Added HTTP MCP server jira with URL: ',
-          R('span',{style:{color:'#7DD3FC',textDecoration:'underline'}},'https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b')
+
+        // ── "Manage MCP servers" header ──
+        mgrHeadP>0.01?R('div',{style:{marginTop:20,opacity:mgrHeadP,color:'#7DD3FC',fontWeight:700,textDecoration:'underline'}},'Manage MCP servers'):null,
+        mgrHeadP>0.01?R('div',{style:{marginTop:2,opacity:mgrHeadP,color:'#94A3B8'}},'9 servers'):null,
+
+        // ── Local MCPs ──
+        localHdrP>0.01?R('div',{style:{marginTop:16,opacity:localHdrP,color:'#F8FAFC',fontWeight:700}},'Local MCPs ',R('span',{style:{color:'#64748B',fontWeight:400}},'(~/.claude.json)')):null,
+
+        localR1P>0.01?R('div',{style:{marginTop:4,opacity:localR1P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#94A3B8'}},'›'),
+          R('span',{style:{color:'#7DD3FC',fontWeight:700}},'atlassian'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#F87171'}},'○'),
+          R('span',{style:{color:'#94A3B8'}},'disabled')
         ):null,
-        allowedP>0.01?R('div',{style:{marginTop:8,opacity:allowedP,color:'#94A3B8'}},
-          'Allowed by auto agreed classifier'
+        localR2P>0.01?R('div',{style:{marginTop:2,opacity:localR2P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#E2E8F0',fontWeight:700}},'figma'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#22C55E'}},'✓'),
+          R('span',{style:{color:'#94A3B8'}},'connected'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#E2E8F0'}},'18 tools')
         ):null,
-        listCmdP>0.01?R('div',{style:{marginTop:24,opacity:listCmdP}},
-          span('$ ', '#22C55E'),
-          R('span',null,'claude mcp list | head -5')
+        localR3P>0.01?R('div',{style:{marginTop:2,opacity:localR3P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#E2E8F0',fontWeight:700}},'playwright'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#F87171'}},'○'),
+          R('span',{style:{color:'#94A3B8'}},'disabled')
         ):null,
-        listResP>0.01?R('div',{style:{marginTop:12,opacity:listResP,display:'flex',alignItems:'center',gap:'16px'}},
-          R('span',{style:{color:'#FBBF24',fontWeight:700}},'jira'),
-          R('span',{style:{color:'#22C55E',fontWeight:700}},'✓ Connected'),
-          R('span',{style:{color:'#E2E8F0'}},'34 tools')
+
+        // ── User MCPs — Jira lives here, highlighted as the just-added row ──
+        userHdrP>0.01?R('div',{style:{marginTop:16,opacity:userHdrP,color:'#F8FAFC',fontWeight:700}},'User MCPs ',R('span',{style:{color:'#64748B',fontWeight:400}},'(~/.claude.json)')):null,
+
+        jiraRowP>0.01?R('div',{style:{marginTop:4,opacity:jiraRowP,paddingLeft:12,paddingRight:8,paddingTop:6,paddingBottom:6,background:'rgba(34,197,94,0.10)',borderLeft:'2px solid #22C55E',borderRadius:'4px',display:'flex',alignItems:'center',gap:'8px',boxShadow:'0 0 '+(8+10*jiraGlow)+'px rgba(34,197,94,0.18)'}},
+          R('span',{style:{color:'#94A3B8'}},'›'),
+          R('span',{style:{color:'#FBBF24',fontWeight:700}},'Jira'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#22C55E'}},'✓'),
+          R('span',{style:{color:'#22C55E',fontWeight:700}},'connected'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#E2E8F0'}},'34 tools'),
+          R('span',{style:{marginLeft:'auto',padding:'2px 8px',background:'rgba(34,197,94,0.20)',color:'#86EFAC',fontSize:'11px',fontWeight:700,borderRadius:'4px',letterSpacing:'0.04em'}},'JUST ADDED')
+        ):null,
+
+        // ── claude.ai (built-in) ──
+        clHdrP>0.01?R('div',{style:{marginTop:16,opacity:clHdrP,color:'#F8FAFC',fontWeight:700}},'claude.ai'):null,
+        clR1P>0.01?R('div',{style:{marginTop:2,opacity:clR1P,paddingLeft:16,color:'#94A3B8'}},'claude.ai Gmail · ',R('span',{style:{color:'#FBBF24'}},'△'),' needs authentication'):null,
+        clR2P>0.01?R('div',{style:{marginTop:2,opacity:clR2P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#E2E8F0'}},'claude.ai Planner MCP'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#22C55E'}},'✓'),
+          R('span',{style:{color:'#94A3B8'}},'connected'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#E2E8F0'}},'20 tools')
+        ):null,
+
+        // ── Built-in MCPs ──
+        biHdrP>0.01?R('div',{style:{marginTop:16,opacity:biHdrP,color:'#F8FAFC',fontWeight:700}},'Built-in MCPs ',R('span',{style:{color:'#64748B',fontWeight:400}},'(always available)')):null,
+        biR1P>0.01?R('div',{style:{marginTop:2,opacity:biR1P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#E2E8F0'}},'computer-use'),
+          R('span',{style:{color:'#64748B'}},'·'),
+          R('span',{style:{color:'#F87171'}},'○'),
+          R('span',{style:{color:'#94A3B8'}},'disabled')
         ):null
       )
     ):null,
