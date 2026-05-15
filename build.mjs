@@ -1432,7 +1432,7 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
     R('div',{style:{position:'absolute',left:'50%',top:'108px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928'}},'Wire up the Atlassian Jira MCP server.'),
 
     // ─── Chrome browser window (visible throughout) ─────────────────
-    R('div',{style:{position:'absolute',left:'50%',top:'160px',width:'1700px',height:'780px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
+    R('div',{style:{position:'absolute',left:'50%',top:'200px',width:'1700px',height:'770px',transform:'translateX(-50%)',background:'#FFFFFF',borderRadius:'12px',overflow:'hidden',boxShadow:'0 30px 70px rgba(17,25,40,0.30)',opacity:chromeP,border:'1px solid #D1D5DB'}},
 
       // Chrome chrome bar — traffic lights + tab
       R('div',{style:{height:'44px',background:'#DEE1E6',display:'flex',alignItems:'flex-end',padding:'0 14px',gap:'4px',position:'relative'}},
