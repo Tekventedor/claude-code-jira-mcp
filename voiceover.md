@@ -12,9 +12,9 @@ Each scene block lists: frame range · scene id · timing budget · approximate 
 
 Hard cut into the demo.
 
-## Scene 2 — Demo · frames 90–450 · 12.0 s · ~38 words
+## Scene 2 — Demo · frames 90–450 · 12.0 s · ~40 words
 
-> You paste one prompt. Claude finds your Jira project. Runs your JQL. Pulls back the issue resolved this sprint — KAN three. Then files a new tracking issue — KAN four — with the summary already written. Three tool calls. One prompt.
+> You paste one prompt. Claude finds your Jira project. Runs the JQL to spot an open bug with no owner — KAN three. Then files a triage task — KAN four — blocking the bug so it can't slip the sprint. Three tool calls. One prompt.
 
 Land "KAN four" exactly as `createJiraIssue` resolves on screen (~frame 230).
 
