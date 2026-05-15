@@ -236,10 +236,15 @@ const ArchScene = `function ArchScene(props){${HELPERS}
   var nw=240, nh=200;
 
   function nodeIcon(kind){
+    // "You" stays as a simple terminal mark — generic, not branded.
     if(kind==='term') return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'22px',fontWeight:800}}, '>_');
-    if(kind==='dot')  return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'26px',fontWeight:800}}, '⏺');
-    // Atlassian "A" mark
-    return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',fontSize:'28px',fontWeight:900}}, 'A');
+    // Claude Code — real Claude AI mark.
+    if(kind==='dot')  return R('img',{src:'${CLAUDE_ICON}',width:54,height:54,style:{display:'block',borderRadius:'12px'}});
+    // Atlassian MCP server — real Atlassian mark on white tile so the
+    // blue mark reads clearly at small sizes.
+    return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'#FFFFFF',border:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'center'}},
+      R('img',{src:'${ATLASSIAN_MARK}',width:38,height:38,style:{display:'block'}})
+    );
   }
 
   function node(n, p){
