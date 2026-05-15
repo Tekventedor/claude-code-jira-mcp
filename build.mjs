@@ -440,17 +440,18 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
   // closing line land inside the viewport by the bottom-hold phase.
   var scrollY=lerp(0, -1080, scrollT);
 
-  // Browser window geometry — this scene now renders inside a full Chrome
-  // window so it visually reads as a real FlowHunt page (matches scenes 5–7).
-  var browserW=1760, browserH=960;
+  // Browser window geometry — chrome stops above y≈970 so the FlowHunt
+  // watermark (around y=994) sits CLEAN BELOW the box rather than over it.
+  var browserW=1760, browserH=900;
   var browserX=(1920-browserW)/2;   // 80
-  var browserY=60;
+  var browserY=50;
   var chromeChromeH=42;             // tabs row
   var urlBarH=44;                   // URL bar row
+  var pageHdrH=52;                  // FlowHunt page-level header strip (Edit/Run/Batch)
   // Chat window sits *inside* the browser body, slightly inset.
-  var winW=1500, winH=820;
+  var winW=1500, winH=720;
   var winX=browserX+(browserW-winW)/2;   // centred inside browser
-  var winY=browserY+chromeChromeH+urlBarH+18;
+  var winY=browserY+chromeChromeH+urlBarH+pageHdrH+18;
   var headerH=46;
   var sidebarW=280;
   var inputBarH=72;
@@ -588,19 +589,42 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
           )
         )
       ),
-      // FlowHunt page-level header inside the browser
-      R('div',{style:{height:'48px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 28px',gap:'14px'}},
-        R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
-          R('div',{style:{display:'flex',alignItems:'center',fontSize:'18px',fontWeight:800,letterSpacing:'-0.3px'}},
-            R('span',{style:{color:'#111928'}},'Flow'),
-            R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
+      // FlowHunt page-level header inside the browser — matches the
+      // real agent-run page: breadcrumb on the left, Edit / Run / Batch
+      // pill toggle centred with Run active, History + Publish on right.
+      R('div',{style:{height:pageHdrH+'px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 24px',gap:'14px',position:'relative'}},
+        // Left: Agents > Jira breadcrumb with caret
+        R('div',{style:{fontSize:'13px',color:'#6B7280',display:'flex',alignItems:'center',gap:'6px'}},
+          R('span',null,'‹'),
+          R('span',null,'Agents')
+        ),
+        R('div',{style:{display:'flex',alignItems:'center',gap:'4px',fontSize:'13px',color:'#111928',fontWeight:700}},
+          R('span',null,'Jira'),
+          R('span',{style:{color:'#9CA3AF',fontWeight:500}},'▾')
+        ),
+        // Centre: Edit | Run | Batch pill toggle (Run active = dark pill)
+        R('div',{style:{position:'absolute',left:'50%',transform:'translateX(-50%)',display:'flex',alignItems:'center',padding:'3px',background:'#F4F5F7',border:'1px solid #E5E7EB',borderRadius:'999px',gap:'2px',fontSize:'13px',fontWeight:600}},
+          R('div',{style:{padding:'4px 16px',color:'#6B7280',display:'flex',alignItems:'center',gap:'6px'}},
+            R('span',{style:{fontSize:'12px'}},'✎'),
+            R('span',null,'Edit')
+          ),
+          R('div',{style:{padding:'4px 16px',background:'#111928',color:'#FFFFFF',borderRadius:'999px',display:'flex',alignItems:'center',gap:'6px',boxShadow:'0 1px 3px rgba(17,25,40,0.20)'}},
+            R('span',{style:{fontSize:'11px'}},'▶'),
+            R('span',null,'Run')
+          ),
+          R('div',{style:{padding:'4px 16px',color:'#6B7280',display:'flex',alignItems:'center',gap:'6px'}},
+            R('span',{style:{fontSize:'12px'}},'☰'),
+            R('span',null,'Batch')
           )
         ),
-        R('div',{style:{marginLeft:'14px',fontSize:'13px',color:'#6B7280'}},'Agents'),
-        R('div',{style:{fontSize:'13px',color:'#6B7280'}},'/'),
-        R('div',{style:{fontSize:'13px',color:'#111928',fontWeight:700}},'Jira'),
-        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'12px',fontSize:'12px',color:'#6B7280'}},
-          R('div',{style:{padding:'5px 11px',background:'#F4F5F7',borderRadius:'14px',fontWeight:600}},'Example Workspace')
+        // Right: History / Version: 3 / Publish Agent
+        R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'14px',fontSize:'12px',color:'#6B7280'}},
+          R('div',{style:{display:'flex',alignItems:'center',gap:'6px',padding:'5px 11px',background:'#F4F5F7',borderRadius:'14px',fontWeight:600}},
+            R('span',{style:{fontSize:'11px'}},'⏱'),
+            R('span',null,'History'),
+            R('span',{style:{color:'#9CA3AF',marginLeft:'4px'}},'Version: 3')
+          ),
+          R('div',{style:{padding:'7px 16px',background:grad,color:'#FFFFFF',borderRadius:'8px',fontSize:'13px',fontWeight:700,boxShadow:'0 4px 10px rgba(0,82,204,0.25)'}},'Publish Agent')
         )
       )
     ),
@@ -611,7 +635,7 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
       // ── Top header bar ──
       R('div',{style:{height:headerH+'px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'12px'}},
         fhSquare(26),
-        R('div',{style:{fontSize:'16px',fontWeight:700,color:'#172B4D'}},'Jira'),
+        R('div',{style:{fontSize:'16px',fontWeight:700,color:'#172B4D'}},'Atlassian Agent'),
         R('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:'14px',color:'#6B7280',fontSize:'18px'}},
           R('span',null,'↻'),
           R('span',{style:{fontSize:'16px',fontWeight:600}},'×')
