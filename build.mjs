@@ -436,10 +436,9 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
   // (bottom) across frames 55–180. easeInOut keeps the motion calm at the
   // start and end so it feels like a mouse-scroll, not a snap-cut.
   var scrollT=easeInOut(cl((f-55)/125));
-  // Content is taller now (ticket pull section stacked above the capability
-  // list), so the scroll range extends further to keep the "How to Use Me"
-  // example list landing inside the viewport at the bottom hold.
-  var scrollY=lerp(0, -2080, scrollT);
+  // Scroll the capability list so the "How to Use Me" example prompts +
+  // closing line land inside the viewport by the bottom-hold phase.
+  var scrollY=lerp(0, -1080, scrollT);
 
   // Browser window geometry — this scene now renders inside a full Chrome
   // window so it visually reads as a real FlowHunt page (matches scenes 5–7).
@@ -491,42 +490,22 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
     return R('div',{style:{width:s,height:s,borderRadius:'6px',background:grad,display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.round(s*0.55)+'px',boxShadow:'0 2px 6px rgba(0,82,204,0.30)'}}, 'J');
   }
 
-  // User bubble at top of conversation (right-aligned, FH blue gradient)
+  // User bubble at top of conversation — short, natural question that a
+  // user would actually type to a fresh agent. The agent's reply is the
+  // standard "what I can do" intro it gives when prompted this way (and
+  // is what FlowHunt actually returned for this agent in the user's demo).
   var userBubble=R('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:24}},
     R('div',{style:{maxWidth:'72%',background:grad,color:'#FFFFFF',padding:'14px 20px',borderRadius:'18px 18px 4px 18px',fontSize:'18px',fontWeight:500,lineHeight:1.5,boxShadow:'0 6px 18px rgba(0,82,204,0.18)'}},
-      'What tickets do I have open, and what can you do with my Atlassian workspace?'
+      'What can you help me with?'
     )
   );
 
-  // Assistant reply card - the long scrollable content.
-  // Two stacked sections so the same scroll motion reveals both:
-  //   1) a real-looking ticket pull (anonymised project names)
-  //   2) the capability list (the "what can I do" intro)
-  var assistantCard=R('div',{style:{background:'#F4F5F7',borderRadius:'14px',padding:'34px 38px',color:'#172B4D'}},
+  // Assistant reply — sized and styled to match a real FlowHunt chat
+  // response. No rounded card wrapper; content flows on the chat surface
+  // like FlowHunt's actual output. Just the capability intro (no fake
+  // ticket pull).
+  var assistantCard=R('div',{style:{padding:'10px 4px',color:'#172B4D'}},
 
-    // ─── Section 1: live ticket pull ───────────────────────────────
-    h1('Your open tickets'),
-    para("Pulled from your yourcompany.atlassian.net Jira. None assigned to you, but there are 17 open tickets across two projects:"),
-
-    h2('ENG - 3 open'),
-    R('div',{style:{marginTop:8,marginBottom:18,paddingLeft:18,lineHeight:1.7,fontSize:18,color:'#172B4D'}},
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'ENG-4'),'  Sprint summary 2026-05-14  (To Do, Medium)'),
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'ENG-3'),'  Fix login form email validation  (In Progress)'),
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'ENG-1'),'  Refactor auth flow  (In Progress)')
-    ),
-
-    h2('OPS - 14 open  (sample)'),
-    R('div',{style:{marginTop:8,marginBottom:18,paddingLeft:18,lineHeight:1.7,fontSize:18,color:'#172B4D'}},
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'OPS-7'),'  Conduct mid-program review'),
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'OPS-11'),'  Create personalized workout plan'),
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'OPS-5'),'  Plan next fitness program'),
-      R('div',null,R('span',{style:{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:'#0052CC'}},'OPS-15'),'  Gather user feedback')
-    ),
-    para('Want to narrow this down (e.g. only ENG, only In Progress, or filter by priority)?'),
-
-    R('div',{style:{height:1,background:'#DFE1E6',margin:'26px 0 26px 0'}}),
-
-    // ─── Section 2: the capability list (same scroll, no new motion) ─
     h1('What I Can Do Here and in Atlassian Jira'),
     para("I'm your assistant for managing Jira issues and projects. Here's what I can help you with:"),
 
@@ -603,8 +582,10 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
         ),
         R('div',{style:{flex:1,padding:'7px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'18px',fontSize:'13px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:7,height:7,borderRadius:'50%',background:'#22C55E'}}),
-          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
-          R('span',{style:{color:'#6B7280'}},'/agents/jira/chat')
+          R('div',{style:{display:'inline-flex',alignItems:'center'}},
+            R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+            R('span',{style:{color:'#6B7280'}},'/agents/jira/chat')
+          )
         )
       ),
       // FlowHunt page-level header inside the browser
@@ -1034,8 +1015,10 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
         ),
         R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
-          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
-          R('span',{style:{color:'#6B7280'}},'/integrations')
+          R('div',{style:{display:'inline-flex',alignItems:'center'}},
+            R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+            R('span',{style:{color:'#6B7280'}},'/integrations')
+          )
         )
       ),
 
@@ -1419,8 +1402,10 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
         ),
         R('div',{style:{flex:1,padding:'8px 16px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'20px',fontSize:'14px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:8,height:8,borderRadius:'50%',background:'#22C55E'}}),
-          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
-          R('span',{style:{color:'#6B7280'}},'/mcp-servers/jira')
+          R('div',{style:{display:'inline-flex',alignItems:'center'}},
+            R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+            R('span',{style:{color:'#6B7280'}},'/mcp-servers/jira')
+          )
         )
       ),
 
@@ -1748,19 +1733,14 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var slashCaret=f>=typeStart && (Math.floor((f-typeStart)/8))%2===0 && f<typeStart+typeDur+20;
   function lineAt(d,dur){return ease(cl((f-d)/(dur||10)));}
   var mgrHeadP=lineAt(60,12);    // "Manage MCP servers" header
-  var localHdrP=lineAt(80,10);   // "Local MCPs" sub-header
-  var localR1P=lineAt(92,10);    // atlassian row
-  var localR2P=lineAt(102,10);   // figma row
-  var localR3P=lineAt(112,10);   // playwright row
-  var userHdrP=lineAt(128,10);   // "User MCPs" sub-header
-  var jiraRowP=lineAt(142,14);   // Jira row (highlighted — the just-added one)
-  var clHdrP=lineAt(170,10);     // "claude.ai" sub-header
-  var clR1P=lineAt(180,10);
-  var clR2P=lineAt(188,10);
-  var biHdrP=lineAt(206,10);     // "Built-in MCPs"
-  var biR1P=lineAt(214,10);
+  var userHdrP=lineAt(82,10);    // "User MCPs" sub-header (only section we show)
+  var jiraRowP=lineAt(96,14);    // Jira row (highlighted — the just-added one)
+  var clHdrP=lineAt(140,10);     // "claude.ai" sub-header
+  var clR1P=lineAt(152,10);      // Gmail row
+  var biHdrP=lineAt(176,10);     // "Built-in MCPs"
+  var biR1P=lineAt(186,10);
   // Subtle pulse on the Jira row's check pill to point out the new addition.
-  var jiraGlow=0.5+0.5*Math.sin((f-142)*0.18);
+  var jiraGlow=0.5+0.5*Math.sin((f-96)*0.18);
 
   // ── RIGHT FlowHunt browser reveal staggers ──
   var browserP=surfP;            // browser appears with the left terminal
@@ -1783,12 +1763,13 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var savePulse=0.5+0.5*Math.sin(pulsePhase);
   var pulseGate=cl((f-pulseStart)/14);
 
-  // Layout — terminal stays small-ish; FlowHunt browser is bigger.
-  // Caption labels live above each surface from frame 0.
+  // Layout — terminal is ~1/3 of the width, FlowHunt browser is ~2/3
+  // so the agent editor inside the Chrome reads at proper proportions
+  // (chat output, AI agent panel, etc. all visible at sensible sizes).
   var captionY=170;
   var surfTopY=210;
-  var termX=50,  termY=surfTopY, termW=820, termH=780;
-  var fhX=900,   fhY=180,       fhW=960,  fhH=820;
+  var termX=40,  termY=surfTopY, termW=600,  termH=820;
+  var fhX=660,   fhY=180,        fhW=1220,   fhH=860;
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
@@ -1838,32 +1819,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
 
         // ── "Manage MCP servers" header ──
         mgrHeadP>0.01?R('div',{style:{marginTop:20,opacity:mgrHeadP,color:'#7DD3FC',fontWeight:700,textDecoration:'underline'}},'Manage MCP servers'):null,
-        mgrHeadP>0.01?R('div',{style:{marginTop:2,opacity:mgrHeadP,color:'#94A3B8'}},'9 servers'):null,
-
-        // ── Local MCPs ──
-        localHdrP>0.01?R('div',{style:{marginTop:16,opacity:localHdrP,color:'#F8FAFC',fontWeight:700}},'Local MCPs ',R('span',{style:{color:'#64748B',fontWeight:400}},'(~/.claude.json)')):null,
-
-        localR1P>0.01?R('div',{style:{marginTop:4,opacity:localR1P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
-          R('span',{style:{color:'#94A3B8'}},'›'),
-          R('span',{style:{color:'#7DD3FC',fontWeight:700}},'atlassian'),
-          R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#F87171'}},'○'),
-          R('span',{style:{color:'#94A3B8'}},'disabled')
-        ):null,
-        localR2P>0.01?R('div',{style:{marginTop:2,opacity:localR2P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
-          R('span',{style:{color:'#E2E8F0',fontWeight:700}},'figma'),
-          R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#22C55E'}},'✓'),
-          R('span',{style:{color:'#94A3B8'}},'connected'),
-          R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#E2E8F0'}},'18 tools')
-        ):null,
-        localR3P>0.01?R('div',{style:{marginTop:2,opacity:localR3P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
-          R('span',{style:{color:'#E2E8F0',fontWeight:700}},'playwright'),
-          R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#F87171'}},'○'),
-          R('span',{style:{color:'#94A3B8'}},'disabled')
-        ):null,
+        mgrHeadP>0.01?R('div',{style:{marginTop:2,opacity:mgrHeadP,color:'#94A3B8'}},'1 user server · 3 built-in'):null,
 
         // ── User MCPs — Jira lives here, highlighted as the just-added row ──
         userHdrP>0.01?R('div',{style:{marginTop:16,opacity:userHdrP,color:'#F8FAFC',fontWeight:700}},'User MCPs ',R('span',{style:{color:'#64748B',fontWeight:400}},'(~/.claude.json)')):null,
@@ -1879,16 +1835,13 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           R('span',{style:{marginLeft:'auto',padding:'2px 8px',background:'rgba(34,197,94,0.20)',color:'#86EFAC',fontSize:'11px',fontWeight:700,borderRadius:'4px',letterSpacing:'0.04em'}},'JUST ADDED')
         ):null,
 
-        // ── claude.ai (built-in) ──
+        // ── claude.ai (built-in connectors) ──
         clHdrP>0.01?R('div',{style:{marginTop:16,opacity:clHdrP,color:'#F8FAFC',fontWeight:700}},'claude.ai'):null,
-        clR1P>0.01?R('div',{style:{marginTop:2,opacity:clR1P,paddingLeft:16,color:'#94A3B8'}},'claude.ai Gmail · ',R('span',{style:{color:'#FBBF24'}},'△'),' needs authentication'):null,
-        clR2P>0.01?R('div',{style:{marginTop:2,opacity:clR2P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
-          R('span',{style:{color:'#E2E8F0'}},'claude.ai Planner MCP'),
+        clR1P>0.01?R('div',{style:{marginTop:4,opacity:clR1P,paddingLeft:16,display:'flex',alignItems:'center',gap:'8px'}},
+          R('span',{style:{color:'#E2E8F0'}},'claude.ai Gmail'),
           R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#22C55E'}},'✓'),
-          R('span',{style:{color:'#94A3B8'}},'connected'),
-          R('span',{style:{color:'#64748B'}},'·'),
-          R('span',{style:{color:'#E2E8F0'}},'20 tools')
+          R('span',{style:{color:'#FBBF24'}},'△'),
+          R('span',{style:{color:'#94A3B8'}},'needs authentication')
         ):null,
 
         // ── Built-in MCPs ──
@@ -1923,8 +1876,10 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
         ),
         R('div',{style:{flex:1,padding:'7px 14px',background:'#FFFFFF',border:'1px solid #DFE1E6',borderRadius:'18px',fontSize:'13px',color:'#42526E',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:7,height:7,borderRadius:'50%',background:'#22C55E'}}),
-          R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
-          R('span',{style:{color:'#6B7280'}},'/agents/jira/edit')
+          R('div',{style:{display:'inline-flex',alignItems:'center'}},
+            R('span',{style:{color:'#172B4D'}},'app.flowhunt.io'),
+            R('span',{style:{color:'#6B7280'}},'/agents/jira/edit')
+          )
         )
       ),
 
@@ -2056,59 +2011,58 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           ):null,
 
           // ── Nested External MCP Servers modal (stacked over outer modal)
-          innerModalP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'130px',transform:'translateX(-50%) translateY('+(10*(1-innerModalP))+'px)',width:'380px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 24px 50px rgba(17,25,40,0.30)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:innerModalP,zIndex:8}},
+          // Wider so the pasted JSON config reads at a comfortable size.
+          innerModalP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'100px',transform:'translateX(-50%) translateY('+(10*(1-innerModalP))+'px)',width:'520px',background:'#FFFFFF',borderRadius:'12px',boxShadow:'0 24px 50px rgba(17,25,40,0.30)',border:'1px solid #E5E7EB',overflow:'hidden',display:'flex',flexDirection:'column',opacity:innerModalP,zIndex:8}},
             // Title strip
             R('div',{style:{padding:'14px 18px',borderBottom:'1px solid #F3F4F6',display:'flex',alignItems:'center',justifyContent:'space-between'}},
               R('div',{style:{fontSize:'14px',fontWeight:800,color:'#111928'}},'External MCP Servers'),
               R('div',{style:{fontSize:'16px',color:'#9CA3AF',fontWeight:600,lineHeight:1}},'×')
             ),
             // Body
-            R('div',{style:{padding:'14px 18px',display:'flex',flexDirection:'column',gap:'12px'}},
-              // Basic Mode toggle (off, per task spec)
+            R('div',{style:{padding:'16px 20px',display:'flex',flexDirection:'column',gap:'14px'}},
+              // Advanced Mode toggle (ON, blue) — matches the user's
+              // actual configuration: they pasted the full JSON config.
               R('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
-                R('span',{style:{fontSize:'12px',fontWeight:700,color:'#111928'}},'Basic Mode'),
-                R('div',{style:{width:32,height:18,borderRadius:'9px',background:'#D1D5DB',padding:'2px',display:'flex',justifyContent:'flex-start',alignItems:'center'}},
-                  R('div',{style:{width:14,height:14,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 2px rgba(0,0,0,0.18)'}})
+                R('span',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'Advanced Mode'),
+                R('div',{style:{width:34,height:20,borderRadius:'10px',background:'#0084FF',padding:'2px',display:'flex',justifyContent:'flex-end',alignItems:'center',boxShadow:'inset 0 1px 2px rgba(0,82,204,0.18)'}},
+                  R('div',{style:{width:16,height:16,borderRadius:'50%',background:'#FFFFFF',boxShadow:'0 1px 3px rgba(0,0,0,0.18)'}})
                 )
               ),
-              R('div',{style:{fontSize:'11px',color:'#6B7280',lineHeight:1.45}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
+              R('div',{style:{fontSize:'12px',color:'#6B7280',lineHeight:1.5}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
 
-              // MCP Server URL field
+              // MCP Configuration JSON textarea (the pasted-in config)
               R('div',null,
-                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'MCP Server URL'),
-                R('div',{style:{padding:'8px 10px',background:'#F9FAFB',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'10px',fontFamily:'JetBrains Mono,monospace',color:'#1F2937',wordBreak:'break-all',lineHeight:1.4}},
-                  'https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b'
+                R('div',{style:{fontSize:'11px',fontWeight:800,color:'#374151',marginBottom:'6px',display:'flex',alignItems:'center',gap:'6px'}},
+                  R('span',null,'MCP Configuration'),
+                  R('span',{style:{display:'inline-block',width:14,height:14,borderRadius:'50%',border:'1px solid #9CA3AF',color:'#9CA3AF',fontSize:'9px',textAlign:'center',lineHeight:'12px',fontWeight:700}},'?')
+                ),
+                R('div',{style:{padding:'12px 14px',background:'#F9FAFB',border:'1.5px solid #0084FF',borderRadius:'8px',fontFamily:'JetBrains Mono,monospace',fontSize:'11px',lineHeight:1.55,color:'#1F2937',boxShadow:'0 0 0 3px rgba(0,132,255,0.10)'}},
+                  R('div',null, span('{','#6B7280')),
+                  R('div',{style:{paddingLeft:'10px'}},
+                    span('"Jira"','#0084FF'), span(': {','#6B7280')
+                  ),
+                  R('div',{style:{paddingLeft:'22px'}},
+                    span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
+                  ),
+                  R('div',{style:{paddingLeft:'22px',wordBreak:'break-all'}},
+                    span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
+                  ),
+                  R('div',{style:{paddingLeft:'22px'}},
+                    span('"headers"','#0084FF'), span(': {','#6B7280')
+                  ),
+                  R('div',{style:{paddingLeft:'34px',wordBreak:'break-all'}},
+                    span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
+                  ),
+                  R('div',{style:{paddingLeft:'22px'}}, span('}','#6B7280')),
+                  R('div',{style:{paddingLeft:'10px'}}, span('}','#6B7280')),
+                  R('div',null, span('}','#6B7280'))
                 )
-              ),
-
-              // Transport dropdown
-              R('div',null,
-                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Transport'),
-                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'11px',fontFamily:'JetBrains Mono,monospace',color:'#111928',display:'flex',alignItems:'center'}},
-                  R('span',{style:{flex:1}},'streamable_http'),
-                  R('span',{style:{color:'#9CA3AF'}},'▾')
-                )
-              ),
-
-              // Authorization dropdown
-              R('div',null,
-                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Authorization'),
-                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'11px',color:'#111928',display:'flex',alignItems:'center'}},
-                  R('span',{style:{flex:1,fontWeight:700}},'Bearer Token'),
-                  R('span',{style:{color:'#9CA3AF'}},'▾')
-                )
-              ),
-
-              // Token (masked)
-              R('div',null,
-                R('div',{style:{fontSize:'10px',fontWeight:800,color:'#374151',marginBottom:'4px'}},'Token'),
-                R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px',fontSize:'13px',color:'#6B7280',letterSpacing:'2px'}},'••••••••••••••••••••••••')
               ),
 
               // Buttons row (Cancel + Save with breathing pulse)
               R('div',{style:{marginTop:'4px',display:'flex',justifyContent:'flex-end',alignItems:'center',gap:'10px',opacity:saveBtnP}},
-                R('div',{style:{padding:'7px 18px',fontSize:'11px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px'}},'Cancel'),
-                R('div',{style:{padding:'7px 22px',fontSize:'11px',fontWeight:800,color:'#FFFFFF',background:'#1A56DB',borderRadius:'6px',boxShadow:'0 0 0 '+(2+10*savePulse*pulseGate)+'px rgba(0,132,255,0.22)'}},'Save')
+                R('div',{style:{padding:'8px 20px',fontSize:'12px',fontWeight:700,color:'#42526E',background:'#FFFFFF',border:'1px solid #D1D5DB',borderRadius:'6px'}},'Cancel'),
+                R('div',{style:{padding:'8px 24px',fontSize:'12px',fontWeight:800,color:'#FFFFFF',background:'#1A56DB',borderRadius:'6px',boxShadow:'0 0 0 '+(2+10*savePulse*pulseGate)+'px rgba(0,132,255,0.22)'}},'Save')
               )
             )
           ):null
