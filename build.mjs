@@ -177,7 +177,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
         ),
         R('div',{style:{marginTop:'22px',fontSize:'12px',color:'#5E6C84',fontWeight:700,letterSpacing:'0.04em'}},'DESCRIPTION'),
         R('div',{style:{height:'1px',background:'#DFE1E6',marginTop:'8px'}}),
-        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Validate emails on the front end so the login form accepts standard addresses. Stays open until the bug above is resolved.')
+        R('div',{style:{marginTop:'14px',fontSize:'15px',color:'#42526E',lineHeight:1.55}},'Update the email-validation regex on the login form so standard addresses are accepted. Verify on Chrome and Firefox, then close when the bug above no longer reproduces.')
       ):null
     ):null,
 
