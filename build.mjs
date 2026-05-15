@@ -728,8 +728,8 @@ const FlowHuntSetupScene = `function FlowHuntSetupScene(props){${HELPERS}
         R('div',{style:{padding:'10px 12px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'8px',display:'flex',alignItems:'center',gap:'10px'}},
           R('div',{style:{width:30,height:30,borderRadius:'7px',background:grad,color:'#FFFFFF',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'13px'}},'CS'),
           R('div',{style:{flex:1,minWidth:0}},
-            R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'Chris Space'),
-            R('div',{style:{fontSize:'10px',color:'#6B7280',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'vzeman@qualityunit.com')
+            R('div',{style:{fontSize:'13px',fontWeight:700,color:'#111928'}},'Example Workspace'),
+            R('div',{style:{fontSize:'10px',color:'#6B7280',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'you@example.com')
           )
         ),
         // Agent heading
