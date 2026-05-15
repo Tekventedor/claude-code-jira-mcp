@@ -1790,10 +1790,13 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   // Layout — terminal is ~1/3 of the width, FlowHunt browser is ~2/3
   // so the agent editor inside the Chrome reads at proper proportions
   // (chat output, AI agent panel, etc. all visible at sensible sizes).
-  var captionY=170;
-  var surfTopY=210;
-  var termX=40,  termY=surfTopY, termW=600,  termH=820;
-  var fhX=660,   fhY=180,        fhW=1220,   fhH=860;
+  // Both surfaces start at the SAME y so the captions and surface
+  // borders align. Heights are sized so the bottoms clear the
+  // FlowHunt watermark at y≈994 (gap of ~50px).
+  var captionY=160;
+  var surfTopY=200;
+  var termX=40,  termY=surfTopY, termW=600,  termH=740;
+  var fhX=660,   fhY=surfTopY,   fhW=1220,   fhH=740;
 
   function span(t,c){return R('span',{style:{color:c}},t);}
 
@@ -1934,19 +1937,20 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
 
           // Three vertical nodes connected by dashed lines.
           // We position them absolutely so the connecting lines line up.
-          // Node geometry (px from top of canvas body).
-          //   ny1=24  (Chat Input)
-          //   ny2=158 (AI Agent — taller card)
-          //   ny3=348 (Chat Output)
-          // All nodes are centred horizontally within the canvas column.
+          // Repositioned so the stack sits more centrally in the canvas
+          // and the dashed connectors actually reach each node (the old
+          // bottom connector had a big gap below the AI Agent).
+          //   Chat Input  top:80  (height ~48, bottom ~128)
+          //   AI Agent    top:212 (height ~56, bottom ~268)
+          //   Chat Output top:392 (height ~48, bottom ~440)
 
           // Dashed connector — Chat Input → AI Agent
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'80px',width:'2px',height:'80px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'128px',width:'2px',height:'84px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
           // Dashed connector — AI Agent → Chat Output
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'304px',width:'2px',height:'46px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'268px',width:'2px',height:'124px',transform:'translateX(-50%)',borderLeft:'2px dashed #9CA3AF',opacity:canvasP*0.7}}):null,
 
           // Node 1: Chat Input (green)
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'24px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'80px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
             R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#10B981,#047857)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'›'),
             R('div',{style:{flex:1,minWidth:0}},
               R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Input'),
@@ -1955,8 +1959,8 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
             R('div',{style:{width:9,height:9,borderRadius:'50%',background:'#FFFFFF',border:'2px solid #9CA3AF'}})
           ):null,
 
-          // Node 2: AI Agent (magenta — highlighted, dashed border, with 6 Atlassian icons row)
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'158px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'260px',padding:'12px 14px 10px 14px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'12px',boxShadow:'0 6px 18px rgba(225,29,116,0.18)',opacity:canvasP,zIndex:2}},
+          // Node 2: AI Agent (magenta — highlighted, dashed border)
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'212px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'260px',padding:'12px 14px 10px 14px',background:'#FFFFFF',border:'2px dashed #E11D74',borderRadius:'12px',boxShadow:'0 6px 18px rgba(225,29,116,0.18)',opacity:canvasP,zIndex:2}},
             R('div',{style:{display:'flex',alignItems:'center',gap:'12px'}},
               R('div',{style:{width:30,height:30,borderRadius:'7px',background:'linear-gradient(135deg,#B91C5C,#E11D74)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800,flexShrink:0}},'★'),
               R('div',{style:{flex:1,minWidth:0}},
@@ -1968,7 +1972,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
           ):null,
 
           // Node 3: Chat Output (red/orange)
-          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'348px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
+          canvasP>0.005?R('div',{style:{position:'absolute',left:'50%',top:'392px',transform:'translateX(-50%) translateY('+(8*(1-canvasP))+'px)',width:'240px',padding:'10px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'12px',boxShadow:'0 4px 12px rgba(17,25,40,0.06)',display:'flex',alignItems:'center',gap:'12px',opacity:canvasP}},
             R('div',{style:{width:28,height:28,borderRadius:'7px',background:'linear-gradient(135deg,#EF4444,#DC2626)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'13px',fontWeight:800,flexShrink:0}},'‹'),
             R('div',{style:{flex:1,minWidth:0}},
               R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928'}},'Chat Output'),
