@@ -141,7 +141,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
           R('div',null,'fixes: ',R('span',{style:{color:'#22D3EE'}},'KAN-3'))
         ):null,
         t3Done>0.01?R('div',{style:{opacity:t3Done,color:'#22C55E',marginTop:8}},'  ⎿  ✓ New ticket created · ',R('span',{style:{fontWeight:700}},'KAN-4')):null,
-        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'project_name.atlassian.net/browse/KAN-4'):null
+        t3Url>0.01?R('div',{style:{opacity:t3Url,marginLeft:'24px',color:'#22D3EE',textDecoration:'underline'}},'yourcompany.atlassian.net/browse/KAN-4'):null
       )
     ),
 
@@ -150,7 +150,7 @@ const DemoScene = `function DemoScene(props){${HELPERS}
       // Jira chrome
       R('div',{style:{height:'46px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'10px'}},
         R('div',{style:{width:24,height:24,borderRadius:'4px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800}},'J'),
-        R('div',{style:{fontSize:'13px',color:'#42526E'}},'project_name.atlassian.net / projects / KAN')
+        R('div',{style:{fontSize:'13px',color:'#42526E'}},'yourcompany.atlassian.net / projects / KAN')
       ),
       // Pre-morph state: KAN-3 search result card (the open, unowned bug)
       morphP<0.95?R('div',{style:{padding:'40px 50px',opacity:1-morphP}},
@@ -499,7 +499,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
         R('div',{style:{width:36,height:36,borderRadius:'8px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontWeight:800,fontFamily:'JetBrains Mono,monospace',fontSize:'14px'}},'A'),
         R('div',null,
           R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:700,letterSpacing:'0.06em'}},'SITE'),
-          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'project_name.atlassian.net')
+          R('div',{style:{fontSize:'18px',color:'#111928',fontWeight:700}},'yourcompany.atlassian.net')
         )
       ),
       // Project row
