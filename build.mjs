@@ -221,65 +221,83 @@ const ArchScene = `function ArchScene(props){${HELPERS}
   var END=240;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
   function nIn(d){return easeBack(cl((f-d)/22));}
-  var n1=nIn(0), n2=nIn(20), n3=nIn(40);
+  var n1=nIn(0), n2=nIn(20), n3=nIn(40), n4=nIn(54);
   function lab(d){return ease(cl((f-d)/16));}
-  var l1=lab(70), l2=lab(90);
+  var l1=lab(70), l2=lab(90), l3=lab(96);
 
-  // 3 nodes only — You / Claude Code / Atlassian MCP server.
-  // "atlassian MCP" and "Jira" are effectively the same surface for this video,
-  // so they're collapsed into one Atlassian node (the MCP fronts Jira; the
-  // viewer doesn't need to track the indirection).
-  var nodes=[
-    { x:380,  label:'You',                   sub:'your prompt',  iconKind:'term' },
-    { x:960,  label:'Claude Code',           sub:'agent',        iconKind:'dot'  },
-    { x:1540, label:'Atlassian MCP server',  sub:'your Jira data', iconKind:'a'  }
-  ];
-  var ny=480;
-  var nw=240, nh=200;
+  // 4 nodes — You / Claude Code, then a fork to TWO MCP endpoints:
+  //   Atlassian's own MCP (direct path) and FlowHunt's hosted MCP
+  //   (bridge path). Same outcome, two routes.
+  var youX=320,  claudeX=840, mcpX=1500;
+  var ny=540;          // centre line for You + Claude Code
+  var atlY=380;        // upper branch (Atlassian)
+  var fhMcpY=700;      // lower branch (FlowHunt)
+  var nw=260, nh=200;
 
-  function nodeIcon(kind){
-    // "You" stays as a simple terminal mark — generic, not branded.
-    if(kind==='term') return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'22px',fontWeight:800}}, '>_');
-    // Claude Code — real Claude AI mark.
-    if(kind==='dot')  return R('img',{src:'${CLAUDE_ICON}',width:54,height:54,style:{display:'block',borderRadius:'12px'}});
-    // Atlassian MCP server — real Atlassian mark on white tile so the
-    // blue mark reads clearly at small sizes.
+  function termIcon(){
+    return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontFamily:'JetBrains Mono,monospace',fontSize:'22px',fontWeight:800}}, '>_');
+  }
+  function claudeIcon(){
+    return R('img',{src:'${CLAUDE_ICON}',width:54,height:54,style:{display:'block',borderRadius:'12px'}});
+  }
+  function atlassianIcon(){
     return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'#FFFFFF',border:'1px solid #E5E7EB',display:'flex',alignItems:'center',justifyContent:'center'}},
       R('img',{src:'${ATLASSIAN_MARK}',width:38,height:38,style:{display:'block'}})
     );
   }
-
-  function node(n, p){
-    var s=0.92+0.08*p;
-    return R('div',{key:n.label,style:{position:'absolute',left:(n.x-nw/2)+'px',top:(ny-nh/2)+'px',width:nw,height:nh,background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'16px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'12px',boxShadow:'0 12px 28px rgba(17,25,40,0.08)',opacity:p,transform:'scale('+s+')'}},
-      nodeIcon(n.iconKind),
-      R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928',whiteSpace:'nowrap'}}, n.label),
-      R('div',{style:{fontSize:'13px',color:'#6B7280'}}, n.sub)
+  function fhIcon(){
+    return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 10px rgba(0,82,204,0.30)'}},
+      R('svg',{width:34,height:28,viewBox:'0 0 275 223',fill:'none'},
+        R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
+      )
     );
   }
 
-  return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
-    // Title
-    R('div',{style:{position:'absolute',left:'50%',top:'140px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'HOW IT FLOWS'),
-    R('div',{style:{position:'absolute',left:'50%',top:'180px',transform:'translateX(-50%)',fontSize:'36px',fontWeight:800,color:'#111928'}},'One prompt. One round-trip. Real Atlassian data.'),
+  function node(x, y, icon, label, sub, p){
+    var s=0.92+0.08*p;
+    return R('div',{style:{position:'absolute',left:(x-nw/2)+'px',top:(y-nh/2)+'px',width:nw,height:nh,background:'#FFFFFF',border:'1.5px solid #E5E7EB',borderRadius:'16px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'12px',boxShadow:'0 12px 28px rgba(17,25,40,0.08)',opacity:p,transform:'scale('+s+')'}},
+      icon,
+      R('div',{style:{fontSize:'20px',fontWeight:700,color:'#111928',whiteSpace:'nowrap'}}, label),
+      R('div',{style:{fontSize:'13px',color:'#6B7280'}}, sub)
+    );
+  }
 
-    // Plain connecting lines (no animation, no arrows, no travelling dot).
-    // The horizontal layout already implies flow; the labels carry the meaning.
+  // Connection geometry — line endpoints touch the node borders.
+  var youR=youX+nw/2, claudeL=claudeX-nw/2, claudeR=claudeX+nw/2;
+  var mcpL=mcpX-nw/2;
+
+  return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',fontFamily:'Inter,system-ui,sans-serif',position:'relative',opacity:op}},
+
+    // ─── Title ──────────────────────────────────────────────────────
+    R('div',{style:{position:'absolute',left:'50%',top:'90px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'HOW IT FLOWS'),
+    R('div',{style:{position:'absolute',left:'50%',top:'128px',transform:'translateX(-50%)',fontSize:'40px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px',whiteSpace:'nowrap'}},'Your prompt becomes a tool call. Real Jira data comes back.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'192px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500,whiteSpace:'nowrap'}},'Claude Code reaches your Jira through one of two MCP endpoints. Atlassian directly, or FlowHunt as a bridge.'),
+
+    // ─── Connecting lines (drawn under the nodes) ──────────────────
     R('svg',{style:{position:'absolute',left:0,top:0,pointerEvents:'none'},width:1920,height:1080},
-      R('line',{x1:nodes[0].x+nw/2,y1:ny,x2:nodes[1].x-nw/2,y2:ny,stroke:'#E5E7EB',strokeWidth:2}),
-      R('line',{x1:nodes[1].x+nw/2,y1:ny,x2:nodes[2].x-nw/2,y2:ny,stroke:'#E5E7EB',strokeWidth:2})
+      // You -> Claude Code (straight horizontal)
+      R('line',{x1:youR,y1:ny,x2:claudeL,y2:ny,stroke:'#E5E7EB',strokeWidth:2}),
+      // Fork from Claude Code to Atlassian (upper branch)
+      R('line',{x1:claudeR,y1:ny,x2:mcpL,y2:atlY,stroke:'#E5E7EB',strokeWidth:2}),
+      // Fork from Claude Code to FlowHunt MCP (lower branch)
+      R('line',{x1:claudeR,y1:ny,x2:mcpL,y2:fhMcpY,stroke:'#E5E7EB',strokeWidth:2})
     ),
 
-    // Labels centred on each line
-    l1>0.005?R('div',{style:{position:'absolute',left:(nodes[0].x+nw/2)+'px',top:(ny-32)+'px',width:(nodes[1].x-nodes[0].x-nw)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#0084FF',opacity:l1}},'natural-language prompt'):null,
-    l2>0.005?R('div',{style:{position:'absolute',left:(nodes[1].x+nw/2)+'px',top:(ny-32)+'px',width:(nodes[2].x-nodes[1].x-nw)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#0084FF',opacity:l2}},'MCP tool call'):null,
-    l1>0.005?R('div',{style:{position:'absolute',left:(nodes[0].x+nw/2)+'px',top:(ny+14)+'px',width:(nodes[1].x-nodes[0].x-nw)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#6B7280',opacity:l1}},'agent answer'):null,
-    l2>0.005?R('div',{style:{position:'absolute',left:(nodes[1].x+nw/2)+'px',top:(ny+14)+'px',width:(nodes[2].x-nodes[1].x-nw)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#6B7280',opacity:l2}},'issue JSON'):null,
+    // ─── Labels centred along each segment ─────────────────────────
+    // You -> Claude Code (label above + below)
+    l1>0.005?R('div',{style:{position:'absolute',left:youR+'px',top:(ny-32)+'px',width:(claudeL-youR)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#0084FF',opacity:l1}},'natural-language prompt'):null,
+    l1>0.005?R('div',{style:{position:'absolute',left:youR+'px',top:(ny+14)+'px',width:(claudeL-youR)+'px',textAlign:'center',fontSize:'15px',fontWeight:600,color:'#6B7280',opacity:l1}},'agent answer'):null,
+    // Fork branch labels — anchored near the midpoint of each diagonal
+    l2>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+atlY)/2-44)+'px',width:'180px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0052CC',opacity:l2}},'direct'):null,
+    l2>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+atlY)/2-22)+'px',width:'180px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l2}},"Atlassian's MCP"):null,
+    l3>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+fhMcpY)/2+12)+'px',width:'180px',textAlign:'center',fontSize:'15px',fontWeight:700,color:'#0084FF',opacity:l3}},'via FlowHunt'):null,
+    l3>0.005?R('div',{style:{position:'absolute',left:((claudeR+mcpL)/2-90)+'px',top:((ny+fhMcpY)/2+34)+'px',width:'180px',textAlign:'center',fontSize:'13px',color:'#6B7280',opacity:l3}},'FlowHunt hosted MCP'):null,
 
-    // Nodes
-    node(nodes[0], n1),
-    node(nodes[1], n2),
-    node(nodes[2], n3)
+    // ─── Nodes ─────────────────────────────────────────────────────
+    node(youX,   ny,     termIcon(),      'You',                  'your prompt',     n1),
+    node(claudeX,ny,     claudeIcon(),    'Claude Code',          'agent',           n2),
+    node(mcpX,   atlY,   atlassianIcon(), 'Atlassian MCP',        'your Jira, direct', n3),
+    node(mcpX,   fhMcpY, fhIcon(),        'FlowHunt MCP',         'your Jira, bridged', n4)
   );
 }`;
 
@@ -1970,7 +1988,11 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       // FlowHunt page-level header bar (logo + breadcrumb + version pill)
       R('div',{style:{height:'36px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 16px',gap:'14px',opacity:pageHeadP}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
-          R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'10px',fontWeight:800}},'FH'),
+          R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 3px rgba(0,82,204,0.25)'}},
+            R('svg',{width:14,height:11,viewBox:'0 0 275 223',fill:'none'},
+              R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
+            )
+          ),
           R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'FlowHunt')
         ),
         R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
