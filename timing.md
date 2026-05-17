@@ -7,14 +7,14 @@ Maps each beat of `voiceover.md` Part 2 (the flowing read) to the scene it sits 
 | # | id              | scene name                          | range        | dur     | maps to VO line |
 |---|-----------------|--------------------------------------|--------------|---------|-----------------|
 | 1 | s01-pivot       | Pivot                                | 0–90         | 3.0 s   | *"Claude Code now connects directly to your Atlassian workspace."* |
-| 2 | s02-explainer   | Project codes                        | 90–330       | 8.0 s   | *"Quick vocabulary check… K-A-N, for Kanban template…"* |
-| 3 | s03-demo        | Demo (bug triage, 2x)                | 330–570      | 8.0 s   | *"One prompt. Claude opens the project…"* |
-| 4 | s04-arch        | Architecture (fork to 2 MCPs)        | 570–730      | ~5.3 s  | *"Your prompt becomes a tool call. … Atlassian's directly, or FlowHunt as a bridge."* |
-| 5 | s05-cc-direct   | Claude Code direct to Atlassian      | 730–1015     | 9.5 s   | *"The direct path is the simplest. … the connection goes live."* |
-| 6 | s06-fh-oauth    | FlowHunt Token-Auth integration      | 1015–1300    | 9.5 s   | *"The FlowHunt path is point-and-click. … approve the connection."* |
-| 7 | s07-fh-mcp      | MCP Server config + Connect JSON     | 1300–1585    | 9.5 s   | *"Inside FlowHunt… thirty-four tools… ready-to-use client configuration."* |
-| 8 | s08-fh-bridge   | Same MCP, both sides (paste anim)    | 1585–1915    | 11.0 s  | *"The same configuration works in two places… Both surfaces talk to the same server."* |
-| 9 | s09-fh-usage    | FlowHunt agent in action             | 1915–2185    | 9.0 s   | *"Once connected, the agent reads your workspace…"* |
+| 2 | s02-explainer   | Project codes                        | 90–330       | 8.0 s   | *"Every Jira project has a short code. Ours is K-A-N…"* |
+| 3 | s03-demo        | Demo (bug triage, 2x)                | 330–570      | 8.0 s   | *"One prompt. Claude opens your project, finds an unassigned bug…"* |
+| 4 | s04-arch        | Architecture (fork to 2 MCPs)        | 570–730      | ~5.3 s  | *"Your prompt becomes a tool call… Atlassian directly, or FlowHunt as a bridge."* |
+| 5 | s05-cc-direct   | Claude Code direct to Atlassian      | 730–1015     | 9.5 s   | *"The direct route is one terminal command… you're connected."* |
+| 6 | s06-fh-oauth    | FlowHunt Token-Auth integration      | 1015–1300    | 9.5 s   | *"The FlowHunt route is point-and-click… paste your Atlassian domain, email, and API token, and Integrate."* |
+| 7 | s07-fh-mcp      | MCP Server config + Connect JSON     | 1300–1585    | 9.5 s   | *"Inside FlowHunt… thirty-four tools… copy the client configuration."* |
+| 8 | s08-fh-bridge   | Same MCP, both sides (paste anim)    | 1585–1915    | 11.0 s  | *"One configuration, two places… Both talk to the same server."* |
+| 9 | s09-fh-usage    | FlowHunt agent in action             | 1915–2185    | 9.0 s   | *"Once wired, the agent reads your workspace…"* |
 | 10| s10-cta         | CTA                                  | 2185–2425    | 8.0 s   | *"The complete setup guide is on the FlowHunt blog…"* |
 
 ## Reading cadence
