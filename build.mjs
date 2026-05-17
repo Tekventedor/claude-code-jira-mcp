@@ -151,7 +151,9 @@ const DemoScene = `function DemoScene(props){${HELPERS}
     cardIn>0.005?R('div',{style:{position:'absolute',right:'40px',top:'40px',width:'900px',height:'920px',background:'#FFFFFF',borderRadius:'10px',boxShadow:'0 24px 50px rgba(17,25,40,0.10)',overflow:'hidden',opacity:cardIn}},
       // Jira chrome
       R('div',{style:{height:'46px',background:'#F4F5F7',borderBottom:'1px solid #DFE1E6',display:'flex',alignItems:'center',padding:'0 18px',gap:'10px'}},
-        R('div',{style:{width:24,height:24,borderRadius:'4px',background:'#0052CC',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'14px',fontWeight:800}},'J'),
+        R('div',{style:{width:24,height:24,borderRadius:'4px',background:'#FFFFFF',border:'1px solid #DFE1E6',display:'flex',alignItems:'center',justifyContent:'center'}},
+          R('img',{src:'${ATLASSIAN_MARK}',width:18,height:18,style:{display:'block'}})
+        ),
         R('div',{style:{fontSize:'13px',color:'#42526E'}},'yourcompany.atlassian.net / projects / KAN')
       ),
       // Pre-morph state: KAN-3 search result card (the open, unowned bug)
