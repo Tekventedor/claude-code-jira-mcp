@@ -353,7 +353,10 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
     // ─── Eyebrow + title ───
     R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'PROJECT CODES'),
     R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'Every project has a short code'),
-    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'Ours is KAN because we used a Kanban template. Yours can be anything.'),
+    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},
+      R('span',{style:{color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN'),
+      ' for Kanban template — ours, because that\\'s what we picked. Yours can be anything.'
+    ),
 
     // ─── LEFT (60%): the hierarchy tree ───
     R('div',{style:{position:'absolute',left:'80px',top:'230px',width:'1050px'}},
