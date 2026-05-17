@@ -19,11 +19,11 @@ const F = {
   ccDirect:   { start: 730,  end: 1015,  dur: 285 },  // 9.5s — PATH 3: Claude Code direct to Atlassian
   fhOAuth:    { start: 1015, end: 1300,  dur: 285 },  // 9.5s — PATH 1+2 setup: FlowHunt Token-Auth
   fhMcp:      { start: 1300, end: 1585,  dur: 285 },  // 9.5s — PATH 2 setup: MCP Server + Connect JSON
-  fhBridge:   { start: 1585, end: 1855,  dur: 270 },  // 9s   — PATH 2 wire-up: local + online
-  fhUsage:    { start: 1855, end: 2125,  dur: 270 },  // 9s   — PATH 1 in action: FlowHunt agent scroll
-  cta:        { start: 2125, end: 2365,  dur: 240 },  // 8s
+  fhBridge:   { start: 1585, end: 1915,  dur: 330 },  // 11s  — PATH 2 wire-up: local + online (extended for paste animation)
+  fhUsage:    { start: 1915, end: 2185,  dur: 270 },  // 9s   — PATH 1 in action: FlowHunt agent scroll
+  cta:        { start: 2185, end: 2425,  dur: 240 },  // 8s
 };
-const TOTAL_FRAMES = 2365;
+const TOTAL_FRAMES = 2425;
 const TOTAL_SECONDS = TOTAL_FRAMES / FPS;
 
 const HELPERS = `var R=React.createElement;var cl=function(x){return Math.max(0,Math.min(1,x));};var ease=function(t){return 1-Math.pow(1-t,3);};var easeIn=function(t){return t*t*t;};var easeInOut=function(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};var easeBack=function(t){var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};var lerp=function(a,b,t){return a+(b-a)*t;};var grad='linear-gradient(90deg,#0084FF,#1A56DB)';`;
@@ -246,9 +246,18 @@ const ArchScene = `function ArchScene(props){${HELPERS}
     );
   }
   function fhIcon(){
-    return R('div',{style:{width:54,height:54,borderRadius:'12px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 10px rgba(0,82,204,0.30)'}},
-      R('svg',{width:34,height:28,viewBox:'0 0 275 223',fill:'none'},
-        R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
+    // No backdrop tile — render the FH SVG mark with its own brand
+    // gradient (#0084FF → #1A56DB), the same way Claude Code's icon
+    // is rendered without a surrounding plate.
+    return R('div',{style:{width:54,height:54,display:'flex',alignItems:'center',justifyContent:'center'}},
+      R('svg',{width:54,height:44,viewBox:'0 0 275 223',fill:'none'},
+        R('defs',null,
+          R('linearGradient',{id:'fhArch4',x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+            R('stop',{stopColor:'#0084FF'}),
+            R('stop',{offset:1,stopColor:'#1A56DB'})
+          )
+        ),
+        R('path',{d:'${FH_MARK_PATH}',fill:'url(#fhArch4)'})
       )
     );
   }
@@ -509,13 +518,20 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
     return R('div',{style:{marginTop:10,fontSize:'18px',color:muted?'#6B7280':'#172B4D',lineHeight:1.6}}, text);
   }
 
-  // FlowHunt mark on a blue-gradient tile — replaces the old "J"
-  // letter icon. Uses the brand path FH_MARK_PATH already in scope.
+  // FlowHunt mark rendered with the brand gradient itself — NO
+  // backdrop tile, same as Claude Code / Atlassian icons elsewhere.
   function fhSquare(size){
     var s=size||26;
-    return R('div',{style:{width:s,height:s,borderRadius:'6px',background:grad,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 6px rgba(0,82,204,0.30)'}},
-      R('svg',{width:Math.round(s*0.66),height:Math.round(s*0.53),viewBox:'0 0 275 223',fill:'none'},
-        R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
+    var uid='fhSq'+s;
+    return R('div',{style:{width:s,height:s,display:'flex',alignItems:'center',justifyContent:'center'}},
+      R('svg',{width:Math.round(s*0.95),height:Math.round(s*0.77),viewBox:'0 0 275 223',fill:'none'},
+        R('defs',null,
+          R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+            R('stop',{stopColor:'#0084FF'}),
+            R('stop',{offset:1,stopColor:'#1A56DB'})
+          )
+        ),
+        R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
       )
     );
   }
@@ -534,7 +550,7 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
   // response. No rounded card wrapper; content flows on the chat surface
   // like FlowHunt's actual output. Just the capability intro (no fake
   // ticket pull).
-  var assistantCard=R('div',{style:{padding:'10px 4px',color:'#172B4D'}},
+  var assistantCard=R('div',{style:{background:'#F4F5F7',borderRadius:'12px',padding:'30px 36px',color:'#172B4D'}},
 
     h1('What I Can Do Here and in Atlassian Jira'),
     para("I'm your assistant for managing Jira issues and projects. Here's what I can help you with:"),
@@ -902,13 +918,14 @@ const ClaudeCodeDirectScene = `function ClaudeCodeDirectScene(props){${HELPERS}
       // Body — Atlassian OAuth consent
       R('div',{style:{padding:'54px 80px 60px',display:'flex',flexDirection:'column',alignItems:'center'}},
 
-        // Atlassian wordmark + logo + small Claude Code badge on the right
-        R('div',{style:{display:'flex',alignItems:'center',gap:'18px',marginBottom:'34px',opacity:chromeP}},
-          atlassianMark(56),
-          R('div',{style:{fontSize:'32px',fontWeight:700,color:'#172B4D',letterSpacing:'-0.5px'}},'Atlassian'),
+        // Atlassian + Claude Code, balanced at equal visual weight.
+        // Both sides sized the same so neither dominates the consent strip.
+        R('div',{style:{display:'flex',alignItems:'center',gap:'22px',marginBottom:'34px',opacity:chromeP}},
+          atlassianMark(44),
+          R('div',{style:{fontSize:'24px',fontWeight:700,color:'#172B4D',letterSpacing:'-0.3px'}},'Atlassian'),
           R('div',{style:{width:'1px',height:'30px',background:'#DFE1E6',margin:'0 6px'}}),
-          claudeMark(34),
-          R('div',{style:{fontSize:'15px',fontWeight:700,color:'#42526E'}},'Claude Code')
+          claudeMark(44),
+          R('div',{style:{fontSize:'24px',fontWeight:700,color:'#172B4D',letterSpacing:'-0.3px'}},'Claude Code')
         ),
 
         // Big header
@@ -1128,8 +1145,11 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
           // Crossfade between un-integrated state and integrated state.
           R('div',{style:{flex:1,position:'relative'}},
 
-            // UN-INTEGRATED state (visible before integratedP fades in)
-            R('div',{style:{position:'relative',padding:'22px 24px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'14px',opacity:1-integratedP}},
+            // UN-INTEGRATED state (visible before integratedP fades in).
+            // Card is highlighted blue from frame 0 to mark it as the
+            // selected / active path (matches the real FlowHunt UI where
+            // hovering or focus shows this blue border + tint).
+            R('div',{style:{position:'relative',padding:'22px 24px',background:'#EFF6FF',border:'1.5px solid #0084FF',borderRadius:'14px',opacity:1-integratedP,boxShadow:'0 8px 22px rgba(0,132,255,0.10)'}},
               R('div',{style:{position:'absolute',top:'14px',right:'14px',padding:'2px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em'}},'BETA'),
               atlassianMark(38),
               R('div',{style:{marginTop:'14px',fontSize:'18px',fontWeight:800,color:'#111928'}},'Atlassian (Token-based Auth)'),
@@ -1568,7 +1588,7 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
                     return R('div',{key:i,style:{padding:'12px 14px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'10px',display:'flex',alignItems:'flex-start',gap:'12px'}},
                       R('div',{style:{flex:'0 0 22px',marginTop:'2px'}}, atlassianMark(22)),
                       R('div',{style:{flex:1,minWidth:0}},
-                        R('div',{style:{fontSize:'13.5px',fontWeight:800,color:'#111928',fontFamily:'JetBrains Mono,monospace'}}, cap.name),
+                        R('div',{style:{fontSize:'14px',fontWeight:800,color:'#111928'}}, cap.name),
                         R('div',{style:{marginTop:'3px',fontSize:'12px',color:'#6B7280',lineHeight:1.5}}, cap.desc)
                       ),
                       R('div',{style:{padding:'3px 8px',background:'#DCFCE7',color:'#047857',fontSize:'10px',fontWeight:800,borderRadius:'4px',letterSpacing:'0.04em',flexShrink:0}},'ENABLED')
@@ -1768,7 +1788,7 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
 
 const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var f=props.frame||0;
-  var END=270;
+  var END=330;
   var op=ease(cl(f/20))-easeIn(cl((f-(END-20))/20));
 
   // ─── Surfaces fade in together (same formula as previous version) ──
@@ -1803,12 +1823,21 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var toolRowP=ease(cl((f-70)/16));    // MCP Client tool row highlights
   var outerModalP=ease(cl((f-86)/20)); // Configure Tool: MCP Client modal
   var innerModalP=ease(cl((f-118)/20));// nested External MCP Servers modal
-  var saveBtnP=ease(cl((f-140)/16));   // save button row inside inner modal
+  var saveBtnP=ease(cl((f-200)/16));   // save button row inside inner modal
+
+  // ── PASTE animation inside the nested modal's MCP Configuration field
+  // The MCP Configuration starts EMPTY. A small "⌘V Pasted" hint pops
+  // briefly, then the JSON content fades in — visualising that the user
+  // is pasting the SAME config they copied from Scene 7's Connect tab.
+  var pasteHintIn=ease(cl((f-160)/12));   // ⌘V hint appears
+  var pasteHintOut=easeIn(cl((f-195)/14));// then fades out
+  var pasteHintP=cl(pasteHintIn-pasteHintOut);
+  var jsonP=ease(cl((f-176)/24));         // JSON content fades in after the hint pops
 
   // ─── Save-button pulse (fast→slow phase-integrated) ───────────────
-  // Same phase-integrated formula and timing values as the previous scene.
-  var pulseStart=200;
-  var fastEnd=230;
+  // Pulse starts AFTER the paste action settles (was f=200, now f=240).
+  var pulseStart=240;
+  var fastEnd=275;
   var fastFreq=0.22, slowFreq=0.085;
   var pulsePhase = f<=fastEnd
     ? (f-pulseStart)*fastFreq
@@ -1994,10 +2023,14 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       // FlowHunt page-level header bar (logo + breadcrumb + version pill)
       R('div',{style:{height:'36px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 16px',gap:'14px',opacity:pageHeadP}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
-          R('div',{style:{width:20,height:20,borderRadius:'5px',background:'linear-gradient(135deg,#0084FF,#1A56DB)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 3px rgba(0,82,204,0.25)'}},
-            R('svg',{width:14,height:11,viewBox:'0 0 275 223',fill:'none'},
-              R('path',{d:'${FH_MARK_PATH}',fill:'#FFFFFF'})
-            )
+          R('svg',{width:24,height:19,viewBox:'0 0 275 223',fill:'none',style:{display:'block'}},
+            R('defs',null,
+              R('linearGradient',{id:'fhBridgeHdr',x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+                R('stop',{stopColor:'#0084FF'}),
+                R('stop',{offset:1,stopColor:'#1A56DB'})
+              )
+            ),
+            R('path',{d:'${FH_MARK_PATH}',fill:'url(#fhBridgeHdr)'})
           ),
           R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'FlowHunt')
         ),
@@ -2132,33 +2165,48 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
               ),
               R('div',{style:{fontSize:'12px',color:'#6B7280',lineHeight:1.5}},'Here you can add additional configuration fields like OAuth settings, custom headers, or other parameters.'),
 
-              // MCP Configuration JSON textarea (the pasted-in config)
-              R('div',null,
+              // MCP Configuration textarea — starts EMPTY, then a ⌘V hint
+              // pops, then the JSON pasted-in content fades in. Visualises
+              // that this is the SAME config the user copied in Scene 7.
+              R('div',{style:{position:'relative'}},
                 R('div',{style:{fontSize:'11px',fontWeight:800,color:'#374151',marginBottom:'6px',display:'flex',alignItems:'center',gap:'6px'}},
                   R('span',null,'MCP Configuration'),
                   R('span',{style:{display:'inline-block',width:14,height:14,borderRadius:'50%',border:'1px solid #9CA3AF',color:'#9CA3AF',fontSize:'9px',textAlign:'center',lineHeight:'12px',fontWeight:700}},'?')
                 ),
-                R('div',{style:{padding:'12px 14px',background:'#F9FAFB',border:'1.5px solid #0084FF',borderRadius:'8px',fontFamily:'JetBrains Mono,monospace',fontSize:'11px',lineHeight:1.55,color:'#1F2937',boxShadow:'0 0 0 3px rgba(0,132,255,0.10)'}},
-                  R('div',null, span('{','#6B7280')),
-                  R('div',{style:{paddingLeft:'10px'}},
-                    span('"Jira"','#0084FF'), span(': {','#6B7280')
-                  ),
-                  R('div',{style:{paddingLeft:'22px'}},
-                    span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
-                  ),
-                  R('div',{style:{paddingLeft:'22px',wordBreak:'break-all'}},
-                    span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
-                  ),
-                  R('div',{style:{paddingLeft:'22px'}},
-                    span('"headers"','#0084FF'), span(': {','#6B7280')
-                  ),
-                  R('div',{style:{paddingLeft:'34px',wordBreak:'break-all'}},
-                    span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
-                  ),
-                  R('div',{style:{paddingLeft:'22px'}}, span('}','#6B7280')),
-                  R('div',{style:{paddingLeft:'10px'}}, span('}','#6B7280')),
-                  R('div',null, span('}','#6B7280'))
-                )
+                R('div',{style:{position:'relative',minHeight:'140px',padding:'12px 14px',background:'#F9FAFB',border:'1.5px solid #0084FF',borderRadius:'8px',fontFamily:'JetBrains Mono,monospace',fontSize:'11px',lineHeight:1.55,color:'#1F2937',boxShadow:'0 0 0 3px rgba(0,132,255,0.10)'}},
+                  // Empty-state placeholder + caret (visible until JSON fades in)
+                  jsonP<0.9?R('div',{style:{opacity:1-jsonP,color:'#9CA3AF'}},
+                    'Paste JSON config here…',
+                    R('span',{style:{display:'inline-block',width:1.5,height:13,background:'#0084FF',marginLeft:4,verticalAlign:'middle',opacity:(Math.floor(f/8))%2===0?1:0.2}})
+                  ):null,
+                  // JSON content (fades in once paste has "happened")
+                  jsonP>0.005?R('div',{style:{position:'absolute',inset:'12px 14px',opacity:jsonP}},
+                    R('div',null, span('{','#6B7280')),
+                    R('div',{style:{paddingLeft:'10px'}},
+                      span('"Jira"','#0084FF'), span(': {','#6B7280')
+                    ),
+                    R('div',{style:{paddingLeft:'22px'}},
+                      span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
+                    ),
+                    R('div',{style:{paddingLeft:'22px',wordBreak:'break-all'}},
+                      span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
+                    ),
+                    R('div',{style:{paddingLeft:'22px'}},
+                      span('"headers"','#0084FF'), span(': {','#6B7280')
+                    ),
+                    R('div',{style:{paddingLeft:'34px',wordBreak:'break-all'}},
+                      span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
+                    ),
+                    R('div',{style:{paddingLeft:'22px'}}, span('}','#6B7280')),
+                    R('div',{style:{paddingLeft:'10px'}}, span('}','#6B7280')),
+                    R('div',null, span('}','#6B7280'))
+                  ):null
+                ),
+                // ⌘V paste-hint bubble pops over the textarea briefly
+                pasteHintP>0.005?R('div',{style:{position:'absolute',right:'10px',top:'30px',padding:'6px 12px',background:'#111928',color:'#FFFFFF',fontSize:'11px',fontWeight:700,borderRadius:'7px',boxShadow:'0 8px 18px rgba(17,25,40,0.30)',display:'flex',alignItems:'center',gap:'8px',opacity:pasteHintP,transform:'translateY('+(-8*(1-pasteHintP))+'px)'}},
+                  R('span',{style:{padding:'1px 6px',background:'#374151',borderRadius:'4px',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}},'⌘V'),
+                  R('span',null,'Pasted')
+                ):null
               ),
 
               // Buttons row (Cancel + Save with breathing pulse)
