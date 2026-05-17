@@ -32,19 +32,19 @@ This file has two parts:
 
 Claude Code now connects directly to your Atlassian workspace.
 
-Quick vocabulary check. Every Jira project has a short code. K-A-N, for Kanban template — but your team's code could be anything.
+Every Jira project has a short code. Ours is K-A-N, for the Kanban template — with tickets like a login form rejecting valid emails.
 
 One natural-language prompt. Claude opens the right Jira project, searches for bugs nobody owns, and files a tracked fix task linked back to the bug it found.
 
-Under the hood, your prompt becomes a tool call. Claude Code reaches your Jira through one of two MCP endpoints — Atlassian's MCP directly, or FlowHunt's hosted MCP as a bridge.
+Under the hood, your prompt becomes a tool call. Claude Code reaches your Jira through one of two MCP endpoints, Atlassian's MCP directly, or FlowHunt's hosted MCP.
 
-The direct route is the simplest. One terminal command — `claude mcp add atlassian` — then approve the OAuth scopes in your browser, and Claude Code is talking to Atlassian.
+The direct route is the simplest. One terminal command then approve the Authentication in your browser, and Claude Code is talking to Atlassian.
 
-The FlowHunt route is point-and-click. Open Integrations, click Manage Integration on the Atlassian Token-based Auth card, paste your Atlassian domain, email, and API token, and Integrate. The page confirms it's connected.
+The FlowHunt route is Simple. Open Integrations, click Manage Integration on the Atlassian Token-based Authentication card, paste your Atlassian domain, email, and API token, and Integrate.
 
-Inside FlowHunt, that same integration powers a Jira MCP server with thirty-four tools — from creating issues to running JQL searches. Open MCP Servers, search Atlassian, name your server, and the Configure tab lists every capability. Switch to Connect, and FlowHunt hands you a ready-to-use client configuration.
+Inside FlowHunt, that same integration powers a Jira MCP server with thirty-four tools, from creating issues to running JQL searches. Open MCP Servers, search Atlassian, name your server, and the have access to every capability. Switch to FlowHunt for a easy-to-use client with more possibilites.
 
-One configuration. Two places. Paste it into Claude Code and `/mcp` shows your Jira MCP connected. Paste it into a FlowHunt agent's MCP Client field and the agent picks it up the same way. Both surfaces, the same server.
+One JSON script, two places. Paste it into Claude Code and /mcp shows your Jira MCP connected. Paste it into FlowHunt AI agent's MCP Client field and it's being used the same way.
 
 Once the FlowHunt agent is wired, the chat reads your real Atlassian workspace and lists the full surface — create, search, update, transition, and comment on Jira issues.
 
