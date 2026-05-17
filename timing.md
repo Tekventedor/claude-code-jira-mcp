@@ -1,23 +1,21 @@
 # Scene timing — claude-code-jira-mcp
 
-**Total**: ~78.8 s · 30 fps · 2365 frames · 1920 × 1080.
+**Total**: ~80.8 s · 30 fps · 2425 frames · 1920 × 1080.
 
-Maps each beat of `voiceover.md` to the scene it sits over, with the exact frame range so the VO can be timed precisely against the rendered video.
-
-The narration in `voiceover.md` is a single flowing read with stage-direction brackets — it doesn't have per-scene headings. Use this file to know where each paragraph lands.
+Maps each beat of `voiceover.md` Part 2 (the flowing read) to the scene it sits over, with the exact frame range so the VO can be timed precisely against the rendered video. `voiceover.md` Part 1 has the plain-English narrative for each scene — read that first to align with the video.
 
 | # | id              | scene name                          | range        | dur     | maps to VO line |
 |---|-----------------|--------------------------------------|--------------|---------|-----------------|
 | 1 | s01-pivot       | Pivot                                | 0–90         | 3.0 s   | *"Claude Code now connects directly to your Atlassian workspace."* |
-| 2 | s02-explainer   | Project codes                        | 90–330       | 8.0 s   | *"Quick vocabulary check… Ours is K-A-N… your team's code could be anything."* |
+| 2 | s02-explainer   | Project codes                        | 90–330       | 8.0 s   | *"Quick vocabulary check… K-A-N, for Kanban template…"* |
 | 3 | s03-demo        | Demo (bug triage, 2x)                | 330–570      | 8.0 s   | *"One prompt. Claude opens the project…"* |
 | 4 | s04-arch        | Architecture (fork to 2 MCPs)        | 570–730      | ~5.3 s  | *"Your prompt becomes a tool call. … Atlassian's directly, or FlowHunt as a bridge."* |
 | 5 | s05-cc-direct   | Claude Code direct to Atlassian      | 730–1015     | 9.5 s   | *"The direct path is the simplest. … the connection goes live."* |
 | 6 | s06-fh-oauth    | FlowHunt Token-Auth integration      | 1015–1300    | 9.5 s   | *"The FlowHunt path is point-and-click. … approve the connection."* |
 | 7 | s07-fh-mcp      | MCP Server config + Connect JSON     | 1300–1585    | 9.5 s   | *"Inside FlowHunt… thirty-four tools… ready-to-use client configuration."* |
-| 8 | s08-fh-bridge   | Same MCP, both sides                 | 1585–1855    | 9.0 s   | *"The same configuration works in two places… Both surfaces talk to the same server."* |
-| 9 | s09-fh-usage    | FlowHunt agent in action             | 1855–2125    | 9.0 s   | *"Once connected, the agent reads your real workspace…"* |
-| 10| s10-cta         | CTA                                  | 2125–2365    | 8.0 s   | *"The complete setup guide is on the FlowHunt blog…"* |
+| 8 | s08-fh-bridge   | Same MCP, both sides (paste anim)    | 1585–1915    | 11.0 s  | *"The same configuration works in two places… Both surfaces talk to the same server."* |
+| 9 | s09-fh-usage    | FlowHunt agent in action             | 1915–2185    | 9.0 s   | *"Once connected, the agent reads your workspace…"* |
+| 10| s10-cta         | CTA                                  | 2185–2425    | 8.0 s   | *"The complete setup guide is on the FlowHunt blog…"* |
 
 ## Reading cadence
 

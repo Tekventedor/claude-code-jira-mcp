@@ -362,10 +362,7 @@ const SnapshotScene = `function SnapshotScene(props){${HELPERS}
     // ─── Eyebrow + title ───
     R('div',{style:{position:'absolute',left:'50%',top:'66px',transform:'translateX(-50%)',fontSize:'14px',fontWeight:700,color:'#6B7280',letterSpacing:'2px'}},'PROJECT CODES'),
     R('div',{style:{position:'absolute',left:'50%',top:'104px',transform:'translateX(-50%)',fontSize:'42px',fontWeight:800,color:'#111928',letterSpacing:'-0.5px'}},'Every project has a short code'),
-    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},
-      R('span',{style:{color:'#111928',fontWeight:700,fontFamily:'JetBrains Mono,monospace'}},'KAN'),
-      ' for Kanban template — ours, because that\\'s what we picked. Yours can be anything.'
-    ),
+    R('div',{style:{position:'absolute',left:'50%',top:'162px',transform:'translateX(-50%)',fontSize:'22px',color:'#6B7280',fontWeight:500}},'For example Kan for Kanban template. Your\\'s can be anything'),
 
     // ─── LEFT (60%): the hierarchy tree ───
     R('div',{style:{position:'absolute',left:'80px',top:'230px',width:'1050px'}},
@@ -1826,13 +1823,15 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
   var saveBtnP=ease(cl((f-200)/16));   // save button row inside inner modal
 
   // ── PASTE animation inside the nested modal's MCP Configuration field
-  // The MCP Configuration starts EMPTY. A small "⌘V Pasted" hint pops
-  // briefly, then the JSON content fades in — visualising that the user
-  // is pasting the SAME config they copied from Scene 7's Connect tab.
-  var pasteHintIn=ease(cl((f-160)/12));   // ⌘V hint appears
-  var pasteHintOut=easeIn(cl((f-195)/14));// then fades out
+  // The MCP Configuration starts EMPTY. At f=170 the JSON content
+  // SNAPS in (no fade), the "Pasted" badge pops in simultaneously,
+  // and the textbox grows to fit the content — visualising that the
+  // user just hit paste with the config they copied in Scene 7.
+  var pasteAt=170;
+  var pasted=f>=pasteAt;
+  var pasteHintIn=ease(cl((f-pasteAt)/10));
+  var pasteHintOut=easeIn(cl((f-(pasteAt+34))/14));
   var pasteHintP=cl(pasteHintIn-pasteHintOut);
-  var jsonP=ease(cl((f-176)/24));         // JSON content fades in after the hint pops
 
   // ─── Save-button pulse (fast→slow phase-integrated) ───────────────
   // Pulse starts AFTER the paste action settles (was f=200, now f=240).
@@ -2173,40 +2172,39 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
                   R('span',null,'MCP Configuration'),
                   R('span',{style:{display:'inline-block',width:14,height:14,borderRadius:'50%',border:'1px solid #9CA3AF',color:'#9CA3AF',fontSize:'9px',textAlign:'center',lineHeight:'12px',fontWeight:700}},'?')
                 ),
-                R('div',{style:{position:'relative',minHeight:'140px',padding:'12px 14px',background:'#F9FAFB',border:'1.5px solid #0084FF',borderRadius:'8px',fontFamily:'JetBrains Mono,monospace',fontSize:'11px',lineHeight:1.55,color:'#1F2937',boxShadow:'0 0 0 3px rgba(0,132,255,0.10)'}},
-                  // Empty-state placeholder + caret (visible until JSON fades in)
-                  jsonP<0.9?R('div',{style:{opacity:1-jsonP,color:'#9CA3AF'}},
-                    'Paste JSON config here…',
-                    R('span',{style:{display:'inline-block',width:1.5,height:13,background:'#0084FF',marginLeft:4,verticalAlign:'middle',opacity:(Math.floor(f/8))%2===0?1:0.2}})
-                  ):null,
-                  // JSON content (fades in once paste has "happened")
-                  jsonP>0.005?R('div',{style:{position:'absolute',inset:'12px 14px',opacity:jsonP}},
-                    R('div',null, span('{','#6B7280')),
-                    R('div',{style:{paddingLeft:'10px'}},
-                      span('"Jira"','#0084FF'), span(': {','#6B7280')
-                    ),
-                    R('div',{style:{paddingLeft:'22px'}},
-                      span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
-                    ),
-                    R('div',{style:{paddingLeft:'22px',wordBreak:'break-all'}},
-                      span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
-                    ),
-                    R('div',{style:{paddingLeft:'22px'}},
-                      span('"headers"','#0084FF'), span(': {','#6B7280')
-                    ),
-                    R('div',{style:{paddingLeft:'34px',wordBreak:'break-all'}},
-                      span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
-                    ),
-                    R('div',{style:{paddingLeft:'22px'}}, span('}','#6B7280')),
-                    R('div',{style:{paddingLeft:'10px'}}, span('}','#6B7280')),
-                    R('div',null, span('}','#6B7280'))
-                  ):null
+                R('div',{style:{position:'relative',padding:'12px 14px',background:'#F9FAFB',border:'1.5px solid #0084FF',borderRadius:'8px',fontFamily:'JetBrains Mono,monospace',fontSize:'11px',lineHeight:1.55,color:'#1F2937',boxShadow:'0 0 0 3px rgba(0,132,255,0.10)'}},
+                  pasted?
+                    // Pasted state — content SNAPS in (no fade); box grows to fit.
+                    R('div',null,
+                      R('div',null, span('{','#6B7280')),
+                      R('div',{style:{paddingLeft:'10px'}},
+                        span('"Jira"','#0084FF'), span(': {','#6B7280')
+                      ),
+                      R('div',{style:{paddingLeft:'22px'}},
+                        span('"transport"','#0084FF'), span(': ','#6B7280'), span('"streamable_http"','#10B981'), span(',','#6B7280')
+                      ),
+                      R('div',{style:{paddingLeft:'22px',wordBreak:'break-all'}},
+                        span('"url"','#0084FF'), span(': ','#6B7280'), span('"https://mcp.flowhunt.io/ff978d0f-545d-4df4-9d51-85ec1a22a14b"','#10B981'), span(',','#6B7280')
+                      ),
+                      R('div',{style:{paddingLeft:'22px'}},
+                        span('"headers"','#0084FF'), span(': {','#6B7280')
+                      ),
+                      R('div',{style:{paddingLeft:'34px',wordBreak:'break-all'}},
+                        span('"Authorization"','#0084FF'), span(': ','#6B7280'), span('"Bearer ********"','#10B981')
+                      ),
+                      R('div',{style:{paddingLeft:'22px'}}, span('}','#6B7280')),
+                      R('div',{style:{paddingLeft:'10px'}}, span('}','#6B7280')),
+                      R('div',null, span('}','#6B7280'))
+                    )
+                  :
+                    // Empty state — single-line placeholder with caret.
+                    R('div',{style:{color:'#9CA3AF',padding:'2px 0'}},
+                      'Paste JSON config here…',
+                      R('span',{style:{display:'inline-block',width:1.5,height:13,background:'#0084FF',marginLeft:4,verticalAlign:'middle',opacity:(Math.floor(f/8))%2===0?1:0.2}})
+                    )
                 ),
-                // ⌘V paste-hint bubble pops over the textarea briefly
-                pasteHintP>0.005?R('div',{style:{position:'absolute',right:'10px',top:'30px',padding:'6px 12px',background:'#111928',color:'#FFFFFF',fontSize:'11px',fontWeight:700,borderRadius:'7px',boxShadow:'0 8px 18px rgba(17,25,40,0.30)',display:'flex',alignItems:'center',gap:'8px',opacity:pasteHintP,transform:'translateY('+(-8*(1-pasteHintP))+'px)'}},
-                  R('span',{style:{padding:'1px 6px',background:'#374151',borderRadius:'4px',fontFamily:'JetBrains Mono,monospace',fontSize:'10px'}},'⌘V'),
-                  R('span',null,'Pasted')
-                ):null
+                // "Pasted" badge — pops in at the same frame the JSON snaps in.
+                pasteHintP>0.005?R('div',{style:{position:'absolute',right:'10px',top:'30px',padding:'6px 14px',background:'#111928',color:'#FFFFFF',fontSize:'11px',fontWeight:700,borderRadius:'7px',boxShadow:'0 8px 18px rgba(17,25,40,0.30)',opacity:pasteHintP,transform:'translateY('+(-8*(1-pasteHintP))+'px)',letterSpacing:'0.04em'}},'Pasted'):null
               ),
 
               // Buttons row (Cancel + Save with breathing pulse)
