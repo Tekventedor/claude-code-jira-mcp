@@ -2245,7 +2245,7 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
             R('div',null,
               R('div',{style:{fontSize:'9px',fontWeight:800,color:'#6B7280',letterSpacing:'0.08em',marginBottom:'5px'}},'LLM'),
               R('div',{style:{padding:'8px 10px',background:'#FFFFFF',border:'1px solid #E5E7EB',borderRadius:'7px',display:'flex',alignItems:'center',gap:'8px'}},
-                R('div',{style:{width:18,height:18,borderRadius:'4px',background:'linear-gradient(135deg,#D97757,#B85B3E)',display:'flex',alignItems:'center',justifyContent:'center',color:'#FFFFFF',fontSize:'9px',fontWeight:800,flexShrink:0}},'A'),
+                R('img',{src:'${CLAUDE_ICON}',width:18,height:18,style:{display:'block',borderRadius:'4px',flexShrink:0}}),
                 R('div',{style:{flex:1,minWidth:0}},
                   R('div',{style:{fontSize:'10px',fontWeight:800,color:'#111928'}},'claude-4.5-haiku'),
                   R('div',{style:{fontSize:'8px',color:'#6B7280'}},'Anthropic')
