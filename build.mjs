@@ -4,7 +4,7 @@
 import { writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { CLAUDE_ICON, ATLASSIAN_MARK, FLOWHUNT_ICON } from './assets.mjs';
+import { CLAUDE_ICON, ATLASSIAN_MARK } from './assets.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const FPS = 30;
@@ -248,11 +248,17 @@ const ArchScene = `function ArchScene(props){${HELPERS}
     );
   }
   function fhIcon(){
-    // The FlowHunt PNG mark is square (1000x1000) with built-in whitespace
-    // padding around the glyph. Render at the same 54x54 footprint as the
-    // other node icons, square aspect, no surrounding plate.
+    // FH brand SVG path with blue->indigo gradient. No backdrop tile.
     return R('div',{style:{width:54,height:54,display:'flex',alignItems:'center',justifyContent:'center'}},
-      R('img',{src:'${FLOWHUNT_ICON}',width:54,height:54,style:{display:'block'}})
+      R('svg',{width:54,height:44,viewBox:'0 0 275 223',fill:'none'},
+        R('defs',null,
+          R('linearGradient',{id:'fhArch4',x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+            R('stop',{stopColor:'#0084FF'}),
+            R('stop',{offset:1,stopColor:'#1A56DB'})
+          )
+        ),
+        R('path',{d:'${FH_MARK_PATH}',fill:'url(#fhArch4)'})
+      )
     );
   }
 
@@ -515,7 +521,13 @@ const FlowHuntUsageScene = `function FlowHuntUsageScene(props){${HELPERS}
     var s=size||26;
     var uid='fhSq'+s;
     return R('div',{style:{width:s,height:s,display:'flex',alignItems:'center',justifyContent:'center'}},
-      R('img',{src:'${FLOWHUNT_ICON}',width:s,height:s,style:{display:'block'}})
+      R('svg',{width:Math.round(s*0.95),height:Math.round(s*0.77),viewBox:'0 0 275 223',fill:'none'},
+        R('defs',null,
+          R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+            R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+        ),
+        R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
+      )
     );
   }
 
@@ -1024,7 +1036,13 @@ const FlowHuntOAuthScene = `function FlowHuntOAuthScene(props){${HELPERS}
   function fhMark(size){
     var s=size||22;
     var uid=('fhoa'+Math.floor(s*1000));
-    R('img',{src:'${FLOWHUNT_ICON}',width:s,height:s,style:{display:'block'}});
+    return R('svg',{width:s,height:s*(223/275),viewBox:'0 0 275 223',style:{display:'block'}},
+      R('defs',null,
+        R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+          R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+      ),
+      R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
+    );
   }
 
   // Reusable key-feature bullet (bold-then-colon style)
@@ -1382,7 +1400,13 @@ const FlowHuntMcpServerScene = `function FlowHuntMcpServerScene(props){${HELPERS
   function fhMark(size){
     var s=size||22;
     var uid=('fhmcp'+Math.floor(s*1000));
-    R('img',{src:'${FLOWHUNT_ICON}',width:s,height:s,style:{display:'block'}});
+    return R('svg',{width:s,height:s*(223/275),viewBox:'0 0 275 223',style:{display:'block'}},
+      R('defs',null,
+        R('linearGradient',{id:uid,x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+          R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+      ),
+      R('path',{d:'${FH_MARK_PATH}',fill:'url(#'+uid+')'})
+    );
   }
 
   // ── Capabilities (cards in the Configure tab) — 12 Jira tools ──
@@ -1996,8 +2020,18 @@ const FlowHuntBridgeScene = `function FlowHuntBridgeScene(props){${HELPERS}
       // FlowHunt page-level header bar (logo + breadcrumb + version pill)
       R('div',{style:{height:'36px',background:'#FFFFFF',borderBottom:'1px solid #E5E7EB',display:'flex',alignItems:'center',padding:'0 16px',gap:'14px',opacity:pageHeadP}},
         R('div',{style:{display:'flex',alignItems:'center',gap:'8px'}},
-          R('img',{src:'${FLOWHUNT_ICON}',width:24,height:24,style:{display:'block'}}),
-          R('div',{style:{fontSize:'13px',fontWeight:800,color:'#111928',letterSpacing:'-0.2px'}},'FlowHunt')
+          R('svg',{width:22,height:18,viewBox:'0 0 275 223',fill:'none',style:{display:'block'}},
+            R('defs',null,
+              R('linearGradient',{id:'fhBridgeHdr',x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},
+                R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))
+            ),
+            R('path',{d:'${FH_MARK_PATH}',fill:'url(#fhBridgeHdr)'})
+          ),
+          // FlowHunt wordmark — "Flow" in dark, "Hunt" in brand gradient
+          R('div',{style:{display:'flex',fontSize:'13px',fontWeight:800,letterSpacing:'-0.2px'}},
+            R('span',{style:{color:'#111928'}},'Flow'),
+            R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
+          )
         ),
         R('div',{style:{fontSize:'12px',color:'#6B7280',fontWeight:600,display:'flex',alignItems:'center',gap:'6px'}},
           R('span',null,'Agents'),
@@ -2297,7 +2331,10 @@ const CTAScene = `function CTAScene(props){${HELPERS}
   var op=1-outP;
   return R('div',{style:{width:'100%',height:'100%',background:'#FFFFFF',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'Inter,system-ui,sans-serif',opacity:op}},
     R('div',{style:{opacity:logoP,transform:'translateY('+(12*(1-logoP))+'px)',display:'flex',alignItems:'center',gap:'18px',fontSize:'64px',fontWeight:800,letterSpacing:'-1px'}},
-      R('img',{src:'${FLOWHUNT_ICON}',width:66,height:66,style:{display:'block'}}),
+      R('svg',{width:66,height:53,viewBox:'0 0 275 223',fill:'none'},
+        R('defs',null,R('linearGradient',{id:'fh_cta',x1:0,y1:0,x2:275,y2:223,gradientUnits:'userSpaceOnUse'},R('stop',{stopColor:'#0084FF'}),R('stop',{offset:1,stopColor:'#1A56DB'}))),
+        R('path',{d:'${FH_MARK_PATH}',fill:'url(#fh_cta)'})
+      ),
       R('div',{style:{display:'flex'}},
         R('span',{style:{color:'#111928'}},'Flow'),
         R('span',{style:{background:grad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}},'Hunt')
