@@ -2,12 +2,12 @@
 
 **Total runtime**: ~80.8 s · 10 scenes · 2425 frames. Per-scene frame ranges live in `timing.md`.
 
-**Speaker pace**: ~140 WPM (measured from ElevenLabs voice `sB7vwSCyX0tQmU24cW2C` rendering the prior 285-word script in 2:02). At that pace, ~188 words fit in 80.8 s. This script is **~180 words** to leave headroom for breath beats.
+**Speaker pace**: ~136 WPM (measured from ElevenLabs voice "Jon — Natural Authority", id `sB7vwSCyX0tQmU24cW2C`, rendering the prior 285-word script in 2:06). At that pace, 80.8 s ≈ 183 words. This script is **~180 words** to leave a touch of headroom.
 
 This file has two parts:
 
 - **Part 1 — Scene narrative** (plain English summary of *what is said* over each scene). Read this first to align with the video before you record.
-- **Part 2 — Flowing read with stage directions** (the actual recording script). Stage directions in `[brackets]` are reader cues only; they don't get spoken.
+- **Part 2 — Flowing read** (the actual recording script). Plain prose, one paragraph per scene, in order.
 
 ---
 
@@ -30,40 +30,38 @@ This file has two parts:
 
 ## Part 2 — Flowing read
 
-Target ~140 WPM. Read like a presenter explaining a product. Stage directions in `[brackets]` are reader cues — they don't get spoken. Speak `K-A-N` letter by letter. Speak the URL as "flowhunt dot io slash blog".
+Claude Code now connects directly to your Atlassian workspace.
 
-[calm, clear] Claude Code now connects directly to your Atlassian workspace. [slight pause]
+Every Jira project has a short code. Ours is K-A-N, for Kanban template. Yours can be anything.
 
-[light, explanatory] Every Jira project has a short code. [emphasize, spell out] Ours is K-A-N, [release] for Kanban template. Yours can be anything. [pause]
+One prompt. Claude opens your project, finds an unassigned bug, and files a fix task linked to it.
 
-[slightly quicker] One prompt. Claude opens your project, finds an unassigned bug, and files a fix task linked to it. [brief pause]
+Your prompt becomes a tool call — sent to one of two MCP endpoints. Atlassian directly, or FlowHunt as a bridge.
 
-[tight, technical] Your prompt becomes a tool call — sent to one of two MCP endpoints. [emphasize] Atlassian directly, or FlowHunt as a bridge. [no extra pause]
+The direct route is one terminal command. Approve the OAuth scopes in the browser, and you're connected.
 
-[matter-of-fact] The direct route is one terminal command. Approve the OAuth scopes in the browser, and you're connected. [pause]
+The FlowHunt route is point-and-click. Open Integrations, paste your Atlassian domain, email, and API token, and Integrate.
 
-[guided, step-by-step] The FlowHunt route is point-and-click. Open Integrations, paste your Atlassian domain, email, and API token, and [slight emphasis] Integrate. [pause]
+Inside FlowHunt, that integration powers a Jira MCP server with thirty-four tools. Save it, switch to Connect, and copy the client configuration.
 
-[steady, informative] Inside FlowHunt, that integration powers a Jira MCP server with [emphasize] thirty-four tools. Save it, switch to Connect, and copy the client configuration. [pause]
+One configuration, two places. Paste it into Claude Code, or into a FlowHunt agent's MCP Client field. Both talk to the same server.
 
-[balanced, clear contrast] One configuration, two places. Paste it into Claude Code, or into a FlowHunt agent's MCP Client field. [resolve] Both talk to the same server. [pause]
+Once wired, the agent reads your workspace — create, search, update, transition, and comment on Jira issues.
 
-[observational] Once wired, the agent reads your workspace — [light emphasis sequence] create, search, update, transition, and comment on Jira issues. [pause]
-
-[soft, closing tone] The complete setup guide is on the FlowHunt blog, with worked examples for Jira and Confluence. [trail off]
+The complete setup guide is on the FlowHunt blog, with worked examples for Jira and Confluence.
 
 ---
 
 ## Total word count
 
-~180 words across ~80.8 s. At ~140 WPM that's ~77 seconds of speech + room for the bracketed pauses to breathe.
+~180 words across ~80.8 s at ~136 WPM ≈ 79 seconds of speech, leaving ~2 seconds of natural pause across the read.
 
 ## Recording notes
 
-- Voice: presenter tone. The viewer should feel they are being explained to, not sold to.
-- Pronunciation: spell `K-A-N` letter by letter (not "kan"). Speak the URL as "flowhunt dot io slash blog". Speak `/mcp` (if it's read) as "slash m-c-p".
+- Voice: Jon — Natural Authority (Agent / Assistant). Calm, natural American.
+- Pronunciation: spell `K-A-N` letter by letter (not "kan"). Speak the URL as "flowhunt dot io slash blog".
+- Paragraph breaks correspond to scene boundaries; pause naturally between them.
 - Mic: a flat-EQ tracking signal is fine; no broadcast compression.
-- Cuts: the video has no music bed; pauses are silent, so leave a half-beat of breath at each `[pause]`.
 - File format: deliver as a single mono WAV at 48 kHz.
-- The bracketed directions in Part 2 are reader cues, not spoken text. Part 1 is a reference summary only — don't read it on the recording.
-- Re-rendering with the same ElevenLabs voice should land at or under 80 s without changes.
+- Part 1 is a reference summary only — don't read it on the recording.
+- Re-rendering with the same ElevenLabs voice should land at or under 80 s without further changes.
